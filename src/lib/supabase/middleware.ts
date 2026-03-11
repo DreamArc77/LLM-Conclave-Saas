@@ -28,13 +28,10 @@ export async function updateSession(request: NextRequest) {
   // Refresh session — IMPORTANT: do not write any logic between createServerClient and getUser
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect routes that require authentication
+  // Only protect /account — homepage and all other routes are publicly accessible.
+  // The /account page server component handles its own redirect if unauthenticated.
   const { pathname } = request.nextUrl;
-  const isAuthRoute = pathname.startsWith('/auth/');
-  const isApiRoute = pathname.startsWith('/api/');
-  const isPublicAsset = pathname.startsWith('/_next/') || pathname.startsWith('/favicon');
-
-  if (!user && !isAuthRoute && !isApiRoute && !isPublicAsset) {
+  if (!user && pathname.startsWith('/account')) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/signin';
     return NextResponse.redirect(url);

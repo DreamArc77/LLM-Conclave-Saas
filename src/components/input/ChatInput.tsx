@@ -7,9 +7,13 @@ import { useConfigStore } from '@/stores/config-store';
 import { executeRelay } from '@/lib/relay/relay-engine';
 import { clearSessionMessages } from '@/lib/db/operations';
 import { useT } from '@/hooks/useT';
+import { isSaasClient } from '@/lib/flags';
+import { createClient } from '@/lib/supabase/client';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 export function ChatInput() {
   const [input, setInput] = useState('');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const relay = useChatStore((s) => s.relay);
@@ -24,6 +28,14 @@ export function ChatInput() {
   const handleSend = useCallback(async () => {
     const message = input.trim();
     if (!message || isRunning) return;
+
+    if (isSaasClient) {
+      const { data: { user } } = await createClient().auth.getUser();
+      if (!user) {
+        setShowAuthModal(true);
+        return; // Keep text in textarea so user can resend after login
+      }
+    }
 
     setInput('');
     if (textareaRef.current) {
@@ -62,6 +74,8 @@ export function ChatInput() {
   }, []);
 
   return (
+    <>
+    {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
       <div className="max-w-3xl mx-auto flex items-end gap-2">
         {activeSessionId && (
@@ -112,5 +126,6 @@ export function ChatInput() {
         )}
       </div>
     </div>
+    </>
   );
 }
