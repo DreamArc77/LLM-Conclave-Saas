@@ -1,0 +1,73 @@
+import type { Messages } from './en';
+
+export const ja: Messages = {
+  app: {
+    name: 'AI Council',
+    tagline: 'マルチモデルAI協調プラットフォーム',
+  },
+  chat: {
+    welcome: 'メッセージを送信してマルチモデル協調会話を開始する',
+    generating: '生成中...',
+    thinking: '考え中...',
+    error: 'エラーが発生しました',
+  },
+  input: {
+    placeholder: 'メッセージを入力...',
+    placeholderNoModels: 'まず設定でモデルを設定してください...',
+    clearConversation: '会話をクリア',
+    stopRelay: 'リレーを停止',
+    sendMessage: 'メッセージを送信',
+  },
+  sidebar: {
+    newChat: '新しいチャット',
+    noConversations: '会話がまだありません',
+  },
+  status: {
+    models: '{count} モデル',
+    round: 'ラウンド {round}/{maxRounds} · {modelName}',
+    error: 'エラー',
+    idle: '待機中',
+  },
+  settings: {
+    title: 'モデル設定',
+    maxRounds: '最大ラウンド数',
+    exportFormat: 'エクスポート形式',
+    instruction:
+      '下にモデルを追加します。ドラッグで順序を変更できます（モデルはこの順序で応答します）。モデルをクリックして設定を編集できます。',
+    addModel: 'モデルを追加',
+    addModelTitle: '新しいモデルを追加',
+    provider: 'プロバイダー',
+    apiKey: 'APIキー',
+    endpointUrl: 'エンドポイントURL',
+    quickAdd: 'クイック追加',
+    modelId: 'モデルID',
+    displayName: '表示名（任意）',
+    displayNamePlaceholder: 'チャットで表示される名前',
+    cancel: 'キャンセル',
+    preset: 'プリセット',
+    presetInfo: 'プリセットモデルはサーバーが提供し、APIキーは管理者が設定します。',
+    noModels: 'モデルがまだ追加されていません。上から追加してください。',
+  },
+  export: {
+    exportReport: 'レポートをエクスポート {filename}.{format}',
+    generating: '生成中...',
+    save: '{filename} を保存',
+    retry: '再試行',
+    serverError: 'サーバーエラー {status}',
+    generateFailed: '生成に失敗しました',
+    shareFailed: '共有に失敗しました',
+  },
+  relay: {
+    complete: 'ディスカッション完了（{seconds}秒）。「{topic}」の研究レポートはこちらです',
+  },
+  report: {
+    header: '議事録 · MEETING MINUTES',
+    subheader: 'AI Council · マルチモデル協調プラットフォーム',
+    footer: 'AI Council によって生成',
+  },
+  prompts: {
+    userRole: 'ユーザー',
+    participantSeparator: '、',
+    dateLocale: 'ja-JP',
+  },
+};

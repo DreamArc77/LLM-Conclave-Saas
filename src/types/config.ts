@@ -1,0 +1,33 @@
+export type ProviderId =
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'deepseek'
+  | 'groq'
+  | 'doubao'
+  | 'glm'
+  | 'kimi'
+  | 'custom';
+
+export type ProviderProtocol = 'openai-compatible' | 'anthropic' | 'google-gemini';
+
+export interface ProviderMeta {
+  id: ProviderId;
+  name: string;
+  protocol: ProviderProtocol;
+  defaultBaseUrl: string;
+  logoPath: string;
+  defaultModels: string[];
+}
+
+export interface ModelConfig {
+  id: string;
+  providerId: ProviderId;
+  modelId: string;
+  displayName: string;
+  apiKey: string;
+  baseUrl: string;
+  enabled: boolean;
+  order: number;
+  isPreset?: boolean;
+}
