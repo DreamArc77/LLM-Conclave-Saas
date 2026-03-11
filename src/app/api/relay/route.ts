@@ -3,7 +3,7 @@ import path from 'path';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import { logger } from '@/lib/logger';
-import { createJob, appendJobEvent, finishJob, createJobSSEStream } from '@/lib/relay/job-store';
+import { jobStore } from '@/lib/relay/job-store-factory';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -72,13 +72,13 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   // Create a job for this relay session. The relay runs independently of the HTTP connection.
-  const job = createJob(sessionId);
+  await jobStore.createJob(sessionId);
   const startTime = Date.now();
 
   // writeRelaySSE writes to the job store (buffered + broadcast to all SSE subscribers).
   // This continues even if the original client has disconnected.
   const writeRelaySSE = async (data: object) => {
-    appendJobEvent(job, data);
+    await jobStore.appendJobEvent(sessionId, data);
   };
 
   // Run the relay in a detached background task — NOT awaited.
@@ -94,13 +94,13 @@ export async function POST(req: Request): Promise<Response> {
       const finishedModelIds = new Set<string>();
 
       outerLoop: for (let round = 0; round < maxRounds; round++) {
-        if (job.abort.signal.aborted) break;
+        if (await jobStore.isJobAborted(sessionId)) break;
 
         const activeModels = models.filter((m) => !finishedModelIds.has(m.id));
         if (activeModels.length === 0) break;
 
         for (let i = 0; i < activeModels.length; i++) {
-          if (job.abort.signal.aborted) break outerLoop;
+          if (await jobStore.isJobAborted(sessionId)) break outerLoop;
 
           const model = activeModels[i];
           const provider = PROVIDER_REGISTRY[model.providerId as ProviderId];
@@ -167,7 +167,7 @@ export async function POST(req: Request): Promise<Response> {
             }
           } catch (err) {
             clearInterval(modelKeepaliveTimer);
-            if (job.abort.signal.aborted) return;
+            if (await jobStore.isJobAborted(sessionId)) return;
             logger.error(`[API/relay] Model error (${model.displayName}):`, err);
             await writeRelaySSE({ type: 'error', message: err instanceof Error ? err.message : 'Unknown error' });
             return;
@@ -202,7 +202,7 @@ export async function POST(req: Request): Promise<Response> {
       }
 
       // Generate meeting minutes — only skip if explicitly stopped
-      if (!job.abort.signal.aborted) {
+      if (!(await jobStore.isJobAborted(sessionId))) {
         await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE);
       }
 
@@ -217,14 +217,15 @@ export async function POST(req: Request): Promise<Response> {
       try {
         await writeRelaySSE({ type: 'done' });
       } catch {}
-      finishJob(job, job.abort.signal.aborted ? 'error' : 'done');
+      const wasAborted = await jobStore.isJobAborted(sessionId);
+      await jobStore.finishJob(sessionId, wasAborted ? 'error' : 'done');
     }
   })();
 
   // Return SSE stream that reads from the job store.
   // If this client disconnects, the relay continues and a reconnecting client can
   // use GET /api/relay/events?sessionId=xxx to resume.
-  return createJobSSEStream(job, 0);
+  return jobStore.createJobSSEStream(sessionId, 0);
 }
 
 async function generateSummary(

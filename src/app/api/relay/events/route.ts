@@ -1,4 +1,4 @@
-import { getJob, createJobSSEStream } from '@/lib/relay/job-store';
+import { jobStore } from '@/lib/relay/job-store-factory';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +11,5 @@ export async function GET(req: Request): Promise<Response> {
     return new Response('Missing sessionId', { status: 400 });
   }
 
-  const job = getJob(sessionId);
-  if (!job) {
-    return new Response('Relay not found', { status: 404 });
-  }
-
-  return createJobSSEStream(job, from);
+  return jobStore.createJobSSEStream(sessionId, from);
 }

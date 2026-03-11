@@ -1,4 +1,4 @@
-import { getJob } from '@/lib/relay/job-store';
+import { jobStore } from '@/lib/relay/job-store-factory';
 
 export async function POST(req: Request): Promise<Response> {
   let sessionId: string | undefined;
@@ -13,10 +13,7 @@ export async function POST(req: Request): Promise<Response> {
     return new Response('Missing sessionId', { status: 400 });
   }
 
-  const job = getJob(sessionId);
-  if (job) {
-    job.abort.abort();
-  }
+  await jobStore.abortJob(sessionId);
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { 'Content-Type': 'application/json' },
