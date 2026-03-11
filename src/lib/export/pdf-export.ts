@@ -1,6 +1,8 @@
 import { marked } from 'marked';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { getMessages } from '@/i18n';
+import type { Locale } from '@/i18n';
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -11,8 +13,9 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ]);
 }
 
-async function buildReportContainer(markdownContent: string): Promise<HTMLDivElement> {
+async function buildReportContainer(markdownContent: string, locale: Locale = 'zh-CN'): Promise<HTMLDivElement> {
   const htmlContent = await marked.parse(markdownContent);
+  const msgs = getMessages(locale);
 
   const container = document.createElement('div');
   container.style.cssText = `
@@ -28,7 +31,8 @@ async function buildReportContainer(markdownContent: string): Promise<HTMLDivEle
     box-sizing: border-box;
   `;
 
-  const now = new Date().toLocaleString('zh-CN', {
+  const dateLocale = locale === 'ja' ? 'ja-JP' : locale === 'en' ? 'en-US' : 'zh-CN';
+  const now = new Date().toLocaleString(dateLocale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -39,8 +43,8 @@ async function buildReportContainer(markdownContent: string): Promise<HTMLDivEle
   container.innerHTML = `
     <div style="padding: 60px 64px;">
       <div style="margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #2563eb;">
-        <div style="font-size: 11px; color: #6b7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">MEETING MINUTES · 会议纪要</div>
-        <div style="font-size: 11px; color: #9ca3af;">AI Council · 多模型协作平台</div>
+        <div style="font-size: 11px; color: #6b7280; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;">${msgs.report.header}</div>
+        <div style="font-size: 11px; color: #9ca3af;">${msgs.report.subheader}</div>
       </div>
 
       <div class="minutes-body" style="
@@ -60,7 +64,7 @@ async function buildReportContainer(markdownContent: string): Promise<HTMLDivEle
         display: flex;
         justify-content: space-between;
       ">
-        <span>由 AI Council 自动生成</span>
+        <span>${msgs.report.footer}</span>
         <span>${now}</span>
       </div>
     </div>
@@ -230,8 +234,8 @@ function buildPDFFromCanvas(
 }
 
 // Returns a PDF blob without triggering a download (used by Web Share API on iOS).
-export async function generatePDFBlob(markdownContent: string): Promise<Blob> {
-  const container = await buildReportContainer(markdownContent);
+export async function generatePDFBlob(markdownContent: string, locale: Locale = 'zh-CN'): Promise<Blob> {
+  const container = await buildReportContainer(markdownContent, locale);
   // iOS: scale:1 to avoid canvas memory crash (scale:2 is 4× larger)
   const SCALE = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1 : 2;
   const containerRect = container.getBoundingClientRect();
@@ -253,8 +257,8 @@ export async function generatePDFBlob(markdownContent: string): Promise<Blob> {
 }
 
 // Returns a PNG blob without triggering a download (used by Web Share API on iOS).
-export async function generatePNGBlob(markdownContent: string): Promise<Blob> {
-  const container = await buildReportContainer(markdownContent);
+export async function generatePNGBlob(markdownContent: string, locale: Locale = 'zh-CN'): Promise<Blob> {
+  const container = await buildReportContainer(markdownContent, locale);
   const scale = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 1 : 2;
   try {
     const canvas = await withTimeout(
@@ -275,9 +279,10 @@ export async function generatePNGBlob(markdownContent: string): Promise<Blob> {
 
 export async function exportMeetingMinutesPDF(
   markdownContent: string,
-  filename: string
+  filename: string,
+  locale: Locale = 'zh-CN'
 ): Promise<void> {
-  const container = await buildReportContainer(markdownContent);
+  const container = await buildReportContainer(markdownContent, locale);
 
   // Query h2 positions for smart page breaking (before html2canvas renders)
   const SCALE = 2;
@@ -305,9 +310,10 @@ export async function exportMeetingMinutesPDF(
 
 export async function exportMeetingMinutesPNG(
   markdownContent: string,
-  filename: string
+  filename: string,
+  locale: Locale = 'zh-CN'
 ): Promise<void> {
-  const container = await buildReportContainer(markdownContent);
+  const container = await buildReportContainer(markdownContent, locale);
 
   try {
     const canvas = await html2canvas(container, {

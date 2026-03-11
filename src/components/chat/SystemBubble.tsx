@@ -5,6 +5,7 @@ import { FileText, Download } from 'lucide-react';
 import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
 import { useT } from '@/hooks/useT';
+import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
 import type { ChatMessage } from '@/types/chat';
 
 interface SystemBubbleProps {
@@ -38,21 +39,9 @@ export function SystemBubble({ message }: SystemBubbleProps) {
 
     setDlState({ phase: 'generating' });
     try {
-      const res = await fetch('/api/export', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          markdown: message.reportMarkdown,
-          format: exportFormat,
-          filename,
-          locale,
-        }),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || t('export.serverError', { status: res.status }));
-      }
-      const blob = await res.blob();
+      const blob = exportFormat === 'pdf'
+        ? await generatePDFBlob(message.reportMarkdown, locale)
+        : await generatePNGBlob(message.reportMarkdown, locale);
       const objectUrl = URL.createObjectURL(blob);
       setDlState({ phase: 'ready', blob, filename, mimeType, objectUrl });
     } catch (err) {
