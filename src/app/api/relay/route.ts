@@ -4,6 +4,8 @@ import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import { logger } from '@/lib/logger';
 import { jobStore } from '@/lib/relay/job-store-factory';
+import { isSaas } from '@/lib/flags';
+import { createServerClient } from '@/lib/supabase/server';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -69,6 +71,18 @@ export async function POST(req: Request): Promise<Response> {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // SaaS mode: require authenticated user
+  if (isSaas) {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   // Create a job for this relay session. The relay runs independently of the HTTP connection.

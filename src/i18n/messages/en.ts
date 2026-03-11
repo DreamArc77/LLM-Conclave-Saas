@@ -68,6 +68,23 @@ export const en = {
     participantSeparator: ', ',
     dateLocale: 'en-US',
   },
+  auth: {
+    signinTitle: 'Sign in to LLM Conclave',
+    signupTitle: 'Create your account',
+    email: 'Email',
+    password: 'Password',
+    signinBtn: 'Sign in',
+    signupBtn: 'Create account',
+    signinWithGoogle: 'Continue with Google',
+    noAccount: "Don't have an account?",
+    hasAccount: 'Already have an account?',
+    signupLink: 'Sign up',
+    signinLink: 'Sign in',
+    signinFailed: 'Sign in failed',
+    signupFailed: 'Sign up failed',
+    checkEmail: 'Check your email to confirm your account.',
+    welcomeBonus: '50 welcome credits added!',
+  },
 };
 
 export type Messages = typeof en;
