@@ -2,7 +2,7 @@ import type { Messages } from './en';
 
 export const zhCN: Messages = {
   app: {
-    name: 'AI Council',
+    name: 'LLM Conclave',
     tagline: '多模型AI协作平台',
   },
   chat: {
@@ -62,8 +62,8 @@ export const zhCN: Messages = {
   },
   report: {
     header: 'MEETING MINUTES · 会议纪要',
-    subheader: 'AI Council · 多模型协作平台',
-    footer: '由 AI Council 自动生成',
+    subheader: 'LLM Conclave · 多模型协作平台',
+    footer: '由 LLM Conclave 自动生成',
   },
   prompts: {
     userRole: '用户',

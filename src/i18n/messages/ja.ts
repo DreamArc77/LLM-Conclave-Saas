@@ -2,7 +2,7 @@ import type { Messages } from './en';
 
 export const ja: Messages = {
   app: {
-    name: 'AI Council',
+    name: 'LLM Conclave',
     tagline: 'マルチモデルAI協調プラットフォーム',
   },
   chat: {
@@ -62,8 +62,8 @@ export const ja: Messages = {
   },
   report: {
     header: '議事録 · MEETING MINUTES',
-    subheader: 'AI Council · マルチモデル協調プラットフォーム',
-    footer: 'AI Council によって生成',
+    subheader: 'LLM Conclave · マルチモデル協調プラットフォーム',
+    footer: 'LLM Conclave によって生成',
   },
   prompts: {
     userRole: 'ユーザー',

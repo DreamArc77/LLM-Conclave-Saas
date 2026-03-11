@@ -25,7 +25,7 @@ export function StatusBar() {
           <Menu className="w-5 h-5" />
         </button>
 
-        <h1 className="text-base font-semibold">AI Council</h1>
+        <h1 className="text-base font-semibold">{t('app.name')}</h1>
 
         <div className="flex items-center gap-1.5 text-sm text-gray-500">
           <Zap className="w-3.5 h-3.5" />
