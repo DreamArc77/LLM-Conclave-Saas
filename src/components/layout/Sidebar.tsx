@@ -104,6 +104,12 @@ export function Sidebar() {
           </p>
         )}
       </div>
+
+      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none font-mono">
+          {process.env.NEXT_PUBLIC_BUILD_HASH ?? 'dev'}
+        </span>
+      </div>
     </div>
   );
 }

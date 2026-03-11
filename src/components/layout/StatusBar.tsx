@@ -6,7 +6,6 @@ import { useConfigStore } from '@/stores/config-store';
 import { useUIStore } from '@/stores/ui-store';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useT } from '@/hooks/useT';
-import { isSaasClient } from '@/lib/flags';
 import { SaasUserWidget } from '@/components/billing/SaasUserWidget';
 
 export function StatusBar() {
@@ -57,7 +56,7 @@ export function StatusBar() {
           <span className="text-sm text-gray-400">{t('status.idle')}</span>
         )}
 
-        {isSaasClient && <SaasUserWidget />}
+        <SaasUserWidget />
 
         <LanguageSwitcher />
 

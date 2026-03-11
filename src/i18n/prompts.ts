@@ -4,7 +4,7 @@ import type { Locale } from './index';
 // Note: {{}} placeholders are identical to the zh-CN template file so the same
 // replacement code in relay/route.ts works for all locales.
 
-const EN_REPORT_TEMPLATE = `# AI Council Research Brief: [{{会议简要主题}}]
+const EN_REPORT_TEMPLATE = `# LLM Conclave Research Brief: [{{会议简要主题}}]
 
 \`\`\`markdown
 **Meeting Time**: {{获取当前时间}}
@@ -47,7 +47,7 @@ _(If you'd like to know the specifics of what we discussed, see below:)_
 
 🤖 _We hope this brief is helpful! If you have questions about any topic or want to challenge a conclusion, just let us know and we can start another round of discussion._`;
 
-const JA_REPORT_TEMPLATE = `# AI Council 研究ブリーフ：[{{会议简要主题}}]
+const JA_REPORT_TEMPLATE = `# LLM Conclave 研究ブリーフ：[{{会议简要主题}}]
 
 \`\`\`markdown
 **会議時間**：{{获取当前时间}}
@@ -218,7 +218,7 @@ export function getSummaryPromptInstructions(locale: Locale): string {
     case 'en':
       return `IMPORTANT: Write ALL content (fill in every [xxx] placeholder) in ENGLISH.
 
-Please organize the following AI council debate into a structured research report in English. Follow the template's section structure and Markdown format strictly. Output only what the template specifies.
+Please organize the following LLM Conclave debate into a structured research report in English. Follow the template's section structure and Markdown format strictly. Output only what the template specifies.
 
 Rules:
 1. Replace all placeholders in square brackets [xxx] with content distilled from the debate, written in English
