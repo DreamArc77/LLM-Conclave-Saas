@@ -30,10 +30,15 @@ export function ChatInput() {
     if (!message || isRunning) return;
 
     if (isSaasClient) {
-      const { data: { user } } = await createClient().auth.getUser();
-      if (!user) {
+      try {
+        const { data: { user } } = await createClient().auth.getUser();
+        if (!user) {
+          setShowAuthModal(true);
+          return; // Keep text in textarea so user can resend after login
+        }
+      } catch {
         setShowAuthModal(true);
-        return; // Keep text in textarea so user can resend after login
+        return;
       }
     }
 

@@ -16,17 +16,21 @@ export function SaasUserWidget() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    createClient()
-      .auth.getUser()
-      .then(({ data }) => {
-        if (data.user) {
-          const email = data.user.email ?? '';
-          setUser({ email, initial: email[0]?.toUpperCase() ?? 'U' });
-        } else {
-          setUser(null);
-        }
-      })
-      .catch(() => setUser(null)); // Supabase error → default to logged-out
+    try {
+      createClient()
+        .auth.getUser()
+        .then(({ data }) => {
+          if (data.user) {
+            const email = data.user.email ?? '';
+            setUser({ email, initial: email[0]?.toUpperCase() ?? 'U' });
+          } else {
+            setUser(null);
+          }
+        })
+        .catch(() => setUser(null));
+    } catch {
+      setUser(null); // createClient() throws synchronously when env vars missing
+    }
   }, []);
 
   // Close dropdown when clicking outside
@@ -39,7 +43,9 @@ export function SaasUserWidget() {
   }, []);
 
   const handleSignOut = async () => {
-    await createClient().auth.signOut();
+    try {
+      await createClient().auth.signOut();
+    } catch { /* ignore */ }
     setOpen(false);
     setUser(null);
     router.refresh();
