@@ -1,36 +1,139 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LLM Conclave
 
-## Getting Started
+Multi-model AI collaboration platform. Pit multiple LLMs against each other in a structured debate and get an AI-generated research report.
 
-First, run the development server:
+**Two products, one codebase:**
+- **Open source** (this repo): BYOK, one-click deploy, no account required
+- **[llmconclave.com](https://llmconclave.com)**: Preset models + BYOK + account + credits
+
+---
+
+## Features
+
+- Multi-model debate: models respond in sequence, referencing each other's answers
+- Auto-generated meeting minutes / research report (PDF or PNG export)
+- i18n: English · 中文 · 日本語
+- BYOK: bring your own OpenAI / Anthropic / Gemini / OpenRouter key
+- iOS-compatible client-side export (no server Puppeteer dependency)
+
+---
+
+## One-click Deploy
+
+### Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-org/llmconclave&env=SAAS_MODE,REDIS_DISABLED&envDescription=Set+SAAS_MODE%3Dfalse+and+REDIS_DISABLED%3Dtrue+for+open-source+mode)
+
+### Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/your-org/llmconclave)
+
+---
+
+## Docker Compose (self-hosted)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-org/llmconclave.git
+cd llmconclave
+docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Add your API keys in Settings.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local Development
 
-## Learn More
+```bash
+npm install
+cp .env.local.example .env.local
+# Edit .env.local — set SAAS_MODE=false, REDIS_DISABLED=true
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See [`.env.local.example`](.env.local.example) for the full list.
 
-## Deploy on Vercel
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SAAS_MODE` | No | `true` enables auth + billing. Default: `false` |
+| `REDIS_DISABLED` | No | `true` uses in-memory store. Default: `true` |
+| `OPENROUTER_API_KEY` | No | Preset models via OpenRouter |
+| `DOUBAO_API_KEY` | No | 豆包 / Doubao preset models |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## SaaS Setup
+
+For the hosted SaaS version with Supabase Auth + Stripe credits:
+
+1. Create a [Supabase](https://supabase.com) project and run the SQL schema (see below)
+2. Create a [Stripe](https://stripe.com) account and add three products
+3. Set `SAAS_MODE=true` and fill in Supabase + Stripe env vars
+4. Deploy to [Railway](https://railway.app) and point your domain via Cloudflare
+
+### Supabase SQL Schema
+
+```sql
+create table public.credits (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  balance integer not null default 0,
+  updated_at timestamptz default now()
+);
+
+create table public.credit_transactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  amount integer not null,
+  type text not null check (type in ('purchase','relay_spend','bonus')),
+  description text,
+  relay_session_id text,
+  stripe_payment_intent_id text,
+  estimated_tokens integer,
+  created_at timestamptz default now()
+);
+
+create table public.stripe_customers (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  stripe_customer_id text not null unique,
+  created_at timestamptz default now()
+);
+
+alter table public.credits enable row level security;
+alter table public.credit_transactions enable row level security;
+
+create policy "users see own credits" on public.credits
+  for select using (auth.uid() = user_id);
+create policy "users see own transactions" on public.credit_transactions
+  for select using (auth.uid() = user_id);
+```
+
+### Cloudflare SSE Setup
+
+Create a **Cache Rule** in Cloudflare Dashboard:
+- Path: `/api/relay*`
+- Settings: Response Buffering = **Off**, Cache Status = **Bypass**
+
+This prevents Cloudflare from buffering SSE events.
+
+---
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router, standalone output)
+- **UI**: React 19, Tailwind CSS, Zustand
+- **Providers**: OpenAI / Anthropic / Google Gemini (+ OpenRouter)
+- **Export**: html2canvas + jsPDF (client-side, iOS safe)
+- **Job Store**: In-memory (OSS) · Upstash Redis (SaaS multi-instance)
+- **Auth**: Supabase (email + Google OAuth)
+- **Payments**: Stripe Checkout
+- **Deploy**: Railway + Cloudflare
+
+---
+
+## License
+
+MIT
