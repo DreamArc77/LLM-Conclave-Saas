@@ -111,7 +111,7 @@ export const useConfigStore = create<ConfigState>()(
       },
     }),
     {
-      name: 'ai-concil-config',
+      name: 'llmconclave-config',
     }
   )
 );

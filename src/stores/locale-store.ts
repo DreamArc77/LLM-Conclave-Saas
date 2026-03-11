@@ -27,11 +27,11 @@ export const useLocaleStore = create<LocaleStore>()(
       },
     }),
     {
-      name: 'ai-concil-locale',
+      name: 'llmconclave-locale',
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         try {
-          const raw = localStorage.getItem('ai-concil-locale');
+          const raw = localStorage.getItem('llmconclave-locale');
           const parsed = raw ? JSON.parse(raw) : null;
           // If no locale was stored (first visit), auto-detect from browser
           if (!parsed?.state?.locale) {

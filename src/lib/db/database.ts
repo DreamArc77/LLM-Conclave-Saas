@@ -6,7 +6,7 @@ export class AIConcilDB extends Dexie {
   messages!: Table<ChatMessage>;
 
   constructor() {
-    super('ai-concil-db');
+    super('llmconclave-db');
 
     this.version(1).stores({
       sessions: 'id, updatedAt',

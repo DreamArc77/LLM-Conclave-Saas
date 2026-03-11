@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Council",
-  description: "AI Conversation Tool - Multiple AI models discuss in sequence",
+  title: "LLM Conclave",
+  description: "Multi-model AI collaboration platform",
 };
 
 export default function RootLayout({
