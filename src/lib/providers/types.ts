@@ -4,6 +4,11 @@ export interface ChatMessageItem {
   displayName?: string;
 }
 
+export interface UsageData {
+  inputTokens: number;
+  outputTokens: number;
+}
+
 export interface StreamParams {
   apiKey: string;
   baseUrl?: string | null;
@@ -11,4 +16,5 @@ export interface StreamParams {
   system?: string;
   messages: Array<ChatMessageItem>;
   writeSSE: (data: { type: string; content?: string; message?: string }) => Promise<void>;
+  onUsage?: (usage: UsageData) => void;
 }

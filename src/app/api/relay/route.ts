@@ -5,7 +5,8 @@ import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import { logger } from '@/lib/logger';
 import { jobStore } from '@/lib/relay/job-store-factory';
 import { isSaas } from '@/lib/flags';
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
+import { checkAndDeductCredits } from '@/lib/credits/deduct';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -73,13 +74,29 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
-  // SaaS mode: require authenticated user
+  // SaaS mode: require authenticated user with at least 1 credit
+  let saasUserId: string | null = null;
   if (isSaas) {
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    saasUserId = user.id;
+
+    // Pre-check: user must have at least 1 credit
+    const adminClient = await createAdminClient();
+    const { data: creditRow } = await adminClient
+      .from('credits')
+      .select('balance')
+      .eq('user_id', user.id)
+      .single();
+    if (!creditRow || (creditRow.balance as number) < 1) {
+      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT' }), {
+        status: 402,
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -99,6 +116,14 @@ export async function POST(req: Request): Promise<Response> {
   // The relay uses job.abort.signal to detect explicit stops (Stop button).
   // Client disconnects (req.signal) do NOT abort the relay.
   (async () => {
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let charCount = priorContext.reduce((sum, m) => sum + m.content.length, 0) + query.length;
+    const onUsage = (usage: { inputTokens: number; outputTokens: number }) => {
+      totalInputTokens += usage.inputTokens;
+      totalOutputTokens += usage.outputTokens;
+    };
+
     try {
       const fullContext: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }> = [
         ...priorContext,
@@ -167,13 +192,13 @@ export async function POST(req: Request): Promise<Response> {
           try {
             switch (provider.protocol) {
               case 'openai-compatible':
-                await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE });
+                await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
                 break;
               case 'anthropic':
-                await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE });
+                await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
                 break;
               case 'google-gemini':
-                await streamFromGemini({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE });
+                await streamFromGemini({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
                 break;
               default:
                 await writeRelaySSE({ type: 'error', message: `Unknown protocol: ${provider.protocol}` });
@@ -209,6 +234,7 @@ export async function POST(req: Request): Promise<Response> {
 
           if (content.length > 0) {
             fullContext.push({ role: 'assistant', content, displayName: model.displayName });
+            charCount += content.length;
           }
         }
 
@@ -228,6 +254,24 @@ export async function POST(req: Request): Promise<Response> {
         await writeRelaySSE({ type: 'error', message });
       } catch { /* job emitter may be gone */ }
     } finally {
+      // Deduct credits in SaaS mode (fallback to char estimate if no API usage reported)
+      if (isSaas && saasUserId) {
+        try {
+          const totalTokens = (totalInputTokens + totalOutputTokens) > 0
+            ? totalInputTokens + totalOutputTokens
+            : Math.round(charCount / 2);
+          const adminClient = await createAdminClient();
+          await checkAndDeductCredits({
+            userId: saasUserId,
+            totalTokens,
+            relaySessionId: sessionId,
+            supabase: adminClient,
+          });
+        } catch (err) {
+          logger.error('[API/relay] Credit deduction failed:', err);
+        }
+      }
+
       try {
         await writeRelaySSE({ type: 'done' });
       } catch {}

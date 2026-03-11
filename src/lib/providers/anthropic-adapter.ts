@@ -8,6 +8,7 @@ export async function streamFromAnthropic({
   system,
   messages,
   writeSSE,
+  onUsage,
 }: StreamParams) {
   const client = new Anthropic({
     apiKey,
@@ -27,7 +28,13 @@ export async function streamFromAnthropic({
     await writeSSE({ type: 'chunk', content: text });
   });
 
-  await stream.finalMessage();
+  const finalMsg = await stream.finalMessage();
+  if (onUsage && finalMsg.usage) {
+    onUsage({
+      inputTokens: finalMsg.usage.input_tokens,
+      outputTokens: finalMsg.usage.output_tokens,
+    });
+  }
 }
 
 function normalizeForAnthropic(

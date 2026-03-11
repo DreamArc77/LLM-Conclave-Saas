@@ -11,6 +11,7 @@ export async function streamFromGemini({
   system,
   messages,
   writeSSE,
+  onUsage,
 }: StreamParams) {
   const options: ConstructorParameters<typeof GoogleGenAI>[0] = { apiKey };
   if (baseUrl) {
@@ -41,12 +42,22 @@ export async function streamFromGemini({
     );
 
     let chunkCount = 0;
+    let lastUsageMetadata: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
     for await (const chunk of response) {
       const text = chunk.text;
       if (text) {
         chunkCount++;
         await writeSSE({ type: 'chunk', content: text });
       }
+      if (chunk.usageMetadata) {
+        lastUsageMetadata = chunk.usageMetadata;
+      }
+    }
+    if (onUsage && lastUsageMetadata) {
+      onUsage({
+        inputTokens: lastUsageMetadata.promptTokenCount ?? 0,
+        outputTokens: lastUsageMetadata.candidatesTokenCount ?? 0,
+      });
     }
     console.log(`[Gemini] Stream completed: ${chunkCount} chunks`);
   } catch (err: unknown) {

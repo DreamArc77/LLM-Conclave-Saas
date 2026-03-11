@@ -8,6 +8,7 @@ export async function streamFromOpenAI({
   system,
   messages,
   writeSSE,
+  onUsage,
 }: StreamParams) {
   const client = new OpenAI({
     apiKey,
@@ -22,12 +23,19 @@ export async function streamFromOpenAI({
     model,
     messages: fullMessages,
     stream: true,
+    stream_options: onUsage ? { include_usage: true } : undefined,
   });
 
   for await (const chunk of stream) {
     const content = chunk.choices?.[0]?.delta?.content;
     if (content) {
       await writeSSE({ type: 'chunk', content });
+    }
+    if (chunk.usage && onUsage) {
+      onUsage({
+        inputTokens: chunk.usage.prompt_tokens,
+        outputTokens: chunk.usage.completion_tokens,
+      });
     }
   }
 }
