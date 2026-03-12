@@ -6,6 +6,12 @@ RUN npm ci --frozen-lockfile
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+
+# Placed BEFORE COPY . . so that a new SHA on every deploy invalidates the
+# BuildKit layer cache and forces a fresh COPY + npm run build
+ARG RAILWAY_GIT_COMMIT_SHA=dev
+ENV RAILWAY_GIT_COMMIT_SHA=$RAILWAY_GIT_COMMIT_SHA
+
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
