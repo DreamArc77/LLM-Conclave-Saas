@@ -14,6 +14,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 export function ChatInput() {
   const [input, setInput] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const relay = useChatStore((s) => s.relay);
@@ -23,32 +24,37 @@ export function ChatInput() {
   const t = useT();
 
   const isRunning = relay.status === 'running';
-  const canSend = input.trim().length > 0 && !isRunning && enabledModels.length > 0;
+  const canSend = input.trim().length > 0 && !isRunning && !isSending && enabledModels.length > 0;
 
   const handleSend = useCallback(async () => {
     const message = input.trim();
-    if (!message || isRunning) return;
+    if (!message || isRunning || isSending) return;
 
-    if (isSaasClient) {
-      try {
-        const { data: { user } } = await createClient().auth.getUser();
-        if (!user) {
+    setIsSending(true);
+    try {
+      if (isSaasClient) {
+        try {
+          const { data: { user } } = await createClient().auth.getUser();
+          if (!user) {
+            setShowAuthModal(true);
+            return;
+          }
+        } catch {
           setShowAuthModal(true);
-          return; // Keep text in textarea so user can resend after login
+          return;
         }
-      } catch {
-        setShowAuthModal(true);
-        return;
       }
-    }
 
-    setInput('');
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+      setInput('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
 
-    await executeRelay(activeSessionId, message);
-  }, [input, isRunning, activeSessionId]);
+      await executeRelay(activeSessionId, message);
+    } finally {
+      setIsSending(false);
+    }
+  }, [input, isRunning, isSending, activeSessionId]);
 
   const handleStop = useCallback(() => {
     const ac = useChatStore.getState().relay.abortController;
