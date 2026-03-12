@@ -32,11 +32,17 @@ export default function SignInPage() {
   };
 
   const handleGoogleSignIn = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    setError('');
+    try {
+      const supabase = createClient();
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (err) setError(err.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Google sign-in failed');
+    }
   };
 
   return (
