@@ -72,6 +72,7 @@ export function SaasUserWidget() {
         className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         title={user.email}
       >
+        <CreditBalance />
         <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white select-none">
           {user.initial}
         </div>

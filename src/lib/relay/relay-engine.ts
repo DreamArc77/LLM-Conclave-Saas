@@ -251,6 +251,24 @@ export async function executeRelay(
     });
 
     if (!response.ok) {
+      if (response.status === 402) {
+        // Credits insufficient — add a visible error bubble in the chat
+        const locale = useLocaleStore.getState().locale;
+        const msgs = getMessages(locale);
+        const errorMsg: ChatMessage = {
+          id: nanoid(),
+          sessionId: currentSessionId,
+          role: 'assistant',
+          content: msgs.relay.creditsInsufficient,
+          isError: true,
+          timestamp: Date.now(),
+        };
+        useChatStore.getState().appendMessage(errorMsg);
+        addMessage(errorMsg).catch(() => {});
+        localStorage.removeItem(ACTIVE_RELAY_KEY);
+        useChatStore.getState().errorRelay('CREDITS_INSUFFICIENT');
+        return currentSessionId;
+      }
       const errorText = await response.text();
       throw new Error(`Relay API error ${response.status}: ${errorText}`);
     }

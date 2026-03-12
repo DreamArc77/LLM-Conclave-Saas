@@ -57,6 +57,7 @@ export const en = {
   },
   relay: {
     complete: 'Discussion complete after {seconds}s. Here is the research report for "{topic}"',
+    creditsInsufficient: 'Insufficient credits. Please visit your Account page to top up.',
   },
   report: {
     header: 'MEETING MINUTES',

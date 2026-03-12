@@ -59,6 +59,7 @@ export const zhCN: Messages = {
   },
   relay: {
     complete: '讨论已结束，耗时 {seconds} 秒，以下是「{topic}」的专题研讨报告',
+    creditsInsufficient: 'Credits 余额不足，请前往账户页面充值。',
   },
   report: {
     header: 'MEETING MINUTES · 会议纪要',

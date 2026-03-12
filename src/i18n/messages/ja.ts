@@ -59,6 +59,7 @@ export const ja: Messages = {
   },
   relay: {
     complete: 'ディスカッション完了（{seconds}秒）。「{topic}」の研究レポートはこちらです',
+    creditsInsufficient: 'クレジットが不足しています。アカウントページでチャージしてください。',
   },
   report: {
     header: '議事録 · MEETING MINUTES',
