@@ -21,7 +21,7 @@ export function ChatArea() {
         className="flex-1 flex items-center justify-center overflow-y-auto"
       >
         <div className="text-center text-gray-400">
-          <h2 className="text-2xl font-semibold mb-2">AI Council</h2>
+          <h2 className="text-2xl font-semibold mb-2">LLM Conclave</h2>
           <p className="text-sm">{t('chat.welcome')}</p>
         </div>
       </div>
