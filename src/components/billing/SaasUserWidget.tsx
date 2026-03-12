@@ -82,9 +82,13 @@ export function SaasUserWidget() {
         <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
           <div className="px-3 py-2.5 border-b border-gray-100 dark:border-gray-700">
             <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">{user.email}</p>
-            <div className="mt-1">
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="block mt-1 hover:opacity-70 transition-opacity"
+            >
               <CreditBalance />
-            </div>
+            </Link>
           </div>
 
           <Link

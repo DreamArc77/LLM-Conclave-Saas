@@ -59,6 +59,38 @@ export async function checkAndDeductCredits(params: {
   return { ok: true, cost, remaining: newBalance };
 }
 
+export async function refundCredits(params: {
+  userId: string;
+  /** Amount to refund back to the user (positive number). */
+  amount: number;
+  relaySessionId: string;
+  supabase: SupabaseClient;
+}): Promise<void> {
+  const { userId, amount, relaySessionId, supabase } = params;
+  if (amount <= 0) return;
+
+  const { data: row } = await supabase
+    .from('credits')
+    .select('balance')
+    .eq('user_id', userId)
+    .single();
+
+  if (!row) return;
+
+  await supabase
+    .from('credits')
+    .update({ balance: (row.balance as number) + amount, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+
+  await supabase.from('credit_transactions').insert({
+    user_id: userId,
+    amount,
+    type: 'relay_refund',
+    description: `Refund for session ${relaySessionId}`,
+    relay_session_id: relaySessionId,
+  });
+}
+
 export async function addWelcomeCredits(params: {
   userId: string;
   supabase: SupabaseClient;

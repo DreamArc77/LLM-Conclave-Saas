@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 import { jobStore } from '@/lib/relay/job-store-factory';
 import { isSaas } from '@/lib/flags';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
-import { checkAndDeductCredits } from '@/lib/credits/deduct';
+import { checkAndDeductCredits, refundCredits } from '@/lib/credits/deduct';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -79,6 +79,7 @@ export async function POST(req: Request): Promise<Response> {
 
   // SaaS mode: require authenticated user with at least 1 credit
   let saasUserId: string | null = null;
+  let preDeductedCost = 0; // tracks upfront deduction so the finally block can refund the unused portion
   if (isSaas) {
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -114,20 +115,36 @@ export async function POST(req: Request): Promise<Response> {
       currentBalance = seeded ? (seeded.balance as number) : 0;
     }
 
-    // Pre-check: user must be able to afford at least 1 round of all preset models
+    // Pre-check: user must be able to afford the full expected session cost (maxRounds × per-round cost)
     const minRoundCost = models
       .filter((m) => m.isPreset)
       .reduce((sum, m) => {
         const preset = PRESET_DEFINITIONS.find((p) => p.id === m.id);
         return sum + (preset?.creditsPerRound ?? 0);
       }, 0);
+    const totalExpectedCost = maxRounds * minRoundCost;
 
-    if (currentBalance < Math.max(1, minRoundCost)) {
-      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT' }), {
+    if (currentBalance < Math.max(1, totalExpectedCost)) {
+      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: currentBalance }), {
         status: 402,
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Pre-deduct the full expected cost upfront — unused portion is refunded in the finally block
+    const preDeductResult = await checkAndDeductCredits({
+      userId: user.id,
+      cost: totalExpectedCost,
+      relaySessionId: sessionId,
+      supabase: adminClient,
+    });
+    if (!preDeductResult.ok) {
+      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: currentBalance }), {
+        status: 402,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    preDeductedCost = totalExpectedCost;
   }
 
   // Create a job for this relay session. The relay runs independently of the HTTP connection.
@@ -290,18 +307,18 @@ export async function POST(req: Request): Promise<Response> {
         await writeRelaySSE({ type: 'error', message });
       } catch { /* job emitter may be gone */ }
     } finally {
-      // Deduct credits in SaaS mode (per-model fixed pricing)
-      if (isSaas && saasUserId && totalCreditCost > 0) {
+      // Refund the unused portion of the pre-deducted cost (early exit, user stop, fewer rounds)
+      if (isSaas && saasUserId && preDeductedCost > totalCreditCost) {
         try {
           const adminClient = createAdminClient();
-          await checkAndDeductCredits({
+          await refundCredits({
             userId: saasUserId,
-            cost: totalCreditCost,
+            amount: preDeductedCost - totalCreditCost,
             relaySessionId: sessionId,
             supabase: adminClient,
           });
         } catch (err) {
-          logger.error('[API/relay] Credit deduction failed:', err);
+          logger.error('[API/relay] Credit refund failed:', err);
         }
       }
 

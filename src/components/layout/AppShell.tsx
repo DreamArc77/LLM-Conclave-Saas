@@ -6,6 +6,7 @@ import { StatusBar } from './StatusBar';
 import { ChatArea } from '@/components/chat/ChatArea';
 import { ChatInput } from '@/components/input/ChatInput';
 import { SettingsDrawer } from '@/components/settings/SettingsDrawer';
+import { InsufficientCreditsModal } from '@/components/billing/InsufficientCreditsModal';
 import { useUIStore } from '@/stores/ui-store';
 import { useConfigStore } from '@/stores/config-store';
 import { useChatStore } from '@/stores/chat-store';
@@ -62,6 +63,7 @@ export function AppShell() {
       </div>
 
       <SettingsDrawer />
+      <InsufficientCreditsModal />
     </div>
   );
 }

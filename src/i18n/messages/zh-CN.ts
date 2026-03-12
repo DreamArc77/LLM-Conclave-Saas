@@ -71,6 +71,12 @@ export const zhCN: Messages = {
     participantSeparator: '、',
     dateLocale: 'zh-CN',
   },
+  billing: {
+    insufficientTitle: '余额不足',
+    insufficientBody: '当前设置预计需要 {required} credits，您的余额为 {balance} credits。',
+    topUp: '前往充值',
+    close: '关闭',
+  },
   auth: {
     signinTitle: '登录 LLM Conclave',
     signupTitle: '创建账号',

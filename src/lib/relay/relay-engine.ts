@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { useConfigStore } from '@/stores/config-store';
 import { useChatStore } from '@/stores/chat-store';
 import { useLocaleStore } from '@/stores/locale-store';
+import { useUIStore } from '@/stores/ui-store';
 import { getMessages, interpolate } from '@/i18n';
 import { addMessage, createSession, getSessionMessages } from '@/lib/db/operations';
 import { parseRelayStream } from './stream-parser';
@@ -253,21 +254,11 @@ export async function executeRelay(
 
     if (!response.ok) {
       if (response.status === 402) {
-        // Credits insufficient — add a visible error bubble in the chat
-        const locale = useLocaleStore.getState().locale;
-        const msgs = getMessages(locale);
-        const errorMsg: ChatMessage = {
-          id: nanoid(),
-          sessionId: currentSessionId,
-          role: 'assistant',
-          content: msgs.relay.creditsInsufficient,
-          isError: true,
-          timestamp: Date.now(),
-        };
-        useChatStore.getState().appendMessage(errorMsg);
-        addMessage(errorMsg).catch(() => {});
+        // Credits insufficient — show modal with required vs current balance
+        const body = await response.json().catch(() => ({}));
         localStorage.removeItem(ACTIVE_RELAY_KEY);
         useChatStore.getState().errorRelay('CREDITS_INSUFFICIENT');
+        useUIStore.getState().openCreditsModal(body.required ?? 0, body.balance ?? 0);
         return currentSessionId;
       }
       const errorText = await response.text();

@@ -65,11 +65,17 @@ export function ModelCard({ model }: ModelCardProps) {
           className="flex-1 min-w-0 cursor-pointer"
           onClick={() => setExpanded(!expanded)}
         >
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-medium truncate">{model.displayName}</p>
             {model.isPreset && (
               <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 leading-none">
                 {t('settings.preset')}
+              </span>
+            )}
+            {model.isPreset && model.creditsPerRound != null && process.env.NEXT_PUBLIC_SAAS_MODE === 'true' && (
+              <span className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 leading-none">
+                <Zap className="w-2.5 h-2.5" />
+                {model.creditsPerRound}cr
               </span>
             )}
           </div>
@@ -113,17 +119,9 @@ export function ModelCard({ model }: ModelCardProps) {
       {expanded && (
         <div className="px-3 pb-3 pt-1 border-t border-gray-100 dark:border-gray-700 space-y-2">
           {model.isPreset ? (
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] text-blue-500 dark:text-blue-400">
-                {t('settings.presetInfo')}
-              </p>
-              {model.creditsPerRound != null && process.env.NEXT_PUBLIC_SAAS_MODE === 'true' && (
-                <span className="flex items-center gap-0.5 text-[10px] font-medium text-yellow-600 dark:text-yellow-400">
-                  <Zap className="w-3 h-3" />
-                  {model.creditsPerRound} credits / 轮
-                </span>
-              )}
-            </div>
+            <p className="text-[10px] text-blue-500 dark:text-blue-400">
+              {t('settings.presetInfo')}
+            </p>
           ) : (
             <div>
               <label className="text-[10px] text-gray-500 mb-0.5 block">{t('settings.apiKey')}</label>

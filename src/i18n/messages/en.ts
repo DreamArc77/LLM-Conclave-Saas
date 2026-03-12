@@ -69,6 +69,12 @@ export const en = {
     participantSeparator: ', ',
     dateLocale: 'en-US',
   },
+  billing: {
+    insufficientTitle: 'Insufficient Credits',
+    insufficientBody: 'This session requires {required} credits, but your current balance is {balance} credits.',
+    topUp: 'Top Up',
+    close: 'Close',
+  },
   auth: {
     signinTitle: 'Sign in to LLM Conclave',
     signupTitle: 'Create your account',

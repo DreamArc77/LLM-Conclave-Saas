@@ -57,7 +57,6 @@ export default async function AccountPage() {
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Credits</h2>
           </div>
           <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{balance.toLocaleString()}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">≈ {(balance * 1000).toLocaleString()} tokens</p>
         </div>
 
         {/* Buy credits */}

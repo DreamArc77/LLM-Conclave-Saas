@@ -71,6 +71,12 @@ export const ja: Messages = {
     participantSeparator: '、',
     dateLocale: 'ja-JP',
   },
+  billing: {
+    insufficientTitle: 'クレジット不足',
+    insufficientBody: 'このセッションには {required} クレジットが必要ですが、現在の残高は {balance} クレジットです。',
+    topUp: 'チャージする',
+    close: '閉じる',
+  },
   auth: {
     signinTitle: 'LLM Conclave にサインイン',
     signupTitle: 'アカウントを作成',
