@@ -28,45 +28,56 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'Price not configured' }, { status: 500 });
   }
 
-  const stripe = getStripe();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-  // Find or create Stripe customer
-  const admin = await createAdminClient();
-  const { data: existing } = await admin
-    .from('stripe_customers')
-    .select('stripe_customer_id')
-    .eq('user_id', user.id)
-    .single();
-
-  let customerId: string;
-  if (existing?.stripe_customer_id) {
-    customerId = existing.stripe_customer_id;
-  } else {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: { supabase_user_id: user.id },
-    });
-    customerId = customer.id;
-    await admin.from('stripe_customers').insert({
-      user_id: user.id,
-      stripe_customer_id: customerId,
-    });
+  let stripe: ReturnType<typeof getStripe>;
+  try {
+    stripe = getStripe();
+  } catch {
+    return Response.json({ error: 'Stripe not configured' }, { status: 500 });
   }
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
-    mode: 'payment',
-    success_url: `${appUrl}/account?payment=success`,
-    cancel_url: `${appUrl}/account?payment=cancelled`,
-    metadata: {
-      userId: user.id,
-      packageId: pkg.id,
-      credits: String(pkg.credits),
-    },
-  });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-  return Response.json({ url: session.url });
+  try {
+    // Find or create Stripe customer
+    const admin = await createAdminClient();
+    const { data: existing } = await admin
+      .from('stripe_customers')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .single();
+
+    let customerId: string;
+    if (existing?.stripe_customer_id) {
+      customerId = existing.stripe_customer_id;
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { supabase_user_id: user.id },
+      });
+      customerId = customer.id;
+      await admin.from('stripe_customers').insert({
+        user_id: user.id,
+        stripe_customer_id: customerId,
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'payment',
+      success_url: `${appUrl}/account?payment=success`,
+      cancel_url: `${appUrl}/account?payment=cancelled`,
+      metadata: {
+        userId: user.id,
+        packageId: pkg.id,
+        credits: String(pkg.credits),
+      },
+    });
+
+    return Response.json({ url: session.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Stripe error';
+    return Response.json({ error: message }, { status: 500 });
+  }
 }

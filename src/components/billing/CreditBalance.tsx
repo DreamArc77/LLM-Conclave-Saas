@@ -16,7 +16,20 @@ export function CreditBalance() {
         .select('balance')
         .eq('user_id', user.id)
         .single();
-      if (data) setBalance(data.balance as number);
+      if (data) {
+        setBalance(data.balance as number);
+      } else {
+        // No credits row yet — seed welcome credits then re-fetch
+        try {
+          await fetch('/api/auth/welcome', { method: 'POST' });
+          const { data: seeded } = await supabase
+            .from('credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+          if (seeded) setBalance(seeded.balance as number);
+        } catch { /* non-fatal */ }
+      }
     });
   }, []);
 
