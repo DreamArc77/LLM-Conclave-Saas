@@ -10,7 +10,7 @@ export async function POST(): Promise<Response> {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const admin = await createAdminClient();
+  const admin = createAdminClient();
 
   // Only grant welcome credits if user has no credits row yet
   const { data: existing } = await admin

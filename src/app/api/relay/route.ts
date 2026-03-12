@@ -88,7 +88,7 @@ export async function POST(req: Request): Promise<Response> {
     saasUserId = user.id;
 
     // Pre-check: user must have at least 1 credit
-    const adminClient = await createAdminClient();
+    const adminClient = createAdminClient();
     const { data: creditRow } = await adminClient
       .from('credits')
       .select('balance')
@@ -277,7 +277,7 @@ export async function POST(req: Request): Promise<Response> {
           const totalTokens = (totalInputTokens + totalOutputTokens) > 0
             ? totalInputTokens + totalOutputTokens
             : Math.round(charCount / 2);
-          const adminClient = await createAdminClient();
+          const adminClient = createAdminClient();
           await checkAndDeductCredits({
             userId: saasUserId,
             totalTokens,

@@ -14,7 +14,7 @@ export default async function AccountPage() {
     redirect('/auth/signin');
   }
 
-  const admin = await createAdminClient();
+  const admin = createAdminClient();
   let { data: credits } = await admin
     .from('credits')
     .select('balance')

@@ -25,7 +25,7 @@ export async function GET(request: Request): Promise<Response> {
       // Grant welcome credits to first-time users in SaaS mode
       if (isSaas && data.user) {
         try {
-          const admin = await createAdminClient();
+          const admin = createAdminClient();
           const { data: existing } = await admin
             .from('credits')
             .select('user_id')

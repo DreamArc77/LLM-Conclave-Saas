@@ -8,7 +8,7 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const admin = await createAdminClient();
+  const admin = createAdminClient();
   const { data } = await admin
     .from('credits')
     .select('balance')

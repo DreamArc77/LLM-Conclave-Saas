@@ -27,7 +27,7 @@ export async function POST(req: Request): Promise<Response> {
 
     if (userId && credits) {
       const creditsNum = parseInt(credits, 10);
-      const supabase = await createAdminClient();
+      const supabase = createAdminClient();
 
       // Upsert credits (add to existing balance)
       const { data: existing } = await supabase

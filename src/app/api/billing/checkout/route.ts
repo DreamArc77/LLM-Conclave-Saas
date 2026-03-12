@@ -39,7 +39,7 @@ export async function POST(req: Request): Promise<Response> {
 
   try {
     // Find or create Stripe customer
-    const admin = await createAdminClient();
+    const admin = createAdminClient();
     const { data: existing } = await admin
       .from('stripe_customers')
       .select('stripe_customer_id')
