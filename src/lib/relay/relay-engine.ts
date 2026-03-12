@@ -96,6 +96,7 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>) {
         relayHasEnded = true;
         localStorage.removeItem(ACTIVE_RELAY_KEY);
         useChatStore.getState().completeRelay();
+        window.dispatchEvent(new CustomEvent('credits-changed'));
         break;
 
       case 'error':

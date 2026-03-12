@@ -1,17 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Zap } from 'lucide-react';
 
 export function CreditBalance() {
   const [balance, setBalance] = useState<number | null>(null);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     fetch('/api/credits/balance')
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d?.balance != null) setBalance(d.balance as number); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    refresh();
+    // Re-fetch after relay completes (credits deducted)
+    window.addEventListener('credits-changed', refresh);
+    // Re-fetch when user returns from Stripe checkout (window regains focus)
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.removeEventListener('credits-changed', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [refresh]);
 
   if (balance === null) return null;
 
