@@ -64,15 +64,24 @@ export async function addWelcomeCredits(params: {
 }): Promise<void> {
   const { userId, supabase, amount } = params;
 
-  await supabase.from('credits').upsert(
+  const { error: upsertErr } = await supabase.from('credits').upsert(
     { user_id: userId, balance: amount, updated_at: new Date().toISOString() },
     { onConflict: 'user_id' }
   );
 
-  await supabase.from('credit_transactions').insert({
+  if (upsertErr) {
+    console.error('[credits] addWelcomeCredits upsert failed:', upsertErr);
+    return;
+  }
+
+  const { error: txErr } = await supabase.from('credit_transactions').insert({
     user_id: userId,
     amount,
     type: 'bonus',
     description: 'Welcome bonus',
   });
+
+  if (txErr) {
+    console.error('[credits] addWelcomeCredits transaction insert failed:', txErr);
+  }
 }

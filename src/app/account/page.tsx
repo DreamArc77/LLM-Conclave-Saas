@@ -15,11 +15,23 @@ export default async function AccountPage() {
   }
 
   const admin = await createAdminClient();
-  const { data: credits } = await admin
+  let { data: credits } = await admin
     .from('credits')
     .select('balance')
     .eq('user_id', user.id)
     .maybeSingle();
+
+  if (!credits) {
+    const { addWelcomeCredits } = await import('@/lib/credits/deduct');
+    const { WELCOME_CREDITS } = await import('@/config/credit-packages');
+    await addWelcomeCredits({ userId: user.id, supabase: admin, amount: WELCOME_CREDITS });
+    const { data: seeded } = await admin
+      .from('credits')
+      .select('balance')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    credits = seeded;
+  }
 
   const balance = (credits?.balance as number) ?? 0;
 

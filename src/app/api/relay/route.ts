@@ -93,8 +93,25 @@ export async function POST(req: Request): Promise<Response> {
       .from('credits')
       .select('balance')
       .eq('user_id', user.id)
-      .single();
-    if (!creditRow || (creditRow.balance as number) < 1) {
+      .maybeSingle();
+
+    let currentBalance = creditRow ? (creditRow.balance as number) : null;
+
+    if (currentBalance === null) {
+      // No row yet — auto-seed welcome credits
+      const { addWelcomeCredits } = await import('@/lib/credits/deduct');
+      const { WELCOME_CREDITS } = await import('@/config/credit-packages');
+      await addWelcomeCredits({ userId: user.id, supabase: adminClient, amount: WELCOME_CREDITS });
+      // Re-query to confirm the write succeeded
+      const { data: seeded } = await adminClient
+        .from('credits')
+        .select('balance')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      currentBalance = seeded ? (seeded.balance as number) : 0;
+    }
+
+    if (currentBalance < 1) {
       return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT' }), {
         status: 402,
         headers: { 'Content-Type': 'application/json' },
