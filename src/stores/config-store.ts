@@ -25,7 +25,7 @@ export const useConfigStore = create<ConfigState>()(
   persist(
     (set, get) => ({
       models: [],
-      maxRounds: 3,
+      maxRounds: 2,
       exportFormat: 'png' as const,
 
       addModel: (model) =>
@@ -93,19 +93,19 @@ export const useConfigStore = create<ConfigState>()(
           const serverIds = new Set(serverPresets.map((p) => p.id));
           // Remove presets that no longer exist on the server
           const withoutStale = state.models.filter((m) => !m.isPreset || serverIds.has(m.id));
-          // Update existing presets with fresh server data (baseUrl, modelId, displayName),
+          // Update existing presets with fresh server data (baseUrl, modelId, displayName, creditsPerRound),
           // preserving user preferences (enabled, order)
           const updated = withoutStale.map((m) => {
             if (!m.isPreset) return m;
             const fresh = serverPresets.find((p) => p.id === m.id);
             if (!fresh) return m;
-            return { ...m, modelId: fresh.modelId, displayName: fresh.displayName, baseUrl: fresh.baseUrl };
+            return { ...m, modelId: fresh.modelId, displayName: fresh.displayName, baseUrl: fresh.baseUrl, creditsPerRound: fresh.creditsPerRound };
           });
-          // Add new presets that aren't in the store yet
+          // Add new presets that aren't in the store yet — use server's defaultEnabled
           const existingIds = new Set(updated.map((m) => m.id));
           const toAdd = serverPresets
             .filter((p) => !existingIds.has(p.id))
-            .map((p, i) => ({ ...p, apiKey: '', isPreset: true as const, enabled: true, order: updated.length + i }));
+            .map((p, i) => ({ ...p, apiKey: '', isPreset: true as const, enabled: p.defaultEnabled ?? true, order: updated.length + i }));
           return { models: [...updated, ...toAdd] };
         });
       },

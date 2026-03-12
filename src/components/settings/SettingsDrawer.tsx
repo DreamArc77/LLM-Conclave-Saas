@@ -7,6 +7,8 @@ import { useConfigStore } from '@/stores/config-store';
 import { ModelList } from './ModelList';
 import { AddModelDialog } from './AddModelDialog';
 import { useT } from '@/hooks/useT';
+import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
+import { ALLOW_CUSTOM_MODELS } from '@/config/feature-flags';
 
 export function SettingsDrawer() {
   const settingsOpen = useUIStore((s) => s.settingsOpen);
@@ -17,7 +19,7 @@ export function SettingsDrawer() {
   const setExportFormat = useConfigStore((s) => s.setExportFormat);
 
   // Local string state so user can freely delete digits before typing a new value.
-  // We only clamp to [1, 10] on blur.
+  // We only clamp to [1, MAX_ROUNDS_HARD_LIMIT] on blur.
   const t = useT();
   const [roundsInput, setRoundsInput] = useState(String(maxRounds));
   useEffect(() => { setRoundsInput(String(maxRounds)); }, [maxRounds]);
@@ -55,12 +57,12 @@ export function SettingsDrawer() {
               type="number"
               inputMode="numeric"
               min={1}
-              max={10}
+              max={MAX_ROUNDS_HARD_LIMIT}
               value={roundsInput}
               onChange={(e) => setRoundsInput(e.target.value)}
               onBlur={() => {
                 const n = parseInt(roundsInput, 10);
-                const clamped = isNaN(n) || n < 1 ? 1 : n > 10 ? 10 : n;
+                const clamped = isNaN(n) || n < 1 ? 1 : n > MAX_ROUNDS_HARD_LIMIT ? MAX_ROUNDS_HARD_LIMIT : n;
                 setMaxRounds(clamped);
                 setRoundsInput(String(clamped));
               }}
@@ -91,9 +93,11 @@ export function SettingsDrawer() {
 
           <ModelList />
 
-          <div className="mt-3">
-            <AddModelDialog />
-          </div>
+          {ALLOW_CUSTOM_MODELS && (
+            <div className="mt-3">
+              <AddModelDialog />
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,6 +1,6 @@
 import { getStripe } from '@/lib/stripe';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
-import { CREDIT_PACKAGES } from '@/config/credit-packages';
+import { CREDIT_PACKAGES, totalCredits } from '@/config/credit-packages';
 
 export async function POST(req: Request): Promise<Response> {
   const supabase = await createServerClient();
@@ -70,7 +70,7 @@ export async function POST(req: Request): Promise<Response> {
       metadata: {
         userId: user.id,
         packageId: pkg.id,
-        credits: String(pkg.credits),
+        credits: String(totalCredits(pkg)),
       },
     });
 

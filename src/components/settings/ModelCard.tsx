@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Zap } from 'lucide-react';
 import { ProviderLogo } from '@/components/common/ProviderLogo';
 import { useConfigStore } from '@/stores/config-store';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
@@ -113,9 +113,17 @@ export function ModelCard({ model }: ModelCardProps) {
       {expanded && (
         <div className="px-3 pb-3 pt-1 border-t border-gray-100 dark:border-gray-700 space-y-2">
           {model.isPreset ? (
-            <p className="text-[10px] text-blue-500 dark:text-blue-400">
-              {t('settings.presetInfo')}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-blue-500 dark:text-blue-400">
+                {t('settings.presetInfo')}
+              </p>
+              {model.creditsPerRound != null && process.env.NEXT_PUBLIC_SAAS_MODE === 'true' && (
+                <span className="flex items-center gap-0.5 text-[10px] font-medium text-yellow-600 dark:text-yellow-400">
+                  <Zap className="w-3 h-3" />
+                  {model.creditsPerRound} credits / 轮
+                </span>
+              )}
+            </div>
           ) : (
             <div>
               <label className="text-[10px] text-gray-500 mb-0.5 block">{t('settings.apiKey')}</label>

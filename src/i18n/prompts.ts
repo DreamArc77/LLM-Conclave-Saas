@@ -9,6 +9,7 @@ const EN_REPORT_TEMPLATE = `# LLM Conclave Research Brief: [{{会议简要主题
 \`\`\`markdown
 **Meeting Time**: {{获取当前时间}}
 **Token Consumption**: {{估算全场对话的总Token消耗}}
+**Credit Consumption**: {{本次credit消耗}}
 **Discussion Method**: {{请根据全场对话记录进行提炼。Format reference: "This session featured [Models A, B, etc.] engaging in [X] rounds of cross-debate and perspective sharing, with [Summary Model C] completing the convergence summary, with a total evaluation time of approximately [X] seconds."}}
 \`\`\`
 
@@ -52,6 +53,7 @@ const JA_REPORT_TEMPLATE = `# LLM Conclave 研究ブリーフ：[{{会议简要�
 \`\`\`markdown
 **会議時間**：{{获取当前时间}}
 **トークン消費**：{{估算全场对话的总Token消耗}}
+**クレジット消費**：{{本次credit消耗}}
 **討論方式**：{{请根据全场对话记录进行提炼。フォーマット参考："このセッションでは、[参加モデルA、Bなど]が[X]ラウンドの交差発言と視点補完を行い、最終的に[要約モデルC]が収束要約を完成させ、評価に要した合計時間は約[X]秒でした。"}}
 \`\`\`
 
@@ -117,6 +119,15 @@ export function getTokensLabel(locale: Locale, tokens: number): string {
     case 'en': return `~${tokens} tokens`;
     case 'ja': return `約${tokens}トークン`;
     default: return `约 ${tokens}`;
+  }
+}
+
+/** Locale-aware credit cost label for the report summary. */
+export function getCreditCostLabel(locale: Locale, cost: number): string {
+  switch (locale) {
+    case 'en': return `${cost} credits`;
+    case 'ja': return `${cost}クレジット`;
+    default: return `${cost} credits`;
   }
 }
 

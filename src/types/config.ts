@@ -30,4 +30,8 @@ export interface ModelConfig {
   enabled: boolean;
   order: number;
   isPreset?: boolean;
+  /** Fixed credit cost per round (preset models only). Sourced from server-side PresetDefinition. */
+  creditsPerRound?: number;
+  /** Server-supplied default enabled state (used only during initial preset sync). */
+  defaultEnabled?: boolean;
 }

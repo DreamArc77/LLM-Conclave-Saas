@@ -7,42 +7,40 @@ export interface PresetDefinition {
   displayName: string;
   baseUrl?: string;
   apiKey: string;
+  /** Fixed credit cost each time this model speaks in a debate round. Edit to adjust pricing. */
+  creditsPerRound: number;
+  /** Whether this model is enabled by default when first synced to a new user's config. */
+  defaultEnabled?: boolean;
 }
 
 /**
- * Preset models — edit this array to add models that all visitors can use.
+ * Preset models — edit this array to configure models available to all visitors.
  * This file is server-side only; API keys are never sent to browsers.
  *
- * For production deployments (e.g. Vercel), set API keys as environment variables
- * in the dashboard instead of hardcoding them here.
+ * Pricing config (operator-editable):
+ *   creditsPerRound  — fixed credit cost per model per round
+ *   defaultEnabled   — whether new users get this model turned on by default
  */
 export const PRESET_DEFINITIONS: PresetDefinition[] = [
-  // === Add your preset models here ===
-  //
-  // Example:
-  // {
-  //   id: 'preset-deepseek-chat',
-  //   providerId: 'deepseek',
-  //   modelId: 'deepseek-chat',
-  //   displayName: 'DeepSeek Chat (体验版)',
-  //   baseUrl: 'https://api.deepseek.com/v1',   // optional, defaults to provider default
-  //   apiKey: process.env.DEEPSEEK_API_KEY || '',
-  // },
   {
-    id: 'Gemini',
+    id: 'gemini',
     providerId: 'custom',
     modelId: 'google/gemini-3-flash-preview',
-    displayName: 'Gemini3.2',
+    displayName: 'Gemini3',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 50,
+    defaultEnabled: true,
   },
   {
-    id: 'Claude',
+    id: 'claude',
     providerId: 'custom',
     modelId: 'anthropic/claude-sonnet-4.6',
     displayName: 'Claude Sonnet 4.6',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 260,
+    defaultEnabled: false,
   },
   {
     id: 'openai',
@@ -51,41 +49,38 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'gpt-5.2',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 220,
+    defaultEnabled: true,
   },
   {
-    id: 'Deepseek',
-    providerId: 'doubao',
-    modelId: 'ep-20260303150100-r95bk',
-    displayName: 'DeepseekV3.2',
-    apiKey: process.env.DOUBAO_API_KEY || '',
+    id: 'deepseek',
+    providerId: 'custom',
+    modelId: 'deepseek/deepseek-v3.2',
+    displayName: 'deepseek-v3.2',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 40,
+    defaultEnabled: true,
   },
+   {
+    id: 'xAI',
+    providerId: 'custom',
+    modelId: 'x-ai/grok-4.1-fast',
+    displayName: 'grok-4.1',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 180,
+    defaultEnabled: false,
+  },
+
   {
-    id: 'Doubao',
-    providerId: 'doubao',
-    modelId: 'ep-20260225125500-8ljmw',
-    displayName: '豆包2.0pro',
-    apiKey: process.env.DOUBAO_API_KEY || '',
-  },
-    {
-    id: 'Doubao',
-    providerId: 'doubao',
-    modelId: 'ep-20260225125500-8ljmw',
-    displayName: '豆包2.0pro',
-    apiKey: process.env.DOUBAO_API_KEY || '',
-  },
-  {
-    id: 'Zhipu',
-    providerId: 'doubao',
-    modelId: 'ep-20260305173450-22cv5',
-    displayName: 'GLM4.7',
-    apiKey: process.env.DOUBAO_API_KEY || '',
-  },
-    {
     id: 'Qwen',
     providerId: 'custom',
     modelId: 'qwen/qwen3.5-flash-02-23',
     displayName: 'qwen3.5',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 40,
+    defaultEnabled: false,
   },
 ];

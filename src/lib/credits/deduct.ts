@@ -1,5 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { TOKENS_PER_CREDIT } from '@/config/credit-packages';
 
 export interface DeductResult {
   ok: boolean;
@@ -9,12 +8,16 @@ export interface DeductResult {
 
 export async function checkAndDeductCredits(params: {
   userId: string;
-  totalTokens: number;
+  /** Pre-computed credit cost (sum of creditsPerRound for each model × rounds participated). */
+  cost: number;
   relaySessionId: string;
   supabase: SupabaseClient;
 }): Promise<DeductResult> {
-  const { userId, totalTokens, relaySessionId, supabase } = params;
-  const cost = Math.max(1, Math.ceil(totalTokens / TOKENS_PER_CREDIT));
+  const { userId, cost, relaySessionId, supabase } = params;
+
+  if (cost <= 0) {
+    return { ok: true, cost: 0, remaining: 0 };
+  }
 
   // Fetch current balance
   const { data: creditRow, error: fetchErr } = await supabase
@@ -51,7 +54,6 @@ export async function checkAndDeductCredits(params: {
     type: 'relay_spend',
     description: `Relay session ${relaySessionId}`,
     relay_session_id: relaySessionId,
-    estimated_tokens: totalTokens,
   });
 
   return { ok: true, cost, remaining: newBalance };

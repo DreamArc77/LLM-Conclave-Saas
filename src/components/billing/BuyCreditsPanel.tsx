@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { CREDIT_PACKAGES } from '@/config/credit-packages';
-import { Zap, CheckCircle } from 'lucide-react';
+import { CREDIT_PACKAGES, totalCredits } from '@/config/credit-packages';
+import { Zap, Gift } from 'lucide-react';
 
 export function BuyCreditsPanel() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export function BuyCreditsPanel() {
     <div className="space-y-3">
       <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Buy Credits</h2>
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        1 credit = 1,000 tokens · 1,000 credits = $1
+        1 USD = 500 credits · bonus credits included at higher tiers
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {CREDIT_PACKAGES.map((pkg) => (
@@ -49,14 +49,27 @@ export function BuyCreditsPanel() {
               <Zap className="w-4 h-4 text-yellow-500" />
               <span className="font-semibold text-gray-900 dark:text-gray-100">{pkg.name}</span>
             </div>
+
+            {/* Total credits (large) */}
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {pkg.credits.toLocaleString()}
+              {totalCredits(pkg).toLocaleString()}
               <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">credits</span>
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3 text-green-500" />
-              ~{(pkg.credits * 1000 / 1_000_000).toFixed(0)}M tokens
+
+            {/* Base + bonus breakdown */}
+            <div className="space-y-0.5">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {pkg.baseCredits.toLocaleString()} base
+              </div>
+              <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
+                <Gift className="w-3 h-3" />
+                +{pkg.bonusCredits.toLocaleString()} bonus
+                <span className="text-gray-400 dark:text-gray-500 font-normal">
+                  ({Math.round(pkg.bonusCredits / pkg.baseCredits * 100)}% extra)
+                </span>
+              </div>
             </div>
+
             <button
               onClick={() => handleBuy(pkg.id)}
               disabled={loading === pkg.id}

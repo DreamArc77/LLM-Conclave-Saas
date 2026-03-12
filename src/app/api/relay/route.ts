@@ -10,6 +10,7 @@ import { checkAndDeductCredits } from '@/lib/credits/deduct';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
+import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
 import {
   getDebateSystemPrompt,
   getUserRoleLabel,
@@ -18,6 +19,7 @@ import {
   getReportTemplate,
   getResearchMethod,
   getTokensLabel,
+  getCreditCostLabel,
   getSummaryPromptFull,
   getInitialPropositionLabel,
   getCurrentDiscussionLabel,
@@ -58,7 +60,8 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
-  const { sessionId, query, maxRounds, models, priorContext, locale = 'zh-CN' } = body;
+  const { sessionId, query, maxRounds: rawMaxRounds, models, priorContext, locale = 'zh-CN' } = body;
+  const maxRounds = Math.min(rawMaxRounds, MAX_ROUNDS_HARD_LIMIT);
 
   if (!sessionId) {
     return new Response(JSON.stringify({ error: 'Missing sessionId' }), {
@@ -111,7 +114,15 @@ export async function POST(req: Request): Promise<Response> {
       currentBalance = seeded ? (seeded.balance as number) : 0;
     }
 
-    if (currentBalance < 1) {
+    // Pre-check: user must be able to afford at least 1 round of all preset models
+    const minRoundCost = models
+      .filter((m) => m.isPreset)
+      .reduce((sum, m) => {
+        const preset = PRESET_DEFINITIONS.find((p) => p.id === m.id);
+        return sum + (preset?.creditsPerRound ?? 0);
+      }, 0);
+
+    if (currentBalance < Math.max(1, minRoundCost)) {
       return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT' }), {
         status: 402,
         headers: { 'Content-Type': 'application/json' },
@@ -133,6 +144,8 @@ export async function POST(req: Request): Promise<Response> {
   // The relay uses job.abort.signal to detect explicit stops (Stop button).
   // Client disconnects (req.signal) do NOT abort the relay.
   (async () => {
+    let totalCreditCost = 0;
+    // Token counts kept for fallback logging only (not used for billing)
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
     let charCount = priorContext.reduce((sum, m) => sum + m.content.length, 0) + query.length;
@@ -249,6 +262,12 @@ export async function POST(req: Request): Promise<Response> {
             finished,
           });
 
+          // Accumulate per-model credit cost
+          if (model.isPreset) {
+            const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
+            if (preset) totalCreditCost += preset.creditsPerRound;
+          }
+
           if (content.length > 0) {
             fullContext.push({ role: 'assistant', content, displayName: model.displayName });
             charCount += content.length;
@@ -260,7 +279,7 @@ export async function POST(req: Request): Promise<Response> {
 
       // Generate meeting minutes — only skip if explicitly stopped
       if (!(await jobStore.isJobAborted(sessionId))) {
-        await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE);
+        await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE, totalCreditCost);
       }
 
       await writeRelaySSE({ type: 'relay_done' });
@@ -271,16 +290,13 @@ export async function POST(req: Request): Promise<Response> {
         await writeRelaySSE({ type: 'error', message });
       } catch { /* job emitter may be gone */ }
     } finally {
-      // Deduct credits in SaaS mode (fallback to char estimate if no API usage reported)
-      if (isSaas && saasUserId) {
+      // Deduct credits in SaaS mode (per-model fixed pricing)
+      if (isSaas && saasUserId && totalCreditCost > 0) {
         try {
-          const totalTokens = (totalInputTokens + totalOutputTokens) > 0
-            ? totalInputTokens + totalOutputTokens
-            : Math.round(charCount / 2);
           const adminClient = createAdminClient();
           await checkAndDeductCredits({
             userId: saasUserId,
-            totalTokens,
+            cost: totalCreditCost,
             relaySessionId: sessionId,
             supabase: adminClient,
           });
@@ -309,24 +325,39 @@ async function generateSummary(
   originalQuery: string,
   startTime: number,
   locale: Locale,
-  writeRelaySSE: (data: object) => Promise<void>
+  writeRelaySSE: (data: object) => Promise<void>,
+  creditCost: number
 ): Promise<void> {
-  // Find first usable model
+  // Always prefer Gemini Flash for summary generation (cost-efficient, platform-borne expense).
+  // Falls back to first usable model if Gemini is unavailable.
   let summaryApiKey: string | null = null;
   let summaryModel: RelayModelInput | null = null;
 
-  for (const model of models) {
-    if (model.isPreset) {
-      const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
-      if (preset?.apiKey) {
-        summaryApiKey = preset.apiKey;
+  const geminiPreset = PRESET_DEFINITIONS.find((p) => p.id === 'Gemini');
+  if (geminiPreset?.apiKey) {
+    summaryApiKey = geminiPreset.apiKey;
+    summaryModel = {
+      id: geminiPreset.id,
+      modelId: geminiPreset.modelId,
+      providerId: geminiPreset.providerId,
+      displayName: geminiPreset.displayName,
+      baseUrl: geminiPreset.baseUrl,
+      isPreset: true,
+    };
+  } else {
+    for (const model of models) {
+      if (model.isPreset) {
+        const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
+        if (preset?.apiKey) {
+          summaryApiKey = preset.apiKey;
+          summaryModel = model;
+          break;
+        }
+      } else if (model.apiKey) {
+        summaryApiKey = model.apiKey;
         summaryModel = model;
         break;
       }
-    } else if (model.apiKey) {
-      summaryApiKey = model.apiKey;
-      summaryModel = model;
-      break;
     }
   }
 
@@ -389,6 +420,7 @@ async function generateSummary(
     .replace('{{会议主题}}', originalQuery)
     .replace('{{获取当前时间}}', dateStr)
     .replace('{{估算全场对话的总Token消耗}}', getTokensLabel(locale, estimatedTokens))
+    .replace('{{本次credit消耗}}', getCreditCostLabel(locale, creditCost))
     .replace(/\{\{请根据全场对话记录进行提炼。[\s\S]*?\}\}/, researchMethod);
 
   const summaryPrompt = getSummaryPromptFull(locale, filledTemplate, conversation);

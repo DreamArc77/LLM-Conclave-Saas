@@ -12,6 +12,8 @@ export async function GET() {
       modelId: p.modelId,
       displayName: p.displayName,
       baseUrl: p.baseUrl ?? PROVIDER_REGISTRY[p.providerId].defaultBaseUrl,
+      creditsPerRound: p.creditsPerRound,
+      defaultEnabled: p.defaultEnabled ?? true,
     }));
   return Response.json(available);
 }
