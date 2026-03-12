@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { BuyCreditsPanel } from '@/components/billing/BuyCreditsPanel';
 import { TransactionHistory } from '@/components/billing/TransactionHistory';
 import { SignOutButton } from '@/components/auth/SignOutButton';
@@ -14,11 +14,12 @@ export default async function AccountPage() {
     redirect('/auth/signin');
   }
 
-  const { data: credits } = await supabase
+  const admin = await createAdminClient();
+  const { data: credits } = await admin
     .from('credits')
     .select('balance')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   const balance = (credits?.balance as number) ?? 0;
 

@@ -1,36 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Zap } from 'lucide-react';
 
 export function CreditBalance() {
   const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('credits')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single();
-      if (data) {
-        setBalance(data.balance as number);
-      } else {
-        // No credits row yet — seed welcome credits then re-fetch
-        try {
-          await fetch('/api/auth/welcome', { method: 'POST' });
-          const { data: seeded } = await supabase
-            .from('credits')
-            .select('balance')
-            .eq('user_id', user.id)
-            .single();
-          if (seeded) setBalance(seeded.balance as number);
-        } catch { /* non-fatal */ }
-      }
-    });
+    fetch('/api/credits/balance')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.balance != null) setBalance(d.balance as number); })
+      .catch(() => {});
   }, []);
 
   if (balance === null) return null;

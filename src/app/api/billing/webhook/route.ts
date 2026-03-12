@@ -34,7 +34,7 @@ export async function POST(req: Request): Promise<Response> {
         .from('credits')
         .select('balance')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       const currentBalance = (existing?.balance as number) ?? 0;
       await supabase.from('credits').upsert(
