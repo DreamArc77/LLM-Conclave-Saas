@@ -16,7 +16,7 @@ export async function generateMeetingMinutes(
   const conversation = formatConversation(messages);
 
   const templateRes = await fetch('/api/report-template');
-  if (!templateRes.ok) throw new Error('Failed to load report template (ReportTemplate.md)');
+  if (!templateRes.ok) throw new Error('Failed to load report template (AI智囊团专题研讨交付MD.md)');
   const templateContent = await templateRes.text();
 
   const prompt = buildPrompt(conversation, messages, elapsedSec, estimatedTokens, templateContent);
