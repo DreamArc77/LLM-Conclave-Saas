@@ -4,7 +4,7 @@ import path from 'path';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), 'src', 'AI智囊团专题研讨交付MD.md');
+  const filePath = path.join(process.cwd(), 'src', 'ReportTemplate.md');
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
     return new Response(content, {

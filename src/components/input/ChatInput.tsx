@@ -28,8 +28,7 @@ export function ChatInput() {
   const randomPlaceholder = useMemo(() => {
     const list = getMessages(locale).input.placeholders;
     return list[Math.floor(Math.random() * list.length)];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [locale]);
 
   const isRunning = relay.status === 'running';
   const canSend = input.trim().length > 0 && !isRunning && !isSending && enabledModels.length > 0;
