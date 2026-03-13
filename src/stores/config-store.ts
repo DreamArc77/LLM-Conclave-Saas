@@ -99,7 +99,7 @@ export const useConfigStore = create<ConfigState>()(
             if (!m.isPreset) return m;
             const fresh = serverPresets.find((p) => p.id === m.id);
             if (!fresh) return m;
-            return { ...m, modelId: fresh.modelId, displayName: fresh.displayName, baseUrl: fresh.baseUrl, creditsPerRound: fresh.creditsPerRound };
+            return { ...m, modelId: fresh.modelId, displayName: fresh.displayName, baseUrl: fresh.baseUrl, creditsPerRound: fresh.creditsPerRound, badge: fresh.badge };
           });
           // Add new presets that aren't in the store yet — use server's defaultEnabled
           const existingIds = new Set(updated.map((m) => m.id));

@@ -35,9 +35,9 @@ export function StatusBar() {
           <Menu className="w-5 h-5" />
         </button>
 
-        <h1 className="text-base font-semibold">{t('app.name')}</h1>
+        <h1 className="hidden sm:block text-base font-semibold">{t('app.name')}</h1>
 
-        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+        <div className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500">
           <Zap className="w-3.5 h-3.5" />
           <span>{t('status.models', { count: enabledCount })}</span>
           {isSaas && estimatedCost > 0 && (
@@ -46,11 +46,11 @@ export function StatusBar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {relay.status === 'running' && (
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm text-green-600">
+            <span className="hidden sm:inline text-sm text-green-600">
               {t('status.round', {
                 round: relay.round + 1,
                 maxRounds,
@@ -65,12 +65,14 @@ export function StatusBar() {
         )}
 
         {relay.status === 'idle' && (
-          <span className="text-sm text-gray-400">{t('status.idle')}</span>
+          <span className="hidden sm:inline text-sm text-gray-400">{t('status.idle')}</span>
         )}
 
         <SaasUserWidget />
 
-        <LanguageSwitcher />
+        <div className="hidden sm:flex">
+          <LanguageSwitcher />
+        </div>
 
         <button
           onClick={openSettings}
