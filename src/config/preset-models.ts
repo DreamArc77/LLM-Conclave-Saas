@@ -11,6 +11,8 @@ export interface PresetDefinition {
   creditsPerRound: number;
   /** Whether this model is enabled by default when first synced to a new user's config. */
   defaultEnabled?: boolean;
+  /** Badge label shown on the model card (e.g. "官方", "精选"). Omit to show no badge. */
+  badge?: string;
 }
 
 /**
@@ -29,29 +31,22 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Gemini3',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 50,
+    creditsPerRound: 60,
     defaultEnabled: true,
-  },
-  {
-    id: 'claude',
-    providerId: 'custom',
-    modelId: 'anthropic/claude-sonnet-4.6',
-    displayName: 'Claude Sonnet 4.6',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 260,
-    defaultEnabled: false,
+    badge: 'Balance',
   },
   {
     id: 'openai',
     providerId: 'custom',
-    modelId: 'openai/gpt-5.2',
-    displayName: 'gpt-5.2',
+    modelId: 'openai/gpt-5.4',
+    displayName: 'gpt-5.4',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 220,
+    creditsPerRound: 250,
     defaultEnabled: true,
+    badge: 'Flagship',
   },
+
   {
     id: 'deepseek',
     providerId: 'custom',
@@ -59,18 +54,55 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'deepseek-v3.2',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 40,
+    creditsPerRound: 15,
     defaultEnabled: true,
+    badge: 'Lite',
   },
-   {
-    id: 'xAI',
+
+  {
+    id: 'claude',
     providerId: 'custom',
-    modelId: 'x-ai/grok-4.1-fast',
-    displayName: 'grok-4.1',
+    modelId: 'anthropic/claude-sonnet-4.6',
+    displayName: 'Claude Sonnet 4.6',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 180,
+    creditsPerRound: 250,
     defaultEnabled: false,
+    badge: 'Flagship',
+  },
+
+  {
+    id: 'xAI',
+    providerId: 'custom',
+    modelId: 'x-ai/grok-4.20-beta',
+    displayName: 'grok-4.2-beta',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 200,
+    defaultEnabled: false,
+    badge: 'Flagship',
+  },
+  {
+    id: 'minimax',
+    providerId: 'custom',
+    modelId: 'minimax/minimax-m2.5',
+    displayName: 'minimax-m2.5',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 60,
+    defaultEnabled: false,
+    badge: 'Balance',
+  },
+  {
+    id: 'kimi',
+    providerId: 'custom',
+    modelId: 'moonshotai/kimi-k2.5',
+    displayName: 'kimi-k2.5',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 60,
+    defaultEnabled: false,
+    badge: 'Balance',
   },
 
   {
@@ -82,5 +114,6 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 40,
     defaultEnabled: false,
+    badge: 'Lite',
   },
 ];

@@ -14,6 +14,7 @@ export async function GET() {
       baseUrl: p.baseUrl ?? PROVIDER_REGISTRY[p.providerId].defaultBaseUrl,
       creditsPerRound: p.creditsPerRound,
       defaultEnabled: p.defaultEnabled ?? true,
+      badge: p.badge,
     }));
   return Response.json(available);
 }

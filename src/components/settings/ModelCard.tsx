@@ -67,9 +67,9 @@ export function ModelCard({ model }: ModelCardProps) {
         >
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-medium truncate">{model.displayName}</p>
-            {model.isPreset && (
+            {model.isPreset && model.badge && (
               <span className="shrink-0 text-[9px] font-semibold px-1 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 leading-none">
-                {t('settings.preset')}
+                {model.badge}
               </span>
             )}
             {model.isPreset && model.creditsPerRound != null && process.env.NEXT_PUBLIC_SAAS_MODE === 'true' && (

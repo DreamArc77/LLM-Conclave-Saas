@@ -32,6 +32,8 @@ export interface ModelConfig {
   isPreset?: boolean;
   /** Fixed credit cost per round (preset models only). Sourced from server-side PresetDefinition. */
   creditsPerRound?: number;
+  /** Operator-configured badge label shown on the model card (e.g. "官方", "精选"). */
+  badge?: string;
   /** Server-supplied default enabled state (used only during initial preset sync). */
   defaultEnabled?: boolean;
 }
