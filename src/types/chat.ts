@@ -1,5 +1,23 @@
 import type { ProviderId } from './config';
 
+export interface ModelUsageStat {
+  displayName: string;
+  modelId: string;
+  inputTokens: number;
+  outputTokens: number;
+  roundsCompleted: number;
+  finishedEarly: boolean;
+}
+
+export interface RelayUsageStats {
+  models: ModelUsageStat[];
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  creditCost: number;
+  refund: number;
+  maxRounds: number;
+}
+
 export interface ChatMessage {
   id: string;
   sessionId: string;
@@ -14,6 +32,7 @@ export interface ChatMessage {
   isSystem?: boolean;
   reportMarkdown?: string;
   reportFilename?: string;
+  usageStats?: RelayUsageStats;
 }
 
 export interface ChatSession {

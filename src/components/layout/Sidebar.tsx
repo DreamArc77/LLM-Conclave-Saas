@@ -13,8 +13,10 @@ export function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
+  const relayStatus = useChatStore((s) => s.relay.status);
   const setActiveSession = useChatStore((s) => s.setActiveSession);
   const setMessages = useChatStore((s) => s.setMessages);
+  const isRelayRunning = relayStatus === 'running';
 
   const t = useT();
   const sessions = useLiveQuery(() =>
@@ -26,12 +28,14 @@ export function Sidebar() {
   };
 
   const handleNewSession = () => {
+    if (isRelayRunning) return;
     setActiveSession(null);
     setMessages([]);
     closeMobile();
   };
 
   const handleSelectSession = async (sessionId: string) => {
+    if (isRelayRunning) return;
     setActiveSession(sessionId);
     const messages = await getSessionMessages(sessionId);
     setMessages(messages);
@@ -69,14 +73,20 @@ export function Sidebar() {
       <div className="p-3 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={handleNewSession}
-          className="w-full flex items-center justify-center gap-2 text-sm py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          disabled={isRelayRunning}
+          className="w-full flex items-center justify-center gap-2 text-sm py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus className="w-4 h-4" />
           {t('sidebar.newChat')}
         </button>
+        {isRelayRunning && (
+          <p className="mt-1.5 text-center text-[10px] text-amber-500 dark:text-amber-400">
+            讨论进行中，完成后可切换
+          </p>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className={`flex-1 overflow-y-auto p-2 ${isRelayRunning ? 'opacity-50 pointer-events-none' : ''}`}>
         {sessions?.map((session) => (
           <div
             key={session.id}

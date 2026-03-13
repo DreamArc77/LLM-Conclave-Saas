@@ -27,6 +27,7 @@ import {
 } from '@/i18n/prompts';
 import type { Locale } from '@/i18n';
 import type { ProviderId } from '@/types/config';
+import type { RelayUsageStats } from '@/types/chat';
 
 export const dynamic = 'force-dynamic';
 
@@ -175,6 +176,16 @@ export async function POST(req: Request): Promise<Response> {
       totalOutputTokens += usage.outputTokens;
     };
 
+    // Per-model stats for the summary bubble
+    const perModelStats: Record<string, {
+      displayName: string; modelId: string;
+      inputTokens: number; outputTokens: number;
+      roundsCompleted: number; finishedEarly: boolean;
+    }> = {};
+    for (const m of models) {
+      perModelStats[m.id] = { displayName: m.displayName, modelId: m.modelId, inputTokens: 0, outputTokens: 0, roundsCompleted: 0, finishedEarly: false };
+    }
+
     try {
       const fullContext: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }> = [
         ...priorContext,
@@ -292,6 +303,13 @@ export async function POST(req: Request): Promise<Response> {
             ` in=${modelInputTokens} out=${modelOutputTokens} total=${modelInputTokens + modelOutputTokens}`
           );
 
+          if (perModelStats[model.id]) {
+            perModelStats[model.id].inputTokens += modelInputTokens;
+            perModelStats[model.id].outputTokens += modelOutputTokens;
+            perModelStats[model.id].roundsCompleted += 1;
+            if (finished) perModelStats[model.id].finishedEarly = true;
+          }
+
           // Accumulate per-model credit cost
           if (model.isPreset) {
             const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
@@ -309,7 +327,16 @@ export async function POST(req: Request): Promise<Response> {
 
       // Generate meeting minutes — only skip if explicitly stopped
       if (!(await jobStore.isJobAborted(sessionId))) {
-        await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE, totalCreditCost);
+        const refund = isSaas ? Math.max(0, preDeductedCost - totalCreditCost) : 0;
+        const usageStats: RelayUsageStats = {
+          models: Object.values(perModelStats),
+          totalInputTokens,
+          totalOutputTokens,
+          creditCost: totalCreditCost,
+          refund,
+          maxRounds,
+        };
+        await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE, totalCreditCost, usageStats);
       }
 
       logger.info(
@@ -360,7 +387,8 @@ async function generateSummary(
   startTime: number,
   locale: Locale,
   writeRelaySSE: (data: object) => Promise<void>,
-  creditCost: number
+  creditCost: number,
+  usageStats?: RelayUsageStats
 ): Promise<void> {
   // Always prefer Gemini Flash for summary generation (cost-efficient, platform-borne expense).
   // Falls back to first usable model if Gemini is unavailable.
@@ -510,6 +538,7 @@ async function generateSummary(
     elapsedSec,
     filename,
     topic,
+    usageStats,
   });
 }
 

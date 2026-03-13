@@ -84,6 +84,7 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>) {
           isSystem: true,
           reportMarkdown: markdown,
           reportFilename: event.filename,
+          usageStats: event.usageStats,
         };
         if (!existingIds.has(summaryId)) {
           existingIds.add(summaryId);

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
 import { useT } from '@/hooks/useT';
 import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
 import type { ChatMessage } from '@/types/chat';
+
+const isSaas = process.env.NEXT_PUBLIC_SAAS_MODE === 'true';
 
 interface SystemBubbleProps {
   message: ChatMessage;
@@ -20,6 +22,7 @@ type DownloadState =
 
 export function SystemBubble({ message }: SystemBubbleProps) {
   const [dlState, setDlState] = useState<DownloadState>({ phase: 'idle' });
+  const [statsOpen, setStatsOpen] = useState(false);
   const exportFormat = useConfigStore((s) => s.exportFormat);
   const locale = useLocaleStore((s) => s.locale);
   const t = useT();
@@ -82,6 +85,55 @@ export function SystemBubble({ message }: SystemBubbleProps) {
         <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400" />
         <div className="flex-1">
           <span className="whitespace-pre-line italic">{message.content}</span>
+
+          {message.usageStats && (
+            <div className="mt-2">
+              <button
+                onClick={() => setStatsOpen((v) => !v)}
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                {statsOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                {statsOpen ? '收起用量' : '展开用量'}
+              </button>
+              {statsOpen && (
+                <div className="mt-1.5 text-xs">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left font-normal pb-1 pr-3">模型</th>
+                        <th className="text-right font-normal pb-1 pr-2">输入</th>
+                        <th className="text-right font-normal pb-1 pr-2">输出</th>
+                        <th className="text-right font-normal pb-1">轮次</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {message.usageStats.models.map((m) => (
+                        <tr key={m.modelId} className="text-gray-600 dark:text-gray-400">
+                          <td className="py-0.5 pr-3">
+                            {m.displayName}
+                            {m.finishedEarly && m.roundsCompleted < message.usageStats!.maxRounds && (
+                              <span className="ml-1 text-orange-400 text-[10px]">提前完成</span>
+                            )}
+                          </td>
+                          <td className="text-right tabular-nums pr-2">{m.inputTokens.toLocaleString()}</td>
+                          <td className="text-right tabular-nums pr-2">{m.outputTokens.toLocaleString()}</td>
+                          <td className="text-right tabular-nums">{m.roundsCompleted}/{message.usageStats!.maxRounds}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="mt-1.5 pt-1 border-t border-gray-200 dark:border-gray-700 flex flex-wrap gap-x-3 gap-y-0.5 text-gray-400">
+                    <span>合计 {(message.usageStats.totalInputTokens + message.usageStats.totalOutputTokens).toLocaleString()} tokens</span>
+                    {isSaas && <span>· {message.usageStats.creditCost} credits 已扣</span>}
+                    {isSaas && message.usageStats.refund > 0 && (
+                      <span className="text-green-500">退款 {message.usageStats.refund} credits</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {message.reportMarkdown && (
             <div className="mt-2">
               {dlState.phase === 'idle' && (
