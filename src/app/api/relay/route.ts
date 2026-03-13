@@ -162,11 +162,15 @@ export async function POST(req: Request): Promise<Response> {
   // Client disconnects (req.signal) do NOT abort the relay.
   (async () => {
     let totalCreditCost = 0;
-    // Token counts kept for fallback logging only (not used for billing)
     let totalInputTokens = 0;
     let totalOutputTokens = 0;
     let charCount = priorContext.reduce((sum, m) => sum + m.content.length, 0) + query.length;
+    // Per-call usage — reset before each model call, logged after
+    let modelInputTokens = 0;
+    let modelOutputTokens = 0;
     const onUsage = (usage: { inputTokens: number; outputTokens: number }) => {
+      modelInputTokens += usage.inputTokens;
+      modelOutputTokens += usage.outputTokens;
       totalInputTokens += usage.inputTokens;
       totalOutputTokens += usage.outputTokens;
     };
@@ -215,6 +219,10 @@ export async function POST(req: Request): Promise<Response> {
           const baseUrl = model.baseUrl || provider.defaultBaseUrl;
 
           await writeRelaySSE({ type: 'model_start', modelIndex: i, displayName: model.displayName, round });
+
+          // Reset per-call counters before each model
+          modelInputTokens = 0;
+          modelOutputTokens = 0;
 
           const systemPrompt = buildDebateSystemPrompt(locale, query, model.displayName);
           const isFirstCall = round === 0 && i === 0;
@@ -279,6 +287,11 @@ export async function POST(req: Request): Promise<Response> {
             finished,
           });
 
+          logger.info(
+            `[TOKEN] session=${sessionId} round=${round + 1}/${maxRounds} model=${model.displayName}(${model.modelId})` +
+            ` in=${modelInputTokens} out=${modelOutputTokens} total=${modelInputTokens + modelOutputTokens}`
+          );
+
           // Accumulate per-model credit cost
           if (model.isPreset) {
             const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
@@ -299,6 +312,10 @@ export async function POST(req: Request): Promise<Response> {
         await generateSummary(models, fullContext, query, startTime, locale, writeRelaySSE, totalCreditCost);
       }
 
+      logger.info(
+        `[TOKEN] session=${sessionId} TOTAL in=${totalInputTokens} out=${totalOutputTokens}` +
+        ` sum=${totalInputTokens + totalOutputTokens} credits=${totalCreditCost}`
+      );
       await writeRelaySSE({ type: 'relay_done' });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
