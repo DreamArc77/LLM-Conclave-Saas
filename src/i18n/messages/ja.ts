@@ -7,6 +7,8 @@ export const ja: Messages = {
   },
   chat: {
     welcome: 'メッセージを送信してマルチモデル協調会話を開始する',
+    welcomeHeadline: 'AI シンクタンクへようこそ',
+    welcomeDesc: 'ひとつのテーマ、複数の AI、本物の洞察。',
     generating: '生成中...',
     thinking: '考え中...',
     error: 'エラーが発生しました',
@@ -14,6 +16,13 @@ export const ja: Messages = {
   input: {
     placeholder: 'メッセージを入力...',
     placeholderNoModels: 'まず設定でモデルを設定してください...',
+    placeholders: [
+      '今日のテーマを入力してください',
+      'テーマを投げて、AI 円卓を始めよう',
+      '戦略・投資・キャリア… 何でも聞いて',
+      '一つの問い、複数の AI が深く考える',
+      'AI たちにあなたの難題を議論させよう',
+    ],
     clearConversation: '会話をクリア',
     stopRelay: 'リレーを停止',
     sendMessage: 'メッセージを送信',
@@ -27,6 +36,7 @@ export const ja: Messages = {
     round: 'ラウンド {round}/{maxRounds} · {modelName}',
     error: 'エラー',
     idle: '待機中',
+    estimatedCost: '推定 {cost} クレジット',
   },
   settings: {
     title: 'モデル設定',

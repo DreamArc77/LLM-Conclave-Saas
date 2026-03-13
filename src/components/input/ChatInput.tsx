@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { Send, Square, Trash2 } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
 import { executeRelay } from '@/lib/relay/relay-engine';
 import { clearSessionMessages } from '@/lib/db/operations';
 import { useT } from '@/hooks/useT';
+import { useLocaleStore } from '@/stores/locale-store';
+import { getMessages } from '@/i18n';
 import { isSaasClient } from '@/lib/flags';
 import { createClient } from '@/lib/supabase/client';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -22,6 +24,12 @@ export function ChatInput() {
   const models = useConfigStore((s) => s.models);
   const enabledModels = models.filter((m) => m.enabled);
   const t = useT();
+  const locale = useLocaleStore((s) => s.locale);
+  const randomPlaceholder = useMemo(() => {
+    const list = getMessages(locale).input.placeholders;
+    return list[Math.floor(Math.random() * list.length)];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isRunning = relay.status === 'running';
   const canSend = input.trim().length > 0 && !isRunning && !isSending && enabledModels.length > 0;
@@ -109,7 +117,7 @@ export function ChatInput() {
             placeholder={
               enabledModels.length === 0
                 ? t('input.placeholderNoModels')
-                : t('input.placeholder')
+                : randomPlaceholder
             }
             disabled={enabledModels.length === 0}
             rows={1}

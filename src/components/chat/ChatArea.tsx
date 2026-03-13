@@ -18,11 +18,11 @@ export function ChatArea() {
     return (
       <div
         ref={scrollRef}
-        className="flex-1 flex items-center justify-center overflow-y-auto"
+        className="flex-1 flex items-center justify-center overflow-y-auto px-4"
       >
-        <div className="text-center text-gray-400">
-          <h2 className="text-2xl font-semibold mb-2">LLM Conclave</h2>
-          <p className="text-sm">{t('chat.welcome')}</p>
+        <div className="text-center max-w-sm">
+          <h2 className="text-2xl font-semibold mb-3 text-gray-500 dark:text-gray-300">LLM Conclave</h2>
+          <p className="text-sm text-gray-400">{t('chat.welcomeDesc')}</p>
         </div>
       </div>
     );

@@ -41,9 +41,17 @@ export function StatusBar() {
           <Zap className="w-3.5 h-3.5" />
           <span>{t('status.models', { count: enabledCount })}</span>
           {isSaas && estimatedCost > 0 && (
-            <span className="text-yellow-600 dark:text-yellow-400 font-medium">· ~{estimatedCost} cr</span>
+            <span className="text-yellow-600 dark:text-yellow-400 font-medium">
+              · {t('status.estimatedCost', { cost: estimatedCost })}
+            </span>
           )}
         </div>
+
+        {isSaas && estimatedCost > 0 && (
+          <span className="sm:hidden text-xs font-medium text-yellow-600 dark:text-yellow-400">
+            {t('status.estimatedCost', { cost: estimatedCost })}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">

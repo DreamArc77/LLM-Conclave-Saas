@@ -7,6 +7,8 @@ export const zhCN: Messages = {
   },
   chat: {
     welcome: '发送消息开始多模型协作对话',
+    welcomeHeadline: '汇聚顶尖 AI，深度研讨你的议题',
+    welcomeDesc: '一个议题，多个 AI，碰撞出真正的洞见。',
     generating: '生成中...',
     thinking: '思考中...',
     error: '发生错误',
@@ -14,6 +16,13 @@ export const zhCN: Messages = {
   input: {
     placeholder: '输入消息...',
     placeholderNoModels: '请先在设置中配置模型...',
+    placeholders: [
+      '今天想让 AI 们讨论什么？',
+      '输入议题，开启 AI 圆桌',
+      '宏观、投资、战略… 尽管提',
+      '一个好问题，多个 AI 深度解答',
+      '让 AI 智囊团来研讨你的难题',
+    ],
     clearConversation: '清除对话',
     stopRelay: '停止对话',
     sendMessage: '发送消息',
@@ -27,6 +36,7 @@ export const zhCN: Messages = {
     round: '轮次 {round}/{maxRounds} · {modelName}',
     error: '错误',
     idle: '待机',
+    estimatedCost: '预计消耗：{cost} credits',
   },
   settings: {
     title: '模型设置',

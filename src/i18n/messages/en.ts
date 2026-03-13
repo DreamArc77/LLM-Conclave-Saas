@@ -5,6 +5,8 @@ export const en = {
   },
   chat: {
     welcome: 'Send a message to start a relay conversation',
+    welcomeHeadline: 'Your AI Think Tank',
+    welcomeDesc: 'One topic. Multiple AIs. Real insights.',
     generating: 'generating...',
     thinking: 'thinking...',
     error: 'An error occurred',
@@ -12,6 +14,13 @@ export const en = {
   input: {
     placeholder: 'Type a message...',
     placeholderNoModels: 'Configure models in settings first...',
+    placeholders: [
+      "What's on the agenda for your AI council today?",
+      'Drop a topic, start an AI roundtable',
+      'Strategy, markets, decisions — ask away',
+      'One question, multiple AI perspectives',
+      'Put your toughest question to the AI council',
+    ],
     clearConversation: 'Clear conversation',
     stopRelay: 'Stop relay',
     sendMessage: 'Send message',
@@ -25,6 +34,7 @@ export const en = {
     round: 'Round {round}/{maxRounds} · {modelName}',
     error: 'Error',
     idle: 'Idle',
+    estimatedCost: 'Est. {cost} credits',
   },
   settings: {
     title: 'Model Settings',
