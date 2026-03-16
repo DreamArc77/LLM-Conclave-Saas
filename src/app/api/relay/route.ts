@@ -82,6 +82,14 @@ export async function POST(req: Request): Promise<Response> {
   let saasUserId: string | null = null;
   let preDeductedCost = 0; // tracks upfront deduction so the finally block can refund the unused portion
   if (isSaas) {
+    // Internal bypass: /api/agent/debate handles auth + billing itself
+    const agentUserId = req.headers.get('x-agent-user-id');
+    const agentSecret = req.headers.get('x-agent-secret');
+    const internalSecret = process.env.INTERNAL_RELAY_SECRET;
+    if (agentUserId && internalSecret && agentSecret === internalSecret) {
+      saasUserId = agentUserId;
+      // Skip cookie auth + credit deduction — already handled by the caller
+    } else {
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -146,6 +154,7 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
     preDeductedCost = totalExpectedCost;
+    } // end else (normal auth path)
   }
 
   // Create a job for this relay session. The relay runs independently of the HTTP connection.

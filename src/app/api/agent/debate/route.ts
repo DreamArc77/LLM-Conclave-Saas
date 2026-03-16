@@ -1,0 +1,347 @@
+import { verifyAgentApiKey } from '@/lib/agent-auth';
+import { createAdminClient } from '@/lib/supabase/server';
+import { checkAndDeductCredits, refundCredits } from '@/lib/credits/deduct';
+import { PRESET_DEFINITIONS } from '@/config/preset-models';
+import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
+import type { Locale } from '@/i18n';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // 5 minutes
+
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+
+interface DebateRequest {
+  query: string;
+  models?: string[];        // preset IDs; if omitted, use standard-tier defaults
+  maxRounds?: number;
+  locale?: Locale;
+}
+
+interface DebateTurn {
+  round: number;
+  model: string;
+  content: string;
+}
+
+function buildImMessage(params: {
+  query: string;
+  summary: string;
+  participants: string[];
+  rounds: number;
+  elapsedSec: number;
+  creditsUsed: number;
+  balance: number;
+  reportUrl: string;
+  locale: Locale;
+}): string {
+  const { query, summary, participants, rounds, elapsedSec, creditsUsed, balance, reportUrl, locale } = params;
+
+  // Extract bullet points from key sections of the summary
+  const lines = summary.split('\n');
+  const bullets: string[] = [];
+  let inKeySection = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.match(/^#+\s*(核心结论|关键发现|主要观点|主要结论|结论与建议|Key (Findings|Conclusions)|主要発見|結論)/i)) {
+      inKeySection = true;
+      continue;
+    }
+    if (trimmed.startsWith('#')) inKeySection = false;
+    if (inKeySection && (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('*'))) {
+      const bullet = trimmed.replace(/^[-•*]\s*/, '').trim();
+      if (bullet && bullet.length > 5) {
+        bullets.push(bullet.slice(0, 100));
+        if (bullets.length >= 5) break;
+      }
+    }
+  }
+  // Fallback: first meaningful non-header lines
+  if (bullets.length === 0) {
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('---') || trimmed.length < 10) continue;
+      bullets.push(trimmed.slice(0, 100));
+      if (bullets.length >= 3) break;
+    }
+  }
+
+  const bulletsText = bullets.map((b) => `• ${b}`).join('\n');
+  const mins = Math.floor(elapsedSec / 60);
+  const secs = elapsedSec % 60;
+  const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+  if (locale === 'zh-CN') {
+    return [
+      `📋 研讨议题：${query}`,
+      '',
+      `🔑 核心结论：`,
+      bulletsText,
+      '',
+      `👥 参与：${participants.join('、')} | ${rounds}轮 | ${timeStr}`,
+      `💰 消耗：${creditsUsed} credits | 余额：${balance}`,
+      '',
+      `📄 完整报告：${reportUrl}`,
+    ].join('\n');
+  }
+  if (locale === 'ja') {
+    return [
+      `📋 議題：${query}`,
+      '',
+      `🔑 主な結論：`,
+      bulletsText,
+      '',
+      `👥 参加：${participants.join('、')} | ${rounds}ラウンド | ${timeStr}`,
+      `💰 消費：${creditsUsed} credits | 残高：${balance}`,
+      '',
+      `📄 全文レポート：${reportUrl}`,
+    ].join('\n');
+  }
+  // en (default)
+  return [
+    `📋 Topic: ${query}`,
+    '',
+    `🔑 Key Conclusions:`,
+    bulletsText,
+    '',
+    `👥 Participants: ${participants.join(', ')} | ${rounds} rounds | ${timeStr}`,
+    `💰 Used: ${creditsUsed} credits | Balance: ${balance}`,
+    '',
+    `📄 Full Report: ${reportUrl}`,
+  ].join('\n');
+}
+
+export async function POST(req: Request) {
+  const userId = await verifyAgentApiKey(req);
+  if (!userId) {
+    return Response.json({ error: 'Invalid or missing API key' }, { status: 401 });
+  }
+
+  let body: DebateRequest;
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { query, locale = 'zh-CN' } = body;
+  if (!query?.trim()) {
+    return Response.json({ error: 'Missing required field: query' }, { status: 400 });
+  }
+
+  const maxRounds = Math.min(body.maxRounds ?? 3, MAX_ROUNDS_HARD_LIMIT);
+
+  // Resolve models
+  const availablePresets = PRESET_DEFINITIONS.filter((p) => p.apiKey);
+  let selectedPresets = body.models?.length
+    ? availablePresets.filter((p) => body.models!.includes(p.id))
+    : availablePresets.filter((p) => (p.agentMeta?.tier === 'standard' || p.agentMeta?.tier === 'lite') && p.defaultEnabled);
+
+  // Fallback: use first 3 available if nothing matched
+  if (selectedPresets.length === 0) {
+    selectedPresets = availablePresets.slice(0, 3);
+  }
+  if (selectedPresets.length === 0) {
+    return Response.json({ error: 'No models available' }, { status: 503 });
+  }
+
+  // Credit check + pre-deduction
+  const admin = createAdminClient();
+  const { data: creditRow } = await admin
+    .from('credits')
+    .select('balance')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  const currentBalance = (creditRow?.balance as number) ?? 0;
+  const totalCost = maxRounds * selectedPresets.reduce((sum, p) => sum + p.creditsPerRound, 0);
+
+  if (currentBalance < Math.max(1, totalCost)) {
+    return Response.json(
+      {
+        error: 'CREDITS_INSUFFICIENT',
+        required: totalCost,
+        balance: currentBalance,
+        topUpUrl: `${APP_URL}/account`,
+      },
+      { status: 402 }
+    );
+  }
+
+  const sessionId = crypto.randomUUID();
+  const deductResult = await checkAndDeductCredits({
+    userId,
+    cost: totalCost,
+    relaySessionId: sessionId,
+    supabase: admin,
+  });
+  if (!deductResult.ok) {
+    return Response.json(
+      { error: 'CREDITS_INSUFFICIENT', required: totalCost, balance: currentBalance, topUpUrl: `${APP_URL}/account` },
+      { status: 402 }
+    );
+  }
+
+  // Build relay request body
+  const relayModels = selectedPresets.map((p) => ({
+    id: p.id,
+    modelId: p.modelId,
+    providerId: p.providerId,
+    displayName: p.displayName,
+    isPreset: true,
+    baseUrl: p.baseUrl,
+  }));
+
+  const relayBody = {
+    sessionId,
+    query,
+    maxRounds,
+    models: relayModels,
+    priorContext: [],
+    locale,
+  };
+
+  // Call relay internally, consuming the SSE stream
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 295_000);
+
+  let actualCost = 0;
+  try {
+    const internalSecret = process.env.INTERNAL_RELAY_SECRET;
+    if (!internalSecret) {
+      return Response.json({ error: 'Server misconfiguration: INTERNAL_RELAY_SECRET not set' }, { status: 500 });
+    }
+
+    const relayRes = await fetch(`${APP_URL}/api/relay`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-agent-user-id': userId,
+        'x-agent-secret': internalSecret,
+      },
+      body: JSON.stringify(relayBody),
+      signal: controller.signal,
+    });
+
+    if (!relayRes.ok) {
+      const err = await relayRes.json().catch(() => ({}));
+      return Response.json({ error: err.error ?? 'Relay failed', ...(err.required ? { required: err.required, balance: err.balance, topUpUrl: `${APP_URL}/account` } : {}) }, { status: relayRes.status });
+    }
+
+    // Consume SSE stream
+    const debate: DebateTurn[] = [];
+    let summary = '';
+    let elapsedSec = 0;
+    let inSummary = false;
+
+    const reader = relayRes.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    outer: while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (!raw) continue;
+        let event: Record<string, unknown>;
+        try { event = JSON.parse(raw); } catch { continue; }
+
+        if (event.type === 'summary_start') {
+          inSummary = true;
+        } else if (event.type === 'content' && inSummary) {
+          summary += (event.text as string) ?? '';
+        } else if (event.type === 'model_done') {
+          inSummary = false;
+          debate.push({
+            round: (event.round as number) + 1,
+            model: event.displayName as string,
+            content: event.content as string,
+          });
+        } else if (event.type === 'summary_done') {
+          elapsedSec = (event.elapsedSec as number) ?? 0;
+          const stats = event.usageStats as Record<string, unknown> | undefined;
+          if (stats?.totalCreditCost) {
+            actualCost = stats.totalCreditCost as number;
+          }
+          break outer;
+        } else if (event.type === 'done') {
+          break outer;
+        } else if (event.type === 'error') {
+          throw new Error(event.message as string);
+        }
+      }
+    }
+
+    clearTimeout(timeoutId);
+
+    // Refund unused pre-deducted credits
+    if (totalCost > actualCost && actualCost > 0) {
+      await refundCredits({
+        userId,
+        amount: totalCost - actualCost,
+        relaySessionId: sessionId,
+        supabase: admin,
+      });
+    }
+
+    // Get updated balance
+    const { data: updatedCredits } = await admin
+      .from('credits')
+      .select('balance')
+      .eq('user_id', userId)
+      .maybeSingle();
+    const newBalance = (updatedCredits?.balance as number) ?? 0;
+
+    const creditsUsed = actualCost > 0 ? actualCost : totalCost;
+    const participants = selectedPresets.map((p) => p.displayName);
+    const reportUrl = `${APP_URL}/api/agent/reports/${sessionId}`;
+
+    // Persist report for later retrieval
+    await admin.from('agent_reports').insert({
+      session_id: sessionId,
+      user_id: userId,
+      report_md: summary,
+    });
+
+    const imMessage = buildImMessage({
+      query,
+      summary,
+      participants,
+      rounds: maxRounds,
+      elapsedSec,
+      creditsUsed,
+      balance: newBalance,
+      reportUrl,
+      locale,
+    });
+
+    return Response.json({
+      sessionId,
+      imMessage,
+      debate,
+      summary,
+      reportUrl,
+      creditsUsed,
+      balance: newBalance,
+      participants,
+      elapsedSec,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    // Refund on error
+    await refundCredits({
+      userId,
+      amount: totalCost - actualCost,
+      relaySessionId: sessionId,
+      supabase: admin,
+    }).catch(() => {});
+    const message = err instanceof Error ? err.message : 'Internal error';
+    return Response.json({ error: message }, { status: 500 });
+  }
+}

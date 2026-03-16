@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Menu, Zap } from 'lucide-react';
+import { Settings, Menu, Zap, Code2 } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -81,6 +81,16 @@ export function StatusBar() {
         <div className="hidden sm:flex">
           <LanguageSwitcher />
         </div>
+
+        <a
+          href="/skill.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          <Code2 className="w-3.5 h-3.5" />
+          API
+        </a>
 
         <button
           onClick={openSettings}

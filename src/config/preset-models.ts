@@ -13,6 +13,12 @@ export interface PresetDefinition {
   defaultEnabled?: boolean;
   /** Badge label shown on the model card (e.g. "官方", "精选"). Omit to show no badge. */
   badge?: string;
+  /** Metadata for AI agents selecting models via /api/agent/models. */
+  agentMeta?: {
+    strengths: string[];
+    /** 'lite' ≤40 cr/r | 'standard' ≤100 cr/r | 'pro' = flagship */
+    tier: 'lite' | 'standard' | 'pro';
+  };
 }
 
 /**
@@ -34,6 +40,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 60,
     defaultEnabled: true,
     badge: 'Balance',
+    agentMeta: { strengths: ['analytical', 'creative', 'balanced'], tier: 'standard' },
   },
   {
     id: 'openai',
@@ -45,6 +52,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 250,
     defaultEnabled: true,
     badge: 'Flagship',
+    agentMeta: { strengths: ['reasoning', 'coding', 'instruction-following'], tier: 'pro' },
   },
 
   {
@@ -57,6 +65,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 15,
     defaultEnabled: true,
     badge: 'Lite',
+    agentMeta: { strengths: ['logical', 'concise', 'fast'], tier: 'lite' },
   },
 
   {
@@ -69,6 +78,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 250,
     defaultEnabled: false,
     badge: 'Flagship',
+    agentMeta: { strengths: ['nuanced-reasoning', 'writing', 'safety'], tier: 'pro' },
   },
 
   {
@@ -81,6 +91,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 200,
     defaultEnabled: false,
     badge: 'Flagship',
+    agentMeta: { strengths: ['real-time-knowledge', 'wit', 'systems-thinking'], tier: 'pro' },
   },
   {
     id: 'minimax',
@@ -92,6 +103,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 60,
     defaultEnabled: false,
     badge: 'Balance',
+    agentMeta: { strengths: ['multimodal', 'creative', 'chinese'], tier: 'standard' },
   },
   {
     id: 'kimi',
@@ -103,6 +115,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 60,
     defaultEnabled: false,
     badge: 'Balance',
+    agentMeta: { strengths: ['long-context', 'research', 'chinese'], tier: 'standard' },
   },
 
   {
@@ -115,5 +128,6 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 40,
     defaultEnabled: false,
     badge: 'Lite',
+    agentMeta: { strengths: ['fast', 'chinese', 'efficient'], tier: 'lite' },
   },
 ];

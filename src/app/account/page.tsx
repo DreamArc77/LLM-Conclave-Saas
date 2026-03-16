@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { BuyCreditsPanel } from '@/components/billing/BuyCreditsPanel';
 import { TransactionHistory } from '@/components/billing/TransactionHistory';
+import { ApiKeyPanel } from '@/components/billing/ApiKeyPanel';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { ArrowLeft, Zap } from 'lucide-react';
 
@@ -62,6 +63,11 @@ export default async function AccountPage() {
         {/* Buy credits */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
           <BuyCreditsPanel />
+        </div>
+
+        {/* Agent API Key */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <ApiKeyPanel />
         </div>
 
         {/* Transaction history */}
