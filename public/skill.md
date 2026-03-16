@@ -69,13 +69,22 @@ Authorization: Bearer llmc_<key>
 POST /api/agent/debate
 Authorization: Bearer llmc_<key>
 Content-Type: application/json
+Idempotency-Key: <your-unique-uuid>
 ```
+
+> **IMPORTANT — Read before calling:**
+> - This endpoint returns a **Server-Sent Events (SSE) stream**, not a plain JSON response.
+> - Debates take **2–5 minutes**. You MUST keep the connection open the entire time.
+> - **DO NOT retry** if the connection appears slow — the debate is running on the server.
+> - A `heartbeat` event is sent every 15 seconds so you know the server is still working.
+> - Always send an `Idempotency-Key` header. If you must retry after a genuine network failure, reuse the **same key** — the server will return the cached result without billing again.
+> - If you receive `409 DEBATE_ALREADY_RUNNING`, stop immediately and wait. Do NOT start a new request.
 
 **Request body:**
 ```json
 {
   "query": "Your topic or question",
-  "models": ["gemini", "deepseek", "openai"],
+  "models": ["gemini", "deepseek"],
   "maxRounds": 3,
   "locale": "zh-CN"
 }
@@ -88,7 +97,21 @@ Content-Type: application/json
 | `maxRounds` | — | 1–5 rounds (default: 3) |
 | `locale` | — | `zh-CN` \| `en` \| `ja` (default: `zh-CN`) |
 
-**Response (200):**
+---
+
+### SSE Event Stream
+
+The response is a stream of Server-Sent Events. Parse each `event:` / `data:` pair:
+
+| Event | When | Payload |
+|-------|------|---------|
+| `start` | Immediately on connect | `{ sessionId, estimatedSec, creditsReserved, participants, rounds }` |
+| `heartbeat` | Every 15 seconds | `{ elapsed }` — server is still working, do NOT disconnect |
+| `round_done` | After each model finishes a round | `{ round, model }` |
+| `final` | Debate complete | Full result object (see below) |
+| `error` | On failure | `{ error }` — inform owner, do not retry automatically |
+
+**`final` event payload:**
 ```json
 {
   "sessionId": "uuid",
@@ -107,8 +130,6 @@ Content-Type: application/json
 ```
 
 > **Agent instruction:** Send the `imMessage` field directly to your owner — it is pre-formatted for IM display (WeChat, Telegram, Slack, etc.) with key conclusions and the report download link.
-
-This endpoint is synchronous — it waits until the full debate and report are complete (up to 5 minutes).
 
 ---
 
@@ -152,12 +173,16 @@ Always call `/api/agent/models` first to see what's currently available and thei
 
 ## Error Reference
 
-| HTTP Status | Meaning | Action |
-|-------------|---------|--------|
-| 401 | Invalid or missing API key | Ask owner to re-generate key from account page |
-| 402 | Insufficient credits | Inform owner, provide `topUpUrl` |
-| 400 | Bad request (missing `query`, etc.) | Fix request body |
-| 500 | Server error | Retry once; if persists, report to owner |
+| HTTP Status | Error Code | Meaning | Action |
+|-------------|------------|---------|--------|
+| 401 | — | Invalid or missing API key | Ask owner to re-generate key from account page |
+| 402 | `CREDITS_INSUFFICIENT` | Insufficient credits | Inform owner, provide `topUpUrl` |
+| 409 | `DEBATE_ALREADY_RUNNING` | Debate already in progress | **Stop. Wait. Do not start a new request.** Check `activeSessionId` in response. |
+| 400 | — | Bad request (missing `query`, etc.) | Fix request body |
+| 500 | — | Server error | Inform owner. Do not retry automatically. |
+
+> **On any error: stop and inform your owner. Never retry a debate automatically.**
+> Automatic retries create duplicate sessions and waste the owner's credits.
 
 ---
 
@@ -171,16 +196,19 @@ curl https://llmconclave.com/api/agent/models
 curl -H "Authorization: Bearer llmc_xxx" \
   https://llmconclave.com/api/agent/balance
 
-# 3. Run a debate (standard tier, 3 rounds)
+# 3. Run a debate — note --no-buffer for SSE, and the Idempotency-Key
 curl -X POST https://llmconclave.com/api/agent/debate \
   -H "Authorization: Bearer llmc_xxx" \
   -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  --no-buffer \
   -d '{
     "query": "AI对金融行业未来5年的影响",
     "models": ["gemini", "deepseek"],
     "maxRounds": 3,
     "locale": "zh-CN"
   }'
+# Output: stream of SSE events ending with event: final
 
 # 4. Download the full report
 curl -H "Authorization: Bearer llmc_xxx" \
