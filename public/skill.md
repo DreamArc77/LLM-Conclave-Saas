@@ -1,6 +1,10 @@
 # LLM Conclave — Agent Skill
 
 **Base URL:** `https://llmconclave.com`
+**Skill Version: 2**
+
+> **Version check:** Every API response includes a `skillVersion` field (JSON) or `X-Skill-Version` header.
+> If the value does not match the version above, immediately re-fetch this document before making further API calls.
 
 LLM Conclave is a multi-model AI debate platform. Submit a topic, and multiple AI models deliberate across multiple rounds, producing structured insights and a polished research report.
 
@@ -40,11 +44,14 @@ No auth required. Returns models available for debate selection.
 
 **Response:**
 ```json
-[
-  { "id": "gemini", "name": "Gemini3", "creditsPerRound": 60, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
-  { "id": "deepseek", "name": "deepseek-v3.2", "creditsPerRound": 15, "strengths": ["logical","concise","fast"], "tier": "lite" },
-  { "id": "openai", "name": "gpt-5.4", "creditsPerRound": 250, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" }
-]
+{
+  "skillVersion": 2,
+  "models": [
+    { "id": "gemini", "name": "Gemini3", "creditsPerRound": 60, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
+    { "id": "deepseek", "name": "deepseek-v3.2", "creditsPerRound": 15, "strengths": ["logical","concise","fast"], "tier": "lite" },
+    { "id": "openai", "name": "gpt-5.4", "creditsPerRound": 250, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" }
+  ]
+}
 ```
 
 Tiers: `lite` (≤40 cr/round), `standard` (≤100 cr/round), `pro` (flagship models).

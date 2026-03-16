@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { checkAndDeductCredits, refundCredits } from '@/lib/credits/deduct';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
+import { SKILL_VERSION, skillVersionHeaders } from '@/lib/agent-skill-version';
 import type { Locale } from '@/i18n';
 
 export const dynamic = 'force-dynamic';
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
   // ── 1. Auth ──────────────────────────────────────────────────────────────
   const userId = await verifyAgentApiKey(req);
   if (!userId) {
-    return Response.json({ error: 'Invalid or missing API key' }, { status: 401 });
+    return Response.json({ error: 'Invalid or missing API key', skillVersion: SKILL_VERSION }, { status: 401, headers: skillVersionHeaders() });
   }
 
   // ── 2. Parse body ─────────────────────────────────────────────────────────
@@ -108,12 +109,12 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return Response.json({ error: 'Invalid JSON body', skillVersion: SKILL_VERSION }, { status: 400, headers: skillVersionHeaders() });
   }
 
   const { query, locale = 'zh-CN' } = body;
   if (!query?.trim()) {
-    return Response.json({ error: 'Missing required field: query' }, { status: 400 });
+    return Response.json({ error: 'Missing required field: query', skillVersion: SKILL_VERSION }, { status: 400, headers: skillVersionHeaders() });
   }
 
   const admin = createAdminClient();
@@ -147,12 +148,8 @@ export async function POST(req: Request) {
       // Still running → tell the agent not to retry
       if (existingJob.status === 'pending') {
         return Response.json(
-          {
-            error: 'DEBATE_ALREADY_RUNNING',
-            message: 'A debate with this idempotency key is already in progress. Wait for it to complete.',
-            sessionId: existingJob.session_id,
-          },
-          { status: 409 }
+          { error: 'DEBATE_ALREADY_RUNNING', message: 'A debate with this idempotency key is already in progress. Wait for it to complete.', sessionId: existingJob.session_id, skillVersion: SKILL_VERSION },
+          { status: 409, headers: skillVersionHeaders() }
         );
       }
       // status === 'error' → fall through and allow a fresh attempt with same key
@@ -173,12 +170,8 @@ export async function POST(req: Request) {
 
   if (activeJobs && activeJobs.length > 0) {
     return Response.json(
-      {
-        error: 'DEBATE_ALREADY_RUNNING',
-        message: 'You already have a debate in progress. Wait for it to complete before starting a new one.',
-        activeSessionId: activeJobs[0].session_id,
-      },
-      { status: 409 }
+      { error: 'DEBATE_ALREADY_RUNNING', message: 'You already have a debate in progress. Wait for it to complete before starting a new one.', activeSessionId: activeJobs[0].session_id, skillVersion: SKILL_VERSION },
+      { status: 409, headers: skillVersionHeaders() }
     );
   }
 
@@ -191,7 +184,7 @@ export async function POST(req: Request) {
 
   if (selectedPresets.length === 0) selectedPresets = availablePresets.slice(0, 3);
   if (selectedPresets.length === 0) {
-    return Response.json({ error: 'No models available' }, { status: 503 });
+    return Response.json({ error: 'No models available', skillVersion: SKILL_VERSION }, { status: 503, headers: skillVersionHeaders() });
   }
 
   // ── 6. Credit check ───────────────────────────────────────────────────────
@@ -201,8 +194,8 @@ export async function POST(req: Request) {
 
   if (currentBalance < Math.max(1, totalCost)) {
     return Response.json(
-      { error: 'CREDITS_INSUFFICIENT', required: totalCost, balance: currentBalance, topUpUrl: `${APP_URL}/account` },
-      { status: 402 }
+      { error: 'CREDITS_INSUFFICIENT', required: totalCost, balance: currentBalance, topUpUrl: `${APP_URL}/account`, skillVersion: SKILL_VERSION },
+      { status: 402, headers: skillVersionHeaders() }
     );
   }
 
@@ -221,11 +214,8 @@ export async function POST(req: Request) {
   if (insertErr) {
     // Race condition: another request just inserted the same idempotency key
     return Response.json(
-      {
-        error: 'DEBATE_ALREADY_RUNNING',
-        message: 'A debate with this idempotency key just started. Please wait.',
-      },
-      { status: 409 }
+      { error: 'DEBATE_ALREADY_RUNNING', message: 'A debate with this idempotency key just started. Please wait.', skillVersion: SKILL_VERSION },
+      { status: 409, headers: skillVersionHeaders() }
     );
   }
 
@@ -234,8 +224,8 @@ export async function POST(req: Request) {
   if (!deductResult.ok) {
     await admin.from('agent_debate_jobs').update({ status: 'error', error_msg: 'Credit deduction failed' }).eq('idempotency_key', jobKey);
     return Response.json(
-      { error: 'CREDITS_INSUFFICIENT', required: totalCost, balance: currentBalance, topUpUrl: `${APP_URL}/account` },
-      { status: 402 }
+      { error: 'CREDITS_INSUFFICIENT', required: totalCost, balance: currentBalance, topUpUrl: `${APP_URL}/account`, skillVersion: SKILL_VERSION },
+      { status: 402, headers: skillVersionHeaders() }
     );
   }
 
@@ -246,7 +236,7 @@ export async function POST(req: Request) {
   if (!internalSecret) {
     await admin.from('agent_debate_jobs').update({ status: 'error', error_msg: 'Server misconfiguration' }).eq('idempotency_key', jobKey);
     await refundCredits({ userId, amount: totalCost, relaySessionId: sessionId, supabase: admin }).catch(() => {});
-    return Response.json({ error: 'Server misconfiguration: INTERNAL_RELAY_SECRET not set' }, { status: 500 });
+    return Response.json({ error: 'Server misconfiguration: INTERNAL_RELAY_SECRET not set', skillVersion: SKILL_VERSION }, { status: 500, headers: skillVersionHeaders() });
   }
 
   const stream = new ReadableStream({
@@ -258,6 +248,7 @@ export async function POST(req: Request) {
 
       // Send start event immediately — Cloudflare sees data and won't 524
       enqueue('start', {
+        skillVersion: SKILL_VERSION,
         sessionId,
         estimatedSec: maxRounds * selectedPresets.length * 30,
         creditsReserved: totalCost,

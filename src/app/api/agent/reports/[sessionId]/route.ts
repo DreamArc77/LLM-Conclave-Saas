@@ -1,5 +1,6 @@
 import { verifyAgentApiKey } from '@/lib/agent-auth';
 import { createAdminClient } from '@/lib/supabase/server';
+import { SKILL_VERSION, skillVersionHeaders } from '@/lib/agent-skill-version';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,7 @@ export async function GET(
 ) {
   const userId = await verifyAgentApiKey(req);
   if (!userId) {
-    return Response.json({ error: 'Invalid or missing API key' }, { status: 401 });
+    return Response.json({ error: 'Invalid or missing API key', skillVersion: SKILL_VERSION }, { status: 401, headers: skillVersionHeaders() });
   }
 
   const { sessionId } = await params;
@@ -22,11 +23,12 @@ export async function GET(
     .single();
 
   if (error || !data) {
-    return Response.json({ error: 'Report not found' }, { status: 404 });
+    return Response.json({ error: 'Report not found', skillVersion: SKILL_VERSION }, { status: 404, headers: skillVersionHeaders() });
   }
 
   return new Response(data.report_md as string, {
     headers: {
+      ...skillVersionHeaders(),
       'Content-Type': 'text/markdown; charset=utf-8',
       'Content-Disposition': `attachment; filename="report-${sessionId}.md"`,
     },
