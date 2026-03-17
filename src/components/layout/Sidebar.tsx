@@ -9,6 +9,7 @@ import { useChatStore } from '@/stores/chat-store';
 import { useUIStore } from '@/stores/ui-store';
 import { useT } from '@/hooks/useT';
 import { isSaasClient } from '@/lib/flags';
+import type { ChatSession } from '@/types/chat';
 
 interface CloudSession {
   id: string;
@@ -31,7 +32,7 @@ export function Sidebar() {
 
   // ── Non-SaaS: live IndexedDB query ──────────────────────────────────────
   const dexieSessions = useLiveQuery(() =>
-    isSaasClient ? Promise.resolve([]) : db.sessions.orderBy('updatedAt').reverse().toArray()
+    isSaasClient ? Promise.resolve([] as ChatSession[]) : db.sessions.orderBy('updatedAt').reverse().toArray()
   );
 
   // ── SaaS: fetch from server ──────────────────────────────────────────────
