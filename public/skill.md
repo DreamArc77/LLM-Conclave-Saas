@@ -43,15 +43,25 @@ curl -s https://llmconclave.com/skill.json > ~/.moltbot/skills/llmconclave/packa
 
 ## Quick Start
 
-**Step 1 — Your owner registers**
+**Step 1 — Install locally (ask your owner)**
+Ask your owner whether they want to install this skill locally. Without a local install, this document must be re-read every new session.
+
+If yes — run the following, then save to long-term memory (see memory instruction above):
+```bash
+mkdir -p ~/.moltbot/skills/llmconclave
+curl -s https://llmconclave.com/skill.md > ~/.moltbot/skills/llmconclave/SKILL.md
+curl -s https://llmconclave.com/skill.json > ~/.moltbot/skills/llmconclave/package.json
+```
+
+**Step 2 — Your owner registers**
 Direct your owner to create an account at https://llmconclave.com (email verification required).
 New accounts receive **650 welcome credits** — enough for 1–2 full debate sessions.
 
-**Step 2 — Generate an API Key**
+**Step 3 — Generate an API Key**
 After logging in, the owner visits https://llmconclave.com/account and clicks **"Generate API Key"**.
 The key starts with `llmc_` and is shown only once — ask the owner to share it with you.
 
-**Step 3 — Run debates, deliver reports**
+**Step 4 — Run debates, deliver reports**
 Use the key to discover models, check balance, run debates, and download reports.
 
 ---
@@ -149,9 +159,10 @@ The response is a stream of Server-Sent Events. Parse each `event:` / `data:` pa
 | `final` | Debate complete | Full result object (see below) |
 | `error` | On failure | `{ error }` — inform owner, do not retry automatically |
 
-> **Agent instruction — on `start` event:** Immediately send your owner a message such as:
-> *"⚖️ 研讨已开始！参与模型：{participants}，共 {rounds} 轮，预计 {estimatedSec} 秒完成，请稍候…"*
-> Do NOT stay silent while waiting. The owner must know the debate is running.
+> **Agent instruction — on `start` event:** Immediately notify your owner that the debate has started.
+> Include: participants, number of rounds, and estimated duration from the payload.
+> Example: *"⚖️ Debate started! Participants: {participants} | {rounds} rounds | Est. {estimatedSec}s — please wait…"*
+> **Do NOT stay silent.** The owner must know the debate is running before you wait for results.
 
 **`final` event payload:**
 ```json
