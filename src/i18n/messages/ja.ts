@@ -68,6 +68,7 @@ export const ja: Messages = {
     serverError: 'サーバーエラー {status}',
     generateFailed: '生成に失敗しました',
     shareFailed: '共有に失敗しました',
+    viewOnline: 'オンラインで表示',
   },
   relay: {
     complete: 'ディスカッション完了（{seconds}秒）。「{topic}」の研究レポートはこちらです',

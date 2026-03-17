@@ -88,7 +88,7 @@ export function SystemBubble({ message }: SystemBubbleProps) {
       className={`${btnBase} text-blue-500 hover:text-blue-600`}
     >
       <ExternalLink className="w-3.5 h-3.5" />
-      在线查看报告
+      {t('export.viewOnline')}
     </a>
   ) : null;
 

@@ -68,6 +68,7 @@ export const zhCN: Messages = {
     serverError: '服务器错误 {status}',
     generateFailed: '生成失败',
     shareFailed: '分享失败',
+    viewOnline: '在线查看报告',
   },
   relay: {
     complete: '讨论已结束，耗时 {seconds} 秒，以下是「{topic}」的专题研讨报告',

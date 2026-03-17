@@ -66,6 +66,7 @@ export const en = {
     serverError: 'Server error {status}',
     generateFailed: 'Generation failed',
     shareFailed: 'Share failed',
+    viewOnline: 'View online',
   },
   relay: {
     complete: 'Discussion complete after {seconds}s. Here is the research report for "{topic}"',
