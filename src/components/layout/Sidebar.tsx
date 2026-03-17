@@ -1,13 +1,21 @@
 'use client';
 
-import { Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Plus, MessageSquare, Trash2, Bot } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db/database';
-import { deleteSession } from '@/lib/db/operations';
+import { deleteSession, getSessionMessages } from '@/lib/db/operations';
 import { useChatStore } from '@/stores/chat-store';
 import { useUIStore } from '@/stores/ui-store';
-import { getSessionMessages } from '@/lib/db/operations';
 import { useT } from '@/hooks/useT';
+import { isSaasClient } from '@/lib/flags';
+
+interface CloudSession {
+  id: string;
+  title: string;
+  source: 'web' | 'agent';
+  updated_at: string;
+}
 
 export function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
@@ -17,12 +25,40 @@ export function Sidebar() {
   const setActiveSession = useChatStore((s) => s.setActiveSession);
   const setMessages = useChatStore((s) => s.setMessages);
   const isRelayRunning = relayStatus === 'running';
+  const prevRelayStatus = useRef(relayStatus);
 
   const t = useT();
-  const sessions = useLiveQuery(() =>
-    db.sessions.orderBy('updatedAt').reverse().toArray()
+
+  // ── Non-SaaS: live IndexedDB query ──────────────────────────────────────
+  const dexieSessions = useLiveQuery(() =>
+    isSaasClient ? Promise.resolve([]) : db.sessions.orderBy('updatedAt').reverse().toArray()
   );
 
+  // ── SaaS: fetch from server ──────────────────────────────────────────────
+  const [cloudSessions, setCloudSessions] = useState<CloudSession[]>([]);
+
+  const fetchCloudSessions = useCallback(async () => {
+    const res = await fetch('/api/sessions').catch(() => null);
+    if (!res?.ok) return;
+    const { sessions } = await res.json();
+    setCloudSessions(sessions ?? []);
+  }, []);
+
+  useEffect(() => {
+    if (isSaasClient) fetchCloudSessions();
+  }, [fetchCloudSessions]);
+
+  // Re-fetch when a debate finishes (running → idle)
+  useEffect(() => {
+    if (isSaasClient && prevRelayStatus.current === 'running' && relayStatus === 'idle') {
+      fetchCloudSessions();
+    }
+    prevRelayStatus.current = relayStatus;
+  }, [relayStatus, fetchCloudSessions]);
+
+  const sessions = isSaasClient ? cloudSessions : (dexieSessions ?? []);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
   const closeMobile = () => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) setSidebarOpen(false);
   };
@@ -34,36 +70,42 @@ export function Sidebar() {
     closeMobile();
   };
 
-  const handleSelectSession = async (sessionId: string) => {
+  const handleSelectSession = async (sessionId: string, source?: string) => {
     if (isRelayRunning) return;
     setActiveSession(sessionId);
-    const messages = await getSessionMessages(sessionId);
-    setMessages(messages);
+    if (isSaasClient && source === 'agent') {
+      // Agent sessions live only in Supabase
+      const res = await fetch(`/api/sessions/${sessionId}/messages`);
+      const { messages } = await res.json();
+      setMessages(messages ?? []);
+    } else {
+      // Web sessions: use IndexedDB (always in sync, faster)
+      const messages = await getSessionMessages(sessionId);
+      setMessages(messages);
+    }
     closeMobile();
   };
 
-  const handleDeleteSession = async (
-    e: React.MouseEvent,
-    sessionId: string
-  ) => {
+  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string, source?: string) => {
     e.stopPropagation();
-    await deleteSession(sessionId);
-    if (activeSessionId === sessionId) {
-      handleNewSession();
+    if (isSaasClient) {
+      await fetch(`/api/sessions?id=${sessionId}`, { method: 'DELETE' });
+      setCloudSessions((prev) => prev.filter((s) => s.id !== sessionId));
     }
+    if (!isSaasClient || source !== 'agent') {
+      await deleteSession(sessionId);
+    }
+    if (activeSessionId === sessionId) handleNewSession();
   };
 
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       className={[
-        // Mobile: fixed overlay that slides in/out
         'fixed inset-y-0 left-0 z-40',
-        // Desktop: inline element that collapses/expands via width
         'md:relative md:inset-auto md:z-auto',
-        // Width: always w-64; desktop uses md:w-0 to collapse
         'w-64',
         sidebarOpen ? 'md:w-64' : 'md:w-0',
-        // Slide transform on mobile; reset on desktop
         sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
         'transition-all duration-300 overflow-hidden',
         'border-r border-gray-200 dark:border-gray-700',
@@ -87,28 +129,34 @@ export function Sidebar() {
       </div>
 
       <div className={`flex-1 overflow-y-auto p-2 ${isRelayRunning ? 'opacity-50 pointer-events-none' : ''}`}>
-        {sessions?.map((session) => (
-          <div
-            key={session.id}
-            onClick={() => handleSelectSession(session.id)}
-            className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm mb-1 transition-colors ${
-              activeSessionId === session.id
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4 flex-shrink-0" />
-            <span className="flex-1 truncate text-sm">{session.title}</span>
-            <button
-              onClick={(e) => handleDeleteSession(e, session.id)}
-              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+        {sessions.map((session) => {
+          const source = isSaasClient ? (session as CloudSession).source : 'web';
+          return (
+            <div
+              key={session.id}
+              onClick={() => handleSelectSession(session.id, source)}
+              className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer text-sm mb-1 transition-colors ${
+                activeSessionId === session.id
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+              }`}
             >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ))}
+              {source === 'agent'
+                ? <Bot className="w-4 h-4 flex-shrink-0 text-blue-500" />
+                : <MessageSquare className="w-4 h-4 flex-shrink-0" />
+              }
+              <span className="flex-1 truncate text-sm">{session.title}</span>
+              <button
+                onClick={(e) => handleDeleteSession(e, session.id, source)}
+                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          );
+        })}
 
-        {sessions?.length === 0 && (
+        {sessions.length === 0 && (
           <p className="text-sm text-gray-400 text-center py-8">
             {t('sidebar.noConversations')}
           </p>

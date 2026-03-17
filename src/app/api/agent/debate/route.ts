@@ -355,6 +355,13 @@ export async function POST(req: Request) {
         const reportUrl = `${APP_URL}/reports/${sessionId}`;
 
         await admin.from('agent_reports').insert({ session_id: sessionId, user_id: userId, report_md: summary });
+        // Also create a unified chat_sessions record so it appears in the sidebar
+        await admin.from('chat_sessions').insert({
+          id: sessionId,
+          user_id: userId,
+          title: query.slice(0, 50) + (query.length > 50 ? '...' : ''),
+          source: 'agent',
+        }); // non-fatal — ignore errors
 
         const imMessage = buildImMessage({ query, summary, participants, rounds: maxRounds, elapsedSec, creditsUsed, balance: newBalance, reportUrl, locale });
         const result = { sessionId, imMessage, debate, summary, reportUrl, creditsUsed, balance: newBalance, participants, elapsedSec };

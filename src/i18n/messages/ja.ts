@@ -12,6 +12,8 @@ export const ja: Messages = {
     generating: '生成中...',
     thinking: '考え中...',
     error: 'エラーが発生しました',
+    collapse: '折りたたむ',
+    expand: '展開する',
   },
   input: {
     placeholder: 'メッセージを入力...',

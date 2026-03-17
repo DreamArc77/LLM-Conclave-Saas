@@ -10,6 +10,8 @@ export const en = {
     generating: 'generating...',
     thinking: 'thinking...',
     error: 'An error occurred',
+    collapse: 'Collapse',
+    expand: 'Expand',
   },
   input: {
     placeholder: 'Type a message...',

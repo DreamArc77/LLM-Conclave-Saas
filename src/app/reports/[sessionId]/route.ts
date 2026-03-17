@@ -15,13 +15,28 @@ export async function GET(
   const { sessionId } = await params;
   const admin = createAdminClient();
 
-  const { data } = await admin
+  let reportMd: string | null = null;
+
+  const { data: agentReport } = await admin
     .from('agent_reports')
     .select('report_md')
     .eq('session_id', sessionId)
     .single();
+  reportMd = agentReport?.report_md ?? null;
 
-  if (!data?.report_md) {
+  // Fallback: web session summary stored in chat_messages
+  if (!reportMd) {
+    const { data: msgReport } = await admin
+      .from('chat_messages')
+      .select('report_markdown')
+      .eq('session_id', sessionId)
+      .eq('is_system', true)
+      .not('report_markdown', 'is', null)
+      .maybeSingle();
+    reportMd = (msgReport?.report_markdown as string | null) ?? null;
+  }
+
+  if (!reportMd) {
     return new Response(
       `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Not Found</title></head>
       <body style="font-family:sans-serif;padding:60px;text-align:center;color:#6b7280">
@@ -31,7 +46,7 @@ export async function GET(
     );
   }
 
-  const baseHtml = await buildReportHTMLString(data.report_md as string);
+  const baseHtml = await buildReportHTMLString(reportMd);
 
   // Inject print button (hidden in print media) before </body>
   const html = baseHtml.replace(

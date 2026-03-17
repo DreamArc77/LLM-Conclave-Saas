@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, ExternalLink } from 'lucide-react';
 import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
 import { useT } from '@/hooks/useT';
@@ -25,6 +25,9 @@ export function SystemBubble({ message }: SystemBubbleProps) {
   const exportFormat = useConfigStore((s) => s.exportFormat);
   const locale = useLocaleStore((s) => s.locale);
   const t = useT();
+
+  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const reportUrl = isSaas && message.sessionId ? `/reports/${message.sessionId}` : null;
 
   // Revoke object URL when leaving 'ready' state to avoid memory leaks
   useEffect(() => {
@@ -53,7 +56,6 @@ export function SystemBubble({ message }: SystemBubbleProps) {
   };
 
   const handleSave = (blob: Blob, filename: string, mimeType: string) => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS && typeof navigator.share === 'function') {
       const file = new File([blob], filename, { type: mimeType });
       navigator.share({ files: [file], title: filename }).catch((err) => {
@@ -77,6 +79,18 @@ export function SystemBubble({ message }: SystemBubbleProps) {
   };
 
   const btnBase = 'flex items-center gap-1.5 transition-colors text-xs font-medium';
+
+  const ViewOnlineLink = reportUrl ? (
+    <a
+      href={reportUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${btnBase} text-blue-500 hover:text-blue-600`}
+    >
+      <ExternalLink className="w-3.5 h-3.5" />
+      在线查看报告
+    </a>
+  ) : null;
 
   return (
     <div className="flex justify-center px-4 py-2">
@@ -104,7 +118,10 @@ export function SystemBubble({ message }: SystemBubbleProps) {
           )}
 
           {message.reportMarkdown && (
-            <div className="mt-2">
+            <div className="mt-2 flex flex-col gap-1.5">
+              {/* iOS: show online link first as primary option */}
+              {isIOS && ViewOnlineLink}
+
               {dlState.phase === 'idle' && (
                 <button onClick={handleGenerate} className={`${btnBase} text-blue-500 hover:text-blue-600`}>
                   <Download className="w-3.5 h-3.5" />
@@ -139,16 +156,22 @@ export function SystemBubble({ message }: SystemBubbleProps) {
                 </div>
               )}
               {dlState.phase === 'error' && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-red-500 text-xs">{dlState.message}</span>
-                  <button
-                    onClick={() => setDlState({ phase: 'idle' })}
-                    className="text-blue-500 hover:text-blue-600 text-xs underline"
-                  >
-                    {t('export.retry')}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setDlState({ phase: 'idle' })}
+                      className="text-blue-500 hover:text-blue-600 text-xs underline"
+                    >
+                      {t('export.retry')}
+                    </button>
+                    {ViewOnlineLink}
+                  </div>
                 </div>
               )}
+
+              {/* Desktop: show online link after download button as secondary option */}
+              {!isIOS && dlState.phase !== 'error' && ViewOnlineLink}
             </div>
           )}
         </div>

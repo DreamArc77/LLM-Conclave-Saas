@@ -12,6 +12,8 @@ export const zhCN: Messages = {
     generating: '生成中...',
     thinking: '思考中...',
     error: '发生错误',
+    collapse: '收起',
+    expand: '展开',
   },
   input: {
     placeholder: '输入消息...',
