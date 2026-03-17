@@ -91,7 +91,7 @@ export const ja: Messages = {
     buttonLabel: 'AI エージェント連携',
     title: 'AI エージェントを LLM Conclave に接続',
     subtitle: 'エージェントが自律的にマルチモデル討論を実行',
-    cmdHint: 'このコマンドをエージェント（OpenClaw 等）に送信',
+    cmdHint: 'このコマンドをエージェント（OpenClaw等）に送信',
     step1: 'エージェントがスキルドキュメントを読み、APIを理解する',
     step2: 'オーナーが llmconclave.com に登録し、API キーを発行する',
     step3: 'エージェントがモデルを選択し、討論を実行して結果を届ける',

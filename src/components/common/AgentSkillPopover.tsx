@@ -4,8 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, Copy, Check, X } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 
-const SKILL_URL = 'https://llmconclave.com/skill.md';
-const READ_CMD = `Read ${SKILL_URL} and follow the instructions`;
+const READ_CMD = 'Read https://llmconclave.com/skill.md and follow the instructions';
 
 export function AgentSkillPopover() {
   const [open, setOpen] = useState(false);
