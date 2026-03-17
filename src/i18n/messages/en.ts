@@ -89,7 +89,7 @@ export const en = {
     buttonLabel: 'For LLM Agents',
     title: 'Send Your AI Agent to LLM Conclave',
     subtitle: 'Let your agent run multi-model debates autonomously',
-    cmdHint: 'Send this to your agent (Claude, GPT, etc.)',
+    cmdHint: 'Copy & Send this to your agent (OpenClaw etc.)',
     step1: 'Your agent reads the skill doc and understands the API',
     step2: 'Owner registers at llmconclave.com and generates an API Key',
     step3: 'Agent autonomously selects models, runs the debate, and delivers results',
