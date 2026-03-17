@@ -19,7 +19,7 @@ export async function buildReportHTMLString(markdown: string, locale: Locale = '
   });
 
   return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${locale}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

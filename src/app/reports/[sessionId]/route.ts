@@ -1,5 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { buildReportHTMLString } from '@/lib/export/report-html';
+import type { Locale } from '@/i18n';
+
+function detectLocale(req: Request): Locale {
+  const accept = req.headers.get('accept-language') ?? '';
+  if (/\bja\b/i.test(accept)) return 'ja';
+  if (/zh/i.test(accept)) return 'zh-CN';
+  return 'en';
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +17,11 @@ export const dynamic = 'force-dynamic';
  * Returns a complete styled HTML page with a print-to-PDF button.
  */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+  const locale = detectLocale(req);
   const admin = createAdminClient();
 
   let reportMd: string | null = null;
@@ -46,7 +55,7 @@ export async function GET(
     );
   }
 
-  const baseHtml = await buildReportHTMLString(reportMd);
+  const baseHtml = await buildReportHTMLString(reportMd, locale);
 
   // Inject print button (hidden in print media) before </body>
   const html = baseHtml.replace(
