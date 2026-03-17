@@ -85,6 +85,16 @@ export const en = {
     topUp: 'Top Up',
     close: 'Close',
   },
+  agentSkill: {
+    buttonLabel: 'For LLM Agents',
+    title: 'Send Your AI Agent to LLM Conclave',
+    subtitle: 'Let your agent run multi-model debates autonomously',
+    cmdHint: 'Send this to your agent (Claude, GPT, etc.)',
+    step1: 'Your agent reads the skill doc and understands the API',
+    step2: 'Owner registers at llmconclave.com and generates an API Key',
+    step3: 'Agent autonomously selects models, runs the debate, and delivers results',
+    docsLink: 'View full skill.md documentation →',
+  },
   auth: {
     signinTitle: 'Sign in to LLM Conclave',
     signupTitle: 'Create your account',

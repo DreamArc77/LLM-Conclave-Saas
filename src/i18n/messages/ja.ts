@@ -87,6 +87,16 @@ export const ja: Messages = {
     topUp: 'チャージする',
     close: '閉じる',
   },
+  agentSkill: {
+    buttonLabel: 'AI エージェント連携',
+    title: 'AI エージェントを LLM Conclave に接続',
+    subtitle: 'エージェントが自律的にマルチモデル討論を実行',
+    cmdHint: 'このコマンドをエージェント（Claude、GPT 等）に送信',
+    step1: 'エージェントがスキルドキュメントを読み、APIを理解する',
+    step2: 'オーナーが llmconclave.com に登録し、API キーを発行する',
+    step3: 'エージェントがモデルを選択し、討論を実行して結果を届ける',
+    docsLink: '完全な skill.md ドキュメントを見る →',
+  },
   auth: {
     signinTitle: 'LLM Conclave にサインイン',
     signupTitle: 'アカウントを作成',

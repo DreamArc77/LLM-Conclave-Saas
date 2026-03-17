@@ -351,7 +351,8 @@ export async function POST(req: Request) {
         const { data: updatedCredits } = await admin.from('credits').select('balance').eq('user_id', userId).maybeSingle();
         const newBalance = (updatedCredits?.balance as number) ?? 0;
         const creditsUsed = actualCost > 0 ? actualCost : totalCost;
-        const reportUrl = `${APP_URL}/api/agent/reports/${sessionId}`;
+        // Human-readable public page (no auth required, UUID as capability token)
+        const reportUrl = `${APP_URL}/reports/${sessionId}`;
 
         await admin.from('agent_reports').insert({ session_id: sessionId, user_id: userId, report_md: summary });
 

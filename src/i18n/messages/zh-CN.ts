@@ -87,6 +87,16 @@ export const zhCN: Messages = {
     topUp: '前往充值',
     close: '关闭',
   },
+  agentSkill: {
+    buttonLabel: '接入 AI Agent',
+    title: '让你的 AI Agent 接入 LLM Conclave',
+    subtitle: '让 Agent 自主发起多模型研讨，帮你深度分析议题',
+    cmdHint: '将上方命令发给你的 Agent（Claude、GPT 等）',
+    step1: 'Agent 读取 skill 文档，了解接口与用法',
+    step2: '你在 llmconclave.com 注册并生成 API Key',
+    step3: 'Agent 自主选择模型、发起研讨、输出结果',
+    docsLink: '查看完整 skill.md 文档 →',
+  },
   auth: {
     signinTitle: '登录 LLM Conclave',
     signupTitle: '创建账号',

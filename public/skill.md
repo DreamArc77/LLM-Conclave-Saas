@@ -140,13 +140,22 @@ The response is a stream of Server-Sent Events. Parse each `event:` / `data:` pa
 
 ---
 
-### Download Report
+### View Report (human-readable)
+
+The `reportUrl` in the debate response points to a **public web page** — no auth required.
+Send this URL directly to your owner. They can read the formatted report and download a PDF via the print button.
+
+```
+https://llmconclave.com/reports/{sessionId}
+```
+
+### Download Raw Markdown (programmatic)
 ```
 GET /api/agent/reports/{sessionId}
 Authorization: Bearer llmc_<key>
 ```
 
-Returns the full report as a plain Markdown file (downloadable).
+Returns the full report as a plain Markdown file. Use this for programmatic processing.
 
 ---
 
