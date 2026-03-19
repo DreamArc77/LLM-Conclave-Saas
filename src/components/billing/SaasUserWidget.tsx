@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { Gift, LogIn, LogOut, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useUIStore } from '@/stores/ui-store';
+import { useT } from '@/hooks/useT';
 import { CreditBalance } from './CreditBalance';
 
 type UserInfo = { email: string; initial: string };
@@ -14,6 +16,8 @@ export function SaasUserWidget() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
+  const openSettings = useUIStore((s) => s.openSettings);
+  const t = useT();
 
   useEffect(() => {
     try {
@@ -99,6 +103,14 @@ export function SaasUserWidget() {
             <User className="w-4 h-4" />
             Account
           </Link>
+
+          <button
+            onClick={() => { setOpen(false); openSettings(); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Gift className="w-4 h-4" />
+            {t('invite.menuItem')}
+          </button>
 
           <button
             onClick={handleSignOut}

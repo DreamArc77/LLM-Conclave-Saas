@@ -25,7 +25,7 @@ export const useConfigStore = create<ConfigState>()(
   persist(
     (set, get) => ({
       models: [],
-      maxRounds: 2,
+      maxRounds: 1,
       exportFormat: 'png' as const,
 
       addModel: (model) =>

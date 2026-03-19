@@ -65,6 +65,9 @@ export default function SignInPage() {
           </svg>
           {t('auth.signinWithGoogle')}
         </button>
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 -mt-3">
+          {t('auth.googleWebViewHint')}
+        </p>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

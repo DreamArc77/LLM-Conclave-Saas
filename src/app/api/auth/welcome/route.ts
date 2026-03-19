@@ -1,5 +1,6 @@
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { addWelcomeCredits } from '@/lib/credits/deduct';
+import { redeemInviteCode } from '@/lib/credits/invite';
 import { WELCOME_CREDITS } from '@/config/credit-packages';
 
 export async function POST(): Promise<Response> {
@@ -25,5 +26,16 @@ export async function POST(): Promise<Response> {
 
   await addWelcomeCredits({ userId: user.id, supabase: admin, amount: WELCOME_CREDITS });
 
-  return Response.json({ ok: true, credits: WELCOME_CREDITS });
+  // Redeem invite code if the user provided one at signup
+  let inviteRedeemed = false;
+  const inviteCode = user.user_metadata?.invite_code as string | undefined;
+  if (inviteCode) {
+    const result = await redeemInviteCode(inviteCode, user.id, admin);
+    inviteRedeemed = result.ok;
+    if (!result.ok) {
+      console.log('[welcome] Invite code redemption failed:', result.reason);
+    }
+  }
+
+  return Response.json({ ok: true, credits: WELCOME_CREDITS, inviteRedeemed });
 }

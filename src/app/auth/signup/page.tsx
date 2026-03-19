@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useT } from '@/hooks/useT';
+import { useIsWebView } from '@/hooks/useIsWebView';
 
 export default function SignUpPage() {
   const t = useT();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,12 +28,20 @@ export default function SignUpPage() {
       email,
       password,
       options: {
+        data: inviteCode.trim() ? { invite_code: inviteCode.trim().toUpperCase() } : {},
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
     if (err) {
-      setError(err.message || t('auth.signupFailed'));
+      const msg = err.message?.toLowerCase() ?? '';
+      if (msg.includes('rate limit') || msg.includes('email rate')) {
+        setError(t('auth.emailRateLimit'));
+      } else if (msg.includes('already registered') || msg.includes('user already exists')) {
+        setError(t('auth.emailAlreadyExists'));
+      } else {
+        setError(err.message || t('auth.signupFailed'));
+      }
       setLoading(false);
       return;
     }
@@ -82,6 +92,9 @@ export default function SignUpPage() {
           </svg>
           {t('auth.signinWithGoogle')}
         </button>
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 -mt-3">
+          {t('auth.googleWebViewHint')}
+        </p>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -116,6 +129,19 @@ export default function SignUpPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t('auth.inviteCode')}
+            </label>
+            <input
+              type="text"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              placeholder={t('auth.inviteCodePlaceholder')}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase placeholder:normal-case"
             />
           </div>
 

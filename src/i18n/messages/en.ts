@@ -112,8 +112,23 @@ export const en = {
     signinLink: 'Sign in',
     signinFailed: 'Sign in failed',
     signupFailed: 'Sign up failed',
+    emailRateLimit: 'Too many verification emails sent. Please wait a moment or sign in with Google.',
+    emailAlreadyExists: 'This email is already registered. Please sign in instead.',
+    webviewGoogleBlocked: 'Google sign-in requires an external browser. Please open this page in Safari or Chrome first.',
+    googleWebViewHint: 'Google sign-in requires an external browser. Please open this page in Safari or Chrome first.',
     checkEmail: 'Check your email to confirm your account.',
     welcomeBonus: '50 welcome credits added!',
+    inviteCode: 'Invite Code (optional)',
+    inviteCodePlaceholder: 'Enter invite code',
+  },
+  invite: {
+    title: 'Invite Friends',
+    description: 'Share your invite code. Both you and your friend get bonus credits.',
+    code: 'Your Invite Code',
+    copy: 'Copy',
+    copied: 'Copied!',
+    usageCount: '{count}/{max} used',
+    menuItem: 'Invite Friends',
   },
 };
 

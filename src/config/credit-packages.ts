@@ -44,8 +44,17 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
 ];
 
-/** New user welcome bonus: covers exactly 1 full session (default 3 models × 2 rounds = 310 × 2 = 620) */
-export const WELCOME_CREDITS = 650;
+/** New user welcome bonus: covers 1 round with default enabled models (deepseek 15 + gpt 250 + gemini 60 = 325) */
+export const WELCOME_CREDITS = 350;
+
+/** Extra credits granted to a new user who redeems an invite code */
+export const INVITE_INVITEE_BONUS = 100;
+
+/** Credits granted to the inviter for each successful referral */
+export const INVITE_INVITER_BONUS = 350;
+
+/** Maximum number of times a single invite code can be used */
+export const INVITE_CODE_MAX_USES = 10;
 
 /**
  * Hard limit on debate rounds enforced server-side.
