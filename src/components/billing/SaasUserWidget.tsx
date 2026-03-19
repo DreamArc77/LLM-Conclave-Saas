@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Gift, LogIn, LogOut, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useUIStore } from '@/stores/ui-store';
 import { useT } from '@/hooks/useT';
 import { CreditBalance } from './CreditBalance';
 
@@ -16,7 +15,6 @@ export function SaasUserWidget() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
-  const openSettings = useUIStore((s) => s.openSettings);
   const t = useT();
 
   useEffect(() => {
@@ -71,16 +69,25 @@ export function SaasUserWidget() {
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        title={user.email}
-      >
+      <div className="flex items-center gap-1.5 p-1">
         <CreditBalance />
-        <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white select-none">
-          {user.initial}
-        </div>
-      </button>
+        <Link
+          href="/account#invite"
+          className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 hover:opacity-75 transition-opacity"
+          title={t('invite.menuItem')}
+        >
+          <Gift className="w-3.5 h-3.5" />
+        </Link>
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex items-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors p-0.5"
+          title={user.email}
+        >
+          <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white select-none">
+            {user.initial}
+          </div>
+        </button>
+      </div>
 
       {open && (
         <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
@@ -103,14 +110,6 @@ export function SaasUserWidget() {
             <User className="w-4 h-4" />
             Account
           </Link>
-
-          <button
-            onClick={() => { setOpen(false); openSettings(); }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Gift className="w-4 h-4" />
-            {t('invite.menuItem')}
-          </button>
 
           <button
             onClick={handleSignOut}

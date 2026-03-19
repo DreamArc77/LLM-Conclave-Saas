@@ -128,7 +128,7 @@ export const en = {
     copy: 'Copy',
     copied: 'Copied!',
     usageCount: '{count}/{max} used',
-    menuItem: 'Invite Friends',
+    menuItem: 'Invite friends to get credits',
   },
 };
 

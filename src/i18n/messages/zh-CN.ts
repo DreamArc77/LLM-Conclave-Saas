@@ -130,6 +130,6 @@ export const zhCN: Messages = {
     copy: '复制',
     copied: '已复制',
     usageCount: '已使用 {count}/{max} 次',
-    menuItem: '邀请好友',
+    menuItem: '邀请好友，双方获得算力',
   },
 };

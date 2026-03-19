@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { X, Copy, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { useUIStore } from '@/stores/ui-store';
 import { useConfigStore } from '@/stores/config-store';
 import { ModelList } from './ModelList';
@@ -9,9 +9,6 @@ import { AddModelDialog } from './AddModelDialog';
 import { useT } from '@/hooks/useT';
 import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
 import { ALLOW_CUSTOM_MODELS } from '@/config/feature-flags';
-import { interpolate } from '@/i18n';
-
-type InviteInfo = { code: string; useCount: number; maxUses: number } | null;
 
 export function SettingsDrawer() {
   const settingsOpen = useUIStore((s) => s.settingsOpen);
@@ -26,27 +23,6 @@ export function SettingsDrawer() {
   const t = useT();
   const [roundsInput, setRoundsInput] = useState(String(maxRounds));
   useEffect(() => { setRoundsInput(String(maxRounds)); }, [maxRounds]);
-
-  const [inviteInfo, setInviteInfo] = useState<InviteInfo>(null);
-  const [copied, setCopied] = useState(false);
-
-  const fetchInviteCode = useCallback(async () => {
-    try {
-      const res = await fetch('/api/invite/my-code');
-      if (res.ok) setInviteInfo(await res.json());
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => {
-    if (settingsOpen && !inviteInfo) fetchInviteCode();
-  }, [settingsOpen, inviteInfo, fetchInviteCode]);
-
-  const handleCopy = async () => {
-    if (!inviteInfo) return;
-    await navigator.clipboard.writeText(inviteInfo.code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
     <>
@@ -111,33 +87,6 @@ export function SettingsDrawer() {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Invite Code */}
-          <div className="mb-3 pb-3 border-b border-gray-100 dark:border-gray-800">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-0.5">{t('invite.title')}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{t('invite.description')}</p>
-            {inviteInfo ? (
-              <div className="flex items-center gap-2">
-                <span className="flex-1 font-mono text-sm tracking-widest bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg text-gray-900 dark:text-gray-100 select-all">
-                  {inviteInfo.code}
-                </span>
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? t('invite.copied') : t('invite.copy')}
-                </button>
-              </div>
-            ) : (
-              <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
-            )}
-            {inviteInfo && (
-              <p className="text-xs text-gray-400 mt-1.5">
-                {interpolate(t('invite.usageCount'), { count: inviteInfo.useCount, max: inviteInfo.maxUses })}
-              </p>
-            )}
           </div>
 
           <p className="text-xs text-gray-400 mb-3">{t('settings.instruction')}</p>

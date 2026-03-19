@@ -130,6 +130,6 @@ export const ja: Messages = {
     copy: 'コピー',
     copied: 'コピー済み',
     usageCount: '{count}/{max} 回使用済み',
-    menuItem: '友達を招待',
+    menuItem: '招待してクレジットをもらう',
   },
 };
