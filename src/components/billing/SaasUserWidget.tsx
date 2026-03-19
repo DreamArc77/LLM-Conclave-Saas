@@ -76,7 +76,7 @@ export function SaasUserWidget() {
           className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 hover:opacity-75 transition-opacity"
           title={t('invite.menuItem')}
         >
-          <Gift className="w-3.5 h-3.5" />
+          <Gift className="w-3.5 h-3.5 animate-bounce" />
         </Link>
         <button
           onClick={() => setOpen(!open)}
