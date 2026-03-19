@@ -101,16 +101,16 @@ export function SystemBubble({ message }: SystemBubbleProps) {
 
           {isSaas && message.usageStats && (
             <div className="mt-1.5 text-xs text-gray-400 flex flex-wrap gap-x-2 gap-y-0.5">
-              <span>本次消耗 {message.usageStats.creditCost} credits</span>
+              <span>{t('relay.creditCost', { cost: message.usageStats.creditCost })}</span>
               {message.usageStats.refund > 0 && (() => {
                 const earlyModels = message.usageStats!.models
                   .filter((m) => m.finishedEarly && m.roundsCompleted < message.usageStats!.maxRounds)
                   .map((m) => m.displayName)
-                  .join('、');
+                  .join(t('prompts.participantSeparator'));
                 return (
                   <span className="text-green-500">
-                    已退款 {message.usageStats!.refund} credits
-                    {earlyModels ? `（${earlyModels} 提前完成）` : ''}
+                    {t('relay.refund', { amount: message.usageStats!.refund })}
+                    {earlyModels ? t('relay.finishedEarly', { models: earlyModels }) : ''}
                   </span>
                 );
               })()}

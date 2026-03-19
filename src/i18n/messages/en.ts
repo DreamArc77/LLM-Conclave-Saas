@@ -71,6 +71,9 @@ export const en = {
   relay: {
     complete: 'Discussion complete after {seconds}s. Here is the research report for "{topic}"',
     creditsInsufficient: 'Insufficient credits. Please visit your Account page to top up.',
+    creditCost: 'Used {cost} credits',
+    refund: 'Refunded {amount} credits',
+    finishedEarly: ' ({models} finished early)',
   },
   report: {
     header: 'MEETING MINUTES',
@@ -110,6 +113,9 @@ export const en = {
     hasAccount: 'Already have an account?',
     signupLink: 'Sign up',
     signinLink: 'Sign in',
+    signIn: 'Sign In',
+    signOut: 'Sign Out',
+    account: 'Account',
     signinFailed: 'Sign in failed',
     signupFailed: 'Sign up failed',
     emailRateLimit: 'Too many verification emails sent. Please wait a moment or sign in with Google.',

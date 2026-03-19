@@ -62,7 +62,7 @@ export function SaasUserWidget() {
         className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
       >
         <LogIn className="w-4 h-4" />
-        Sign In
+        {t('auth.signIn')}
       </Link>
     );
   }
@@ -108,7 +108,7 @@ export function SaasUserWidget() {
             className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <User className="w-4 h-4" />
-            Account
+            {t('auth.account')}
           </Link>
 
           <button
@@ -116,7 +116,7 @@ export function SaasUserWidget() {
             className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            Sign Out
+            {t('auth.signOut')}
           </button>
         </div>
       )}

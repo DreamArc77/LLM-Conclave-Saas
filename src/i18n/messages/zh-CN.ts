@@ -73,6 +73,9 @@ export const zhCN: Messages = {
   relay: {
     complete: '讨论已结束，耗时 {seconds} 秒，以下是「{topic}」的专题研讨报告',
     creditsInsufficient: 'Credits 余额不足，请前往账户页面充值。',
+    creditCost: '本次消耗 {cost} credits',
+    refund: '已退款 {amount} credits',
+    finishedEarly: '（{models} 提前完成）',
   },
   report: {
     header: 'MEETING MINUTES · 会议纪要',
@@ -112,6 +115,9 @@ export const zhCN: Messages = {
     hasAccount: '已有账号？',
     signupLink: '立即注册',
     signinLink: '去登录',
+    signIn: '登录',
+    signOut: '退出',
+    account: '账户',
     signinFailed: '登录失败',
     signupFailed: '注册失败',
     emailRateLimit: '验证邮件发送过于频繁，请稍后再试或使用 Google 登录。',

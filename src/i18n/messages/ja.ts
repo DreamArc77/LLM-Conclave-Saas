@@ -73,6 +73,9 @@ export const ja: Messages = {
   relay: {
     complete: 'ディスカッション完了（{seconds}秒）。「{topic}」の研究レポートはこちらです',
     creditsInsufficient: 'クレジットが不足しています。アカウントページでチャージしてください。',
+    creditCost: '今回消費 {cost} credits',
+    refund: '{amount} credits 返金',
+    finishedEarly: '（{models} 早期完了）',
   },
   report: {
     header: '議事録 · MEETING MINUTES',
@@ -112,6 +115,9 @@ export const ja: Messages = {
     hasAccount: 'すでにアカウントをお持ちですか？',
     signupLink: '登録する',
     signinLink: 'サインイン',
+    signIn: 'サインイン',
+    signOut: 'サインアウト',
+    account: 'アカウント',
     signinFailed: 'サインインに失敗しました',
     signupFailed: '登録に失敗しました',
     emailRateLimit: '確認メールの送信が多すぎます。しばらく待つか、Googleでサインインしてください。',
