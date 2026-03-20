@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowUpCircle, ArrowDownCircle, Gift } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Transaction {
   id: string;
@@ -13,6 +14,7 @@ interface Transaction {
 }
 
 export function TransactionHistory() {
+  const t = useT();
   const [txns, setTxns] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,8 +33,18 @@ export function TransactionHistory() {
     });
   }, []);
 
-  if (loading) return <div className="text-xs text-gray-400">Loading...</div>;
-  if (txns.length === 0) return <div className="text-xs text-gray-400">No transactions yet.</div>;
+  if (loading) return (
+    <>
+      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('account.transactionHistory')}</h2>
+      <div className="text-xs text-gray-400">{t('billing.txLoading')}</div>
+    </>
+  );
+  if (txns.length === 0) return (
+    <>
+      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('account.transactionHistory')}</h2>
+      <div className="text-xs text-gray-400">{t('billing.txNone')}</div>
+    </>
+  );
 
   const icons = {
     purchase: <ArrowUpCircle className="w-4 h-4 text-green-500" />,
@@ -42,6 +54,7 @@ export function TransactionHistory() {
 
   return (
     <div className="space-y-2">
+      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('account.transactionHistory')}</h2>
       {txns.map((t) => (
         <div key={t.id} className="flex items-center justify-between text-sm py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
           <div className="flex items-center gap-2">

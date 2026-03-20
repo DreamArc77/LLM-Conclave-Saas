@@ -89,7 +89,7 @@ export function AuthModal({ onClose }: Props) {
             <div className="w-full border-t border-gray-300 dark:border-gray-600" />
           </div>
           <div className="relative flex justify-center text-xs text-gray-500 dark:text-gray-400">
-            <span className="bg-white dark:bg-gray-900 px-2">or</span>
+            <span className="bg-white dark:bg-gray-900 px-2">{t('auth.or')}</span>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ export function AuthModal({ onClose }: Props) {
             disabled={loading}
             className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            {loading ? '...' : t('auth.signinBtn')}
+            {loading ? t('auth.loading') : t('auth.signinBtn')}
           </button>
         </form>
 

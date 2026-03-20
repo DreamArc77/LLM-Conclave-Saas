@@ -79,9 +79,7 @@ export function StatusBar() {
 
         <SaasUserWidget />
 
-        <div className="hidden sm:flex">
-          <LanguageSwitcher />
-        </div>
+        <LanguageSwitcher />
 
         <AgentSkillPopover />
 

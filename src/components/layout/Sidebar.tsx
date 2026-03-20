@@ -124,7 +124,7 @@ export function Sidebar() {
         </button>
         {isRelayRunning && (
           <p className="mt-1.5 text-center text-[10px] text-amber-500 dark:text-amber-400">
-            讨论进行中，完成后可切换
+            {t('sidebar.relayRunning')}
           </p>
         )}
       </div>

@@ -9,6 +9,7 @@ import { useIsWebView } from '@/hooks/useIsWebView';
 
 export default function SignUpPage() {
   const t = useT();
+  const isWebView = useIsWebView();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -82,7 +83,8 @@ export default function SignUpPage() {
 
         <button
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          disabled={isWebView}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -92,16 +94,18 @@ export default function SignUpPage() {
           </svg>
           {t('auth.signinWithGoogle')}
         </button>
-        <p className="text-center text-xs text-gray-400 dark:text-gray-500 -mt-3">
-          {t('auth.googleWebViewHint')}
-        </p>
+        {isWebView && (
+          <p className="text-center text-xs text-amber-500 dark:text-amber-400 -mt-3">
+            {t('auth.webviewGoogleBlocked')}
+          </p>
+        )}
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300 dark:border-gray-600" />
           </div>
           <div className="relative flex justify-center text-xs text-gray-500 dark:text-gray-400">
-            <span className="bg-gray-50 dark:bg-gray-900 px-2">or</span>
+            <span className="bg-gray-50 dark:bg-gray-900 px-2">{t('auth.or')}</span>
           </div>
         </div>
 
@@ -130,6 +134,7 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-gray-400 mt-1">{t('auth.passwordMinLength')}</p>
           </div>
 
           <div>
@@ -152,7 +157,7 @@ export default function SignUpPage() {
             disabled={loading}
             className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            {loading ? '...' : t('auth.signupBtn')}
+            {loading ? t('auth.loading') : t('auth.signupBtn')}
           </button>
         </form>
 

@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { CREDIT_PACKAGES, totalCredits } from '@/config/credit-packages';
 import { Zap, Gift } from 'lucide-react';
+import { useT } from '@/hooks/useT';
+import { interpolate } from '@/i18n';
 
 export function BuyCreditsPanel() {
+  const t = useT();
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleBuy = async (packageId: string) => {
@@ -26,9 +29,9 @@ export function BuyCreditsPanel() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Buy Credits</h2>
+      <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{t('billing.buyCreditsTitle')}</h2>
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        1 USD = 500 credits · bonus credits included at higher tiers
+        {t('billing.exchangeRate')}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {CREDIT_PACKAGES.map((pkg) => (
@@ -42,7 +45,7 @@ export function BuyCreditsPanel() {
           >
             {pkg.popular && (
               <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-xs font-medium bg-blue-500 text-white px-2 py-0.5 rounded-full">
-                Popular
+                {t('billing.popular')}
               </span>
             )}
             <div className="flex items-center gap-1.5">
@@ -53,20 +56,20 @@ export function BuyCreditsPanel() {
             {/* Total credits (large) */}
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {totalCredits(pkg).toLocaleString()}
-              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">credits</span>
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">{t('billing.creditsUnit')}</span>
             </div>
 
             {/* Base + bonus breakdown */}
             <div className="space-y-0.5">
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                {pkg.baseCredits.toLocaleString()} base
+                {pkg.baseCredits.toLocaleString()} {t('billing.base')}
               </div>
               <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
                 <Gift className="w-3 h-3" />
-                +{pkg.bonusCredits.toLocaleString()} bonus
-                <span className="text-gray-400 dark:text-gray-500 font-normal">
-                  ({Math.round(pkg.bonusCredits / pkg.baseCredits * 100)}% extra)
-                </span>
+                {interpolate(t('billing.bonusExtra'), {
+                  n: pkg.bonusCredits.toLocaleString(),
+                  pct: Math.round(pkg.bonusCredits / pkg.baseCredits * 100),
+                })}
               </div>
             </div>
 
