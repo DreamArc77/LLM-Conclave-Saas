@@ -42,7 +42,7 @@ async function triggerBackgroundCompaction(sessionId: string): Promise<void> {
 // Event handler factory — shared logic for executeRelay and reconnectRelay
 // ---------------------------------------------------------------------------
 
-function createEventProcessor(sessionId: string, existingIds: Set<string>) {
+function createEventProcessor(sessionId: string, existingIds: Set<string>, relayRunId: string) {
   let streamingBuffer = '';
   let summaryBuffer = '';
   let summaryMode = false;
@@ -74,8 +74,9 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>) {
         useChatStore.getState().updateStreamingContent('');
         streamingBuffer = '';
         if (event.content.length > 0) {
-          // Deterministic ID — stable across reconnects for the same model turn
-          const msgId = `${sessionId}-r${event.round}-m${event.modelIndex}`;
+          // Deterministic ID — stable across reconnects for the same relay run,
+          // unique across different relay runs on the same session (relayRunId)
+          const msgId = `${sessionId}-${relayRunId}-r${event.round}-m${event.modelIndex}`;
           const assistantMsg: ChatMessage = {
             id: msgId,
             sessionId,
@@ -98,7 +99,7 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>) {
       case 'summary_done': {
         summaryMode = false;
         const markdown = summaryBuffer.length > 0 ? summaryBuffer : (event.markdown ?? '');
-        const summaryId = `${sessionId}-summary`;
+        const summaryId = `${sessionId}-${relayRunId}-summary`;
         const locale = useLocaleStore.getState().locale;
         const relayMsgs = getMessages(locale);
         const systemMsg: ChatMessage = {
@@ -275,10 +276,14 @@ export async function executeRelay(
   useChatStore.getState().setAbortController(abortController);
 
   const existingIds = new Set(existingMessages.map((m) => m.id));
-  const { handleEvent, isEnded } = createEventProcessor(currentSessionId, existingIds);
+
+  // Unique ID for this relay run — prevents ID collisions across turns on the same session
+  // while remaining stable for reconnects (stored in localStorage)
+  const relayRunId = nanoid(8);
+  const { handleEvent, isEnded } = createEventProcessor(currentSessionId, existingIds, relayRunId);
 
   // Mark relay as active — survives page reload (e.g. iOS Safari killing JS context)
-  localStorage.setItem(ACTIVE_RELAY_KEY, JSON.stringify({ sessionId: currentSessionId }));
+  localStorage.setItem(ACTIVE_RELAY_KEY, JSON.stringify({ sessionId: currentSessionId, relayRunId }));
 
   const locale = useLocaleStore.getState().locale;
   try {
@@ -372,7 +377,11 @@ export async function reconnectRelay(sessionId: string): Promise<void> {
   useChatStore.getState().setAbortController(abortController);
   useChatStore.getState().startRelay();
 
-  const { handleEvent, isEnded } = createEventProcessor(sessionId, existingIds);
+  // Recover the relayRunId saved when the relay was first started so that
+  // reconstructed message IDs match what was already saved to IndexedDB
+  const storedRelay = JSON.parse(localStorage.getItem(ACTIVE_RELAY_KEY) || '{}');
+  const relayRunId = storedRelay.relayRunId || nanoid(8);
+  const { handleEvent, isEnded } = createEventProcessor(sessionId, existingIds, relayRunId);
 
   try {
     await connectAndProcess(sessionId, handleEvent, abortController.signal);
