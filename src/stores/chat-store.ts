@@ -16,6 +16,7 @@ interface ChatState {
   activeSessionId: string | null;
   relay: RelayState;
   messages: ChatMessage[];
+  compactedSummary: string | null;
 
   setActiveSession: (sessionId: string | null) => void;
   setMessages: (messages: ChatMessage[]) => void;
@@ -29,6 +30,7 @@ interface ChatState {
   completeRelay: () => void;
   setAbortController: (ac: AbortController | null) => void;
   clearMessages: () => void;
+  applyCompaction: (summary: string, keepRecentN: number) => void;
 }
 
 const initialRelay: RelayState = {
@@ -44,6 +46,7 @@ export const useChatStore = create<ChatState>()((set) => ({
   activeSessionId: null,
   relay: { ...initialRelay },
   messages: [],
+  compactedSummary: null,
 
   setActiveSession: (sessionId) => set({ activeSessionId: sessionId }),
 
@@ -104,5 +107,20 @@ export const useChatStore = create<ChatState>()((set) => ({
       relay: { ...state.relay, abortController: ac },
     })),
 
-  clearMessages: () => set({ messages: [] }),
+  clearMessages: () => set({ messages: [], compactedSummary: null }),
+
+  applyCompaction: (summary, keepRecentN) =>
+    set((state) => {
+      const eligible = state.messages.filter(
+        (m) => !m.isSystem && !m.isError && !m.isCompacted
+      );
+      const toCompact = eligible.slice(0, -keepRecentN);
+      const ids = new Set(toCompact.map((m) => m.id));
+      return {
+        compactedSummary: summary,
+        messages: state.messages.map((m) =>
+          ids.has(m.id) ? { ...m, isCompacted: true } : m
+        ),
+      };
+    }),
 }));

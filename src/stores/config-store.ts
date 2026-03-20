@@ -9,6 +9,7 @@ interface ConfigState {
   models: ModelConfig[];
   maxRounds: number;
   exportFormat: 'pdf' | 'png';
+  generateReport: boolean;
 
   addModel: (model: Omit<ModelConfig, 'id' | 'order'>) => void;
   removeModel: (modelId: string) => void;
@@ -18,6 +19,7 @@ interface ConfigState {
   getEnabledModels: () => ModelConfig[];
   setMaxRounds: (n: number) => void;
   setExportFormat: (format: 'pdf' | 'png') => void;
+  setGenerateReport: (v: boolean) => void;
   syncPresets: () => Promise<void>;
 }
 
@@ -27,6 +29,7 @@ export const useConfigStore = create<ConfigState>()(
       models: [],
       maxRounds: 1,
       exportFormat: 'png' as const,
+      generateReport: true,
 
       addModel: (model) =>
         set((state) => ({
@@ -79,6 +82,8 @@ export const useConfigStore = create<ConfigState>()(
       setMaxRounds: (n) => set({ maxRounds: n }),
 
       setExportFormat: (format) => set({ exportFormat: format }),
+
+      setGenerateReport: (v) => set({ generateReport: v }),
 
       syncPresets: async () => {
         let serverPresets: ModelConfig[];

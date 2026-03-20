@@ -48,6 +48,7 @@ interface RelayRequest {
   models: RelayModelInput[];
   priorContext: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }>;
   locale?: Locale;
+  generateReport?: boolean;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -61,7 +62,7 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
-  const { sessionId, query, maxRounds: rawMaxRounds, models, priorContext, locale = 'zh-CN' } = body;
+  const { sessionId, query, maxRounds: rawMaxRounds, models, priorContext, locale = 'zh-CN', generateReport = true } = body;
   const maxRounds = Math.min(rawMaxRounds, MAX_ROUNDS_HARD_LIMIT);
 
   if (!sessionId) {
@@ -334,8 +335,8 @@ export async function POST(req: Request): Promise<Response> {
         if (finishedModelIds.size === models.length) break;
       }
 
-      // Generate meeting minutes — only skip if explicitly stopped
-      if (!(await jobStore.isJobAborted(sessionId))) {
+      // Generate meeting minutes — only skip if explicitly stopped or report disabled
+      if (!(await jobStore.isJobAborted(sessionId)) && generateReport !== false) {
         const refund = isSaas ? Math.max(0, preDeductedCost - totalCreditCost) : 0;
         const usageStats: RelayUsageStats = {
           models: Object.values(perModelStats),
@@ -352,7 +353,7 @@ export async function POST(req: Request): Promise<Response> {
         `[TOKEN] session=${sessionId} TOTAL in=${totalInputTokens} out=${totalOutputTokens}` +
         ` sum=${totalInputTokens + totalOutputTokens} credits=${totalCreditCost}`
       );
-      await writeRelaySSE({ type: 'relay_done' });
+      await writeRelaySSE({ type: 'relay_done', totalInputTokens, totalOutputTokens });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error('[API/relay] Unexpected error:', err);

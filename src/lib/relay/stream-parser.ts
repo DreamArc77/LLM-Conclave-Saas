@@ -6,7 +6,7 @@ export type RelaySSEEvent =
   | { type: 'model_done'; round: number; modelIndex: number; modelId: string; providerId: string; displayName: string; content: string; finished: boolean }
   | { type: 'summary_start' }
   | { type: 'summary_done'; markdown?: string; elapsedSec: number; filename: string; topic: string; usageStats?: RelayUsageStats }
-  | { type: 'relay_done' }
+  | { type: 'relay_done'; totalInputTokens?: number; totalOutputTokens?: number }
   | { type: 'error'; message: string }
   | { type: 'keepalive' }
   | { type: 'done' };

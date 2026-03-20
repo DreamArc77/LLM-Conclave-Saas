@@ -30,6 +30,7 @@ export interface ChatMessage {
   isError?: boolean;
   errorMessage?: string;
   isSystem?: boolean;
+  isCompacted?: boolean;
   reportMarkdown?: string;
   reportFilename?: string;
   usageStats?: RelayUsageStats;

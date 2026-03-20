@@ -26,6 +26,7 @@ export const en = {
     clearConversation: 'Clear conversation',
     stopRelay: 'Stop relay',
     sendMessage: 'Send message',
+    generateReport: 'Report',
   },
   sidebar: {
     newChat: 'New Chat',

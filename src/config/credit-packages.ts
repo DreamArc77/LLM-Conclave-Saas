@@ -57,6 +57,16 @@ export const INVITE_INVITER_BONUS = 350;
 export const INVITE_CODE_MAX_USES = 10;
 
 /**
+ * Sum of all model input+output tokens in a single relay run, above which background
+ * context compaction is triggered. For 3 models × 1 round, this corresponds to
+ * ~10k tokens of actual context — keeping GPT-class input costs well within margin.
+ */
+export const COMPACT_TOKEN_THRESHOLD = 30000;
+
+/** Number of most-recent messages to keep intact after compaction */
+export const COMPACT_KEEP_RECENT = 6;
+
+/**
  * Hard limit on debate rounds enforced server-side.
  * Edit this value to change the maximum allowed rounds — redeploy to take effect.
  * The settings UI upper bound is synced to this value automatically.

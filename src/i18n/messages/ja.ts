@@ -28,6 +28,7 @@ export const ja: Messages = {
     clearConversation: '会話をクリア',
     stopRelay: 'リレーを停止',
     sendMessage: 'メッセージを送信',
+    generateReport: 'レポート生成',
   },
   sidebar: {
     newChat: '新しいチャット',

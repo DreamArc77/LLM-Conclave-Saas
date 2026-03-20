@@ -9,8 +9,34 @@ import { parseRelayStream } from './stream-parser';
 import type { RelaySSEEvent } from './stream-parser';
 import type { ChatMessage } from '@/types/chat';
 import type { ProviderId } from '@/types/config';
+import { COMPACT_TOKEN_THRESHOLD, COMPACT_KEEP_RECENT } from '@/config/credit-packages';
 
 const ACTIVE_RELAY_KEY = 'activeRelay';
+
+// ---------------------------------------------------------------------------
+// Background context compaction — triggered after relay if token count is high
+// ---------------------------------------------------------------------------
+
+async function triggerBackgroundCompaction(sessionId: string): Promise<void> {
+  const messages = useChatStore.getState().messages.filter(
+    (m) => !m.isSystem && !m.isError && !m.isCompacted
+  );
+  if (messages.length === 0) return;
+
+  const res = await fetch('/api/compact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages }),
+  });
+
+  if (res.ok) {
+    const { summary } = await res.json() as { summary: string };
+    if (summary) {
+      useChatStore.getState().applyCompaction(summary, COMPACT_KEEP_RECENT);
+      console.log(`[Relay] Context compacted for session ${sessionId}`);
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Event handler factory — shared logic for executeRelay and reconnectRelay
@@ -94,12 +120,17 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>) {
         break;
       }
 
-      case 'relay_done':
+      case 'relay_done': {
         relayHasEnded = true;
         localStorage.removeItem(ACTIVE_RELAY_KEY);
         useChatStore.getState().completeRelay();
         window.dispatchEvent(new CustomEvent('credits-changed'));
+        const totalTokens = (event.totalInputTokens ?? 0) + (event.totalOutputTokens ?? 0);
+        if (totalTokens > COMPACT_TOKEN_THRESHOLD) {
+          triggerBackgroundCompaction(sessionId).catch(() => {});
+        }
         break;
+      }
 
       case 'error':
         relayHasEnded = true;
@@ -214,9 +245,21 @@ export async function executeRelay(
 
   // Build prior context from existing messages (exclude the one just added)
   const existingMessages = useChatStore.getState().messages;
-  const priorContext = existingMessages
-    .filter((m) => m.id !== userMsg.id && !m.isError && !m.isSystem)
-    .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName }));
+  const { compactedSummary } = useChatStore.getState();
+  let priorContext: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }>;
+  if (compactedSummary) {
+    const recent = existingMessages.filter(
+      (m) => !m.isCompacted && !m.isSystem && !m.isError && m.id !== userMsg.id
+    );
+    priorContext = [
+      { role: 'user', content: compactedSummary, displayName: '[Prior Summary]' },
+      ...recent.map((m) => ({ role: m.role, content: m.content, displayName: m.displayName })),
+    ];
+  } else {
+    priorContext = existingMessages
+      .filter((m) => m.id !== userMsg.id && !m.isError && !m.isSystem)
+      .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName }));
+  }
 
   const models = enabledModels.map((m) => ({
     id: m.id,
@@ -249,6 +292,7 @@ export async function executeRelay(
         models,
         priorContext,
         locale,
+        generateReport: configStore.generateReport,
       }),
       signal: abortController.signal,
     });

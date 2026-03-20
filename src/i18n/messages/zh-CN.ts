@@ -28,6 +28,7 @@ export const zhCN: Messages = {
     clearConversation: '清除对话',
     stopRelay: '停止对话',
     sendMessage: '发送消息',
+    generateReport: '生成报告',
   },
   sidebar: {
     newChat: '新对话',
