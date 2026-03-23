@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { addWelcomeCredits } from '@/lib/credits/deduct';
+import { redeemInviteCode } from '@/lib/credits/invite';
 import { WELCOME_CREDITS } from '@/config/credit-packages';
 import { isSaas } from '@/lib/flags';
 
@@ -33,6 +34,10 @@ export async function GET(request: Request): Promise<Response> {
             .single();
           if (!existing) {
             await addWelcomeCredits({ userId: data.user.id, supabase: admin, amount: WELCOME_CREDITS });
+            const inviteCode = data.user.user_metadata?.invite_code as string | undefined;
+            if (inviteCode) {
+              await redeemInviteCode(inviteCode, data.user.id, admin).catch(() => {});
+            }
           }
         } catch { /* non-fatal — user can still proceed */ }
       }

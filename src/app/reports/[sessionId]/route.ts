@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { buildReportHTMLString } from '@/lib/export/report-html';
+import { generateReportMarkdown } from '@/lib/report/regenerate';
 import type { Locale } from '@/i18n';
 
 function detectLocale(req: Request): Locale {
@@ -11,29 +12,71 @@ function detectLocale(req: Request): Locale {
 
 export const dynamic = 'force-dynamic';
 
+// In-memory cache to avoid re-running the LLM on every page refresh.
+// Keyed by "sessionId:locale". Lives as long as the server process.
+const regeneratedCache = new Map<string, string>();
+
 /**
  * Public report viewer — no auth required.
  * Security model: UUID as capability token (anyone with the link can view).
- * Returns a complete styled HTML page with a print-to-PDF button.
+ *
+ * Accepts optional ?locale= query param. When provided, the report content is
+ * regenerated in that language using the session's conversation messages.
+ * Falls back to the stored report_markdown if regeneration fails or no messages.
  */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
-  const locale = detectLocale(req);
+  const url = new URL(req.url);
+  const localeParam = url.searchParams.get('locale') as Locale | null;
+  const locale: Locale = (localeParam && ['en', 'zh-CN', 'ja'].includes(localeParam))
+    ? localeParam
+    : detectLocale(req);
+
   const admin = createAdminClient();
 
-  let reportMd: string | null = null;
+  // Check regeneration cache first
+  const cacheKey = `${sessionId}:${locale}`;
+  let reportMd = regeneratedCache.get(cacheKey) ?? null;
 
-  const { data: agentReport } = await admin
-    .from('agent_reports')
-    .select('report_md')
-    .eq('session_id', sessionId)
-    .single();
-  reportMd = agentReport?.report_md ?? null;
+  if (!reportMd) {
+    // Try regeneration from conversation messages (web sessions)
+    const { data: msgs } = await admin
+      .from('chat_messages')
+      .select('role, content, display_name')
+      .eq('session_id', sessionId)
+      .eq('is_system', false)
+      .order('created_at', { ascending: true });
 
-  // Fallback: web session summary stored in chat_messages
+    if (msgs && msgs.length > 0) {
+      const fullContext = msgs.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content as string,
+        displayName: (m.display_name as string | null) ?? undefined,
+      }));
+      const query = (msgs.find((m) => m.role === 'user')?.content as string) ?? '';
+
+      try {
+        reportMd = await generateReportMarkdown(fullContext, query, locale);
+        regeneratedCache.set(cacheKey, reportMd);
+      } catch {
+        // Regeneration failed — fall through to stored report
+      }
+    }
+  }
+
+  // Fallback: stored report markdown
+  if (!reportMd) {
+    const { data: agentReport } = await admin
+      .from('agent_reports')
+      .select('report_md')
+      .eq('session_id', sessionId)
+      .single();
+    reportMd = agentReport?.report_md ?? null;
+  }
+
   if (!reportMd) {
     const { data: msgReport } = await admin
       .from('chat_messages')
@@ -57,7 +100,10 @@ export async function GET(
 
   const baseHtml = await buildReportHTMLString(reportMd, locale);
 
-  // Inject print button (hidden in print media) before </body>
+  const printLabel = locale === 'zh-CN' ? '⬇ 下载 PDF'
+    : locale === 'ja' ? '⬇ PDF をダウンロード'
+    : '⬇ Download PDF';
+
   const html = baseHtml.replace(
     '</body>',
     `<style>
@@ -71,7 +117,7 @@ export async function GET(
   .llmc-print-btn:hover { background: #1d4ed8; }
   @media print { .llmc-print-btn { display: none !important; } }
 </style>
-<button class="llmc-print-btn" onclick="window.print()">⬇ 下载 PDF</button>
+<button class="llmc-print-btn" onclick="window.print()">${printLabel}</button>
 </body>`
   );
 

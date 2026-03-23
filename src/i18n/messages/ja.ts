@@ -165,5 +165,12 @@ export const ja: Messages = {
     copied: 'コピー済み',
     usageCount: '{count}/{max} 回使用済み',
     menuItem: '招待してクレジットをもらう',
+    redeem: '招待コードを使用',
+    redeemPlaceholder: 'コードを入力',
+    redeemBtn: '使用する',
+    redeemSuccess: 'コードを使用しました！ボーナスクレジットが追加されました。',
+    redeemInvalid: '無効または期限切れの招待コードです。',
+    redeemAlreadyUsed: 'すでに招待コードを使用済みです。',
+    redeemOwnCode: '自分の招待コードは使用できません。',
   },
 };

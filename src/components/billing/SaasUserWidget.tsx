@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Gift, LogIn, LogOut, User } from 'lucide-react';
+import { Gift, LogIn, LogOut, Tag, User } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useT } from '@/hooks/useT';
 import { CreditBalance } from './CreditBalance';
@@ -13,6 +13,10 @@ type UserInfo = { email: string; initial: string };
 export function SaasUserWidget() {
   const [user, setUser] = useState<UserInfo | null | undefined>(undefined); // undefined = loading
   const [open, setOpen] = useState(false);
+  const [showRedeem, setShowRedeem] = useState(false);
+  const [redeemCode, setRedeemCode] = useState('');
+  const [redeemStatus, setRedeemStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [redeemError, setRedeemError] = useState('');
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const t = useT();
@@ -43,6 +47,32 @@ export function SaasUserWidget() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleRedeem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!redeemCode.trim()) return;
+    setRedeemStatus('loading');
+    setRedeemError('');
+    const res = await fetch('/api/invite/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: redeemCode.trim() }),
+    });
+    if (res.ok) {
+      setRedeemStatus('success');
+      setRedeemCode('');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setRedeemStatus('error');
+      if (data.error === 'already_used') {
+        setRedeemError(t('invite.redeemAlreadyUsed'));
+      } else if (data.error === 'own_code') {
+        setRedeemError(t('invite.redeemOwnCode'));
+      } else {
+        setRedeemError(t('invite.redeemInvalid'));
+      }
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -110,6 +140,40 @@ export function SaasUserWidget() {
             <User className="w-4 h-4" />
             {t('auth.account')}
           </Link>
+
+          <button
+            onClick={() => { setShowRedeem(!showRedeem); setRedeemStatus('idle'); setRedeemError(''); }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <Tag className="w-4 h-4" />
+            {t('invite.redeem')}
+          </button>
+
+          {showRedeem && (
+            <div className="px-3 pb-2 border-b border-gray-100 dark:border-gray-700">
+              {redeemStatus === 'success' ? (
+                <p className="text-xs text-green-600 dark:text-green-400">{t('invite.redeemSuccess')}</p>
+              ) : (
+                <form onSubmit={handleRedeem} className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={redeemCode}
+                    onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
+                    placeholder={t('invite.redeemPlaceholder')}
+                    className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 uppercase placeholder:normal-case"
+                  />
+                  <button
+                    type="submit"
+                    disabled={redeemStatus === 'loading'}
+                    className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded transition-colors"
+                  >
+                    {redeemStatus === 'loading' ? t('auth.loading') : t('invite.redeemBtn')}
+                  </button>
+                </form>
+              )}
+              {redeemError && <p className="mt-1 text-xs text-red-500">{redeemError}</p>}
+            </div>
+          )}
 
           <button
             onClick={handleSignOut}

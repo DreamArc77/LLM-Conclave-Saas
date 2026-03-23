@@ -111,6 +111,7 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>, relay
           isSystem: true,
           reportMarkdown: markdown,
           reportFilename: event.filename,
+          reportLocale: locale,
           usageStats: event.usageStats,
         };
         if (!existingIds.has(summaryId)) {

@@ -163,6 +163,13 @@ export const en = {
     copied: 'Copied!',
     usageCount: '{count}/{max} used',
     menuItem: 'Invite friends to get credits',
+    redeem: 'Redeem Invite Code',
+    redeemPlaceholder: 'Enter code',
+    redeemBtn: 'Redeem',
+    redeemSuccess: 'Code redeemed! Bonus credits added.',
+    redeemInvalid: 'Invalid or expired invite code.',
+    redeemAlreadyUsed: 'You have already redeemed an invite code.',
+    redeemOwnCode: 'You cannot use your own invite code.',
   },
 };
 

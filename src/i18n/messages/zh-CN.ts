@@ -165,5 +165,12 @@ export const zhCN: Messages = {
     copied: '已复制',
     usageCount: '已使用 {count}/{max} 次',
     menuItem: '邀请好友，双方获得算力',
+    redeem: '兑换邀请码',
+    redeemPlaceholder: '输入邀请码',
+    redeemBtn: '兑换',
+    redeemSuccess: '邀请码兑换成功！算力已到账。',
+    redeemInvalid: '邀请码无效或已过期。',
+    redeemAlreadyUsed: '每个账户仅限兑换一次邀请码。',
+    redeemOwnCode: '不能使用自己的邀请码。',
   },
 };

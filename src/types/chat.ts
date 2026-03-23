@@ -33,6 +33,7 @@ export interface ChatMessage {
   isCompacted?: boolean;
   reportMarkdown?: string;
   reportFilename?: string;
+  reportLocale?: string;
   usageStats?: RelayUsageStats;
 }
 

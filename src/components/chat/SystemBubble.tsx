@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { FileText, Download, ExternalLink } from 'lucide-react';
 import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
+import { useChatStore } from '@/stores/chat-store';
 import { useT } from '@/hooks/useT';
 import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
 import type { ChatMessage } from '@/types/chat';
+import type { Locale } from '@/i18n';
 
 const isSaas = process.env.NEXT_PUBLIC_SAAS_MODE === 'true';
 
@@ -22,12 +24,16 @@ type DownloadState =
 
 export function SystemBubble({ message }: SystemBubbleProps) {
   const [dlState, setDlState] = useState<DownloadState>({ phase: 'idle' });
+  const [markdownCache, setMarkdownCache] = useState<Partial<Record<Locale, string>>>({});
   const exportFormat = useConfigStore((s) => s.exportFormat);
   const locale = useLocaleStore((s) => s.locale);
+  const messages = useChatStore((s) => s.messages);
   const t = useT();
 
   const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const reportUrl = isSaas && message.sessionId ? `/reports/${message.sessionId}` : null;
+  const reportUrl = isSaas && message.sessionId
+    ? `/reports/${message.sessionId}?locale=${locale}`
+    : null;
 
   // Revoke object URL when leaving 'ready' state to avoid memory leaks
   useEffect(() => {
@@ -43,10 +49,45 @@ export function SystemBubble({ message }: SystemBubbleProps) {
     const mimeType = exportFormat === 'pdf' ? 'application/pdf' : 'image/png';
 
     setDlState({ phase: 'generating' });
+
+    // Determine which markdown to use: regenerate when locale differs from report's original locale
+    let effectiveMarkdown = message.reportMarkdown;
+    const needsRegen = message.reportLocale && message.reportLocale !== locale;
+
+    if (needsRegen) {
+      if (markdownCache[locale]) {
+        effectiveMarkdown = markdownCache[locale]!;
+      } else {
+        try {
+          const body = isSaas
+            ? { sessionId: message.sessionId, locale }
+            : {
+                messages: messages
+                  .filter((m) => !m.isSystem && !m.isError && !m.isCompacted)
+                  .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName })),
+                query: messages.find((m) => m.role === 'user')?.content ?? '',
+                locale,
+              };
+          const res = await fetch('/api/report/regenerate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            effectiveMarkdown = data.markdown;
+            setMarkdownCache((prev) => ({ ...prev, [locale]: data.markdown }));
+          }
+        } catch {
+          // Fall through with original markdown
+        }
+      }
+    }
+
     try {
       const blob = exportFormat === 'pdf'
-        ? await generatePDFBlob(message.reportMarkdown, locale)
-        : await generatePNGBlob(message.reportMarkdown, locale);
+        ? await generatePDFBlob(effectiveMarkdown, locale)
+        : await generatePNGBlob(effectiveMarkdown, locale);
       const objectUrl = URL.createObjectURL(blob);
       setDlState({ phase: 'ready', blob, filename, mimeType, objectUrl });
     } catch (err) {
