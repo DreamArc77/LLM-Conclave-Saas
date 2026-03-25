@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Send, Square, Trash2, FileText } from 'lucide-react';
+import { Send, Square, Trash2 } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
 import { executeRelay } from '@/lib/relay/relay-engine';
@@ -22,8 +22,6 @@ export function ChatInput() {
   const relay = useChatStore((s) => s.relay);
   const clearMessages = useChatStore((s) => s.clearMessages);
   const models = useConfigStore((s) => s.models);
-  const generateReport = useConfigStore((s) => s.generateReport);
-  const setGenerateReport = useConfigStore((s) => s.setGenerateReport);
   const enabledModels = models.filter((m) => m.enabled);
   const t = useT();
   const locale = useLocaleStore((s) => s.locale);
@@ -146,25 +144,7 @@ export function ChatInput() {
         )}
       </div>
 
-      {/* Report toggle */}
-      <div className="max-w-3xl mx-auto flex items-center justify-end gap-1.5 mt-1.5">
-        <FileText className="w-3 h-3 text-gray-400" />
-        <span className="text-xs text-gray-400">{t('input.generateReport')}</span>
-        <button
-          role="switch"
-          aria-checked={generateReport}
-          onClick={() => setGenerateReport(!generateReport)}
-          className={`relative inline-flex h-4 w-7 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-            generateReport ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow transform transition-transform duration-200 ${
-              generateReport ? 'translate-x-3' : 'translate-x-0'
-            }`}
-          />
-        </button>
-      </div>
+
     </div>
     </>
   );
