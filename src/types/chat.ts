@@ -15,6 +15,7 @@ export interface VoteCard {
   activeVoterIndex?: number; // 当前正在投票的模型序号
   activeStatement?: string;  // 当前正在流式输出的陈述
   totalVoters?: number;      // 参与投票的总模型数
+  query?: string;            // 原始议题
 }
 
 export interface ModelUsageStat {

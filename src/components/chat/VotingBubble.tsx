@@ -36,7 +36,7 @@ export function VotingBubble({ message }: VotingBubbleProps) {
   const card = message.voteCard;
   if (!card) return null;
 
-  const { phase, alternatives, votes, activeVoterIndex, totalVoters } = card;
+  const { phase, alternatives, votes, activeVoterIndex, totalVoters, query } = card;
 
   // Count votes per option letter
   const tallyMap: Record<string, number> = {};
@@ -68,12 +68,8 @@ export function VotingBubble({ message }: VotingBubbleProps) {
     headerLabel = t('voting.loadingAlternatives');
   } else if (phase === 'voting') {
     headerLabel = t('voting.inProgress');
-  } else if (phase === 'complete' && winner) {
-    headerLabel = t('voting.complete', {
-      option: winner,
-      votes: winnerVotes,
-      total: totalVoters ?? votes.length,
-    });
+  } else if (phase === 'complete') {
+    headerLabel = query ?? t('voting.readyToDecide');
   } else {
     headerLabel = t('voting.readyToDecide');
   }

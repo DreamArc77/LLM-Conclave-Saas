@@ -56,6 +56,12 @@ export async function prepareVoting(sessionId: string): Promise<void> {
 
   // Append a loading-state voting card message
   const voteCardId = `${sessionId}-vote-${nanoid(6)}`;
+  // Build conversation context (exclude system/error/compacted messages)
+  const convMessages = messages
+    .filter((m) => !m.isSystem && !m.isError && !m.isCompacted && !m.voteCard)
+    .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName }));
+  const query = messages.find((m) => m.role === 'user')?.content ?? '';
+
   const loadingMsg: ChatMessage = {
     id: voteCardId,
     sessionId,
@@ -66,15 +72,10 @@ export async function prepareVoting(sessionId: string): Promise<void> {
       phase: 'loading',
       alternatives: [],
       votes: [],
+      query,
     },
   };
   useChatStore.getState().appendMessage(loadingMsg);
-
-  // Build conversation context (exclude system/error/compacted messages)
-  const convMessages = messages
-    .filter((m) => !m.isSystem && !m.isError && !m.isCompacted && !m.voteCard)
-    .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName }));
-  const query = messages.find((m) => m.role === 'user')?.content ?? '';
 
   try {
     const res = await fetch('/api/vote/prepare', {
