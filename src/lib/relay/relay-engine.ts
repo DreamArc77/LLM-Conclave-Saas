@@ -267,7 +267,7 @@ export async function executeRelay(
   let priorContext: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }>;
   if (compactedSummary) {
     const recent = existingMessages.filter(
-      (m) => !m.isCompacted && !m.isSystem && !m.isError && m.id !== userMsg.id
+      (m) => m.sessionId === currentSessionId && !m.isCompacted && !m.isSystem && !m.isError && m.id !== userMsg.id
     );
     priorContext = [
       { role: 'user', content: compactedSummary, displayName: '[Prior Summary]' },
@@ -275,7 +275,7 @@ export async function executeRelay(
     ];
   } else {
     priorContext = existingMessages
-      .filter((m) => m.id !== userMsg.id && !m.isError && !m.isSystem)
+      .filter((m) => m.sessionId === currentSessionId && m.id !== userMsg.id && !m.isError && !m.isSystem)
       .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName }));
   }
 

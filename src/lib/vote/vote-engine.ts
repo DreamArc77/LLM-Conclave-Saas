@@ -93,6 +93,7 @@ export async function prepareVoting(sessionId: string): Promise<void> {
       alternatives,
       votes: [],
       totalVoters: useConfigStore.getState().getEnabledModels().length,
+      query,
     };
     useChatStore.getState().updateMessage(voteCardId, { voteCard: setupCard });
     await addMessage({ ...loadingMsg, voteCard: setupCard });
@@ -143,6 +144,7 @@ export async function runVoting(voteCardMessageId: string, sessionId: string): P
     alternatives,
     votes: [],
     totalVoters: models.length,
+    query,
   };
   useChatStore.getState().updateMessage(voteCardMessageId, { voteCard: votingCard });
 
