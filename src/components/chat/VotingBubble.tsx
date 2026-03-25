@@ -41,17 +41,12 @@ function ModelAvatar({ providerId, displayName }: { providerId?: string; display
   );
 }
 
-// A single vote comment bubble (below the option)
-function VoteComment({ vote }: { vote: VoteResult }) {
+// A compact voter chip — avatar + name, no statement
+function VoterChip({ vote }: { vote: VoteResult }) {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex items-center gap-1.5">
       <ModelAvatar providerId={vote.providerId} displayName={vote.displayName} />
-      <div className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-2xl rounded-tl-none text-xs text-gray-700 dark:text-gray-200 max-w-xs">
-        <span className="font-medium text-gray-500 dark:text-gray-400 mr-1">
-          {vote.displayName}
-        </span>
-        <span className="italic">"{vote.statement}"</span>
-      </div>
+      <span className="text-xs text-gray-500 dark:text-gray-400">{vote.displayName}</span>
     </div>
   );
 }
@@ -64,7 +59,7 @@ export function VotingBubble({ message }: VotingBubbleProps) {
   const card = message.voteCard;
   if (!card) return null;
 
-  const { phase, alternatives, votes, activeVoterIndex, activeStatement, totalVoters } = card;
+  const { phase, alternatives, votes, activeVoterIndex, totalVoters } = card;
 
   // Count votes per option letter
   const tallyMap: Record<string, number> = {};
@@ -149,8 +144,7 @@ export function VotingBubble({ message }: VotingBubbleProps) {
               // Models currently voting on this option (for the "voting" phase active row)
               const isActiveOption =
                 phase === 'voting' &&
-                activeVoterIndex !== undefined &&
-                activeStatement !== undefined;
+                activeVoterIndex !== undefined;
 
               return (
                 <div
@@ -203,26 +197,22 @@ export function VotingBubble({ message }: VotingBubbleProps) {
                     </div>
                   </div>
 
-                  {/* Vote comments for this option */}
+                  {/* Voters for this option */}
                   {optionVotes.length > 0 && (
-                    <div className="space-y-2 ml-8">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1.5 ml-8 mt-1">
                       {optionVotes.map((v) => (
-                        <VoteComment key={v.modelId} vote={v} />
+                        <VoterChip key={v.modelId} vote={v} />
                       ))}
                     </div>
                   )}
 
-                  {/* Active voter streaming row (show under the option they chose, but
-                      we don't know which option until vote_done, so we show under last section) */}
+                  {/* Active voter indicator (voting in progress) */}
                   {isActiveOption && idx === alternatives.length - 1 && (
-                    <div className="mt-2 ml-8 flex items-start gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                    <div className="mt-2 ml-8 flex items-center gap-1.5">
+                      <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
                       </div>
-                      <div className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-2xl rounded-tl-none text-xs text-gray-600 dark:text-gray-300 italic max-w-xs">
-                        "{activeStatement}"
-                        <span className="inline-block w-1.5 h-3 bg-gray-400 animate-pulse ml-0.5 align-middle" />
-                      </div>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">···</span>
                     </div>
                   )}
 

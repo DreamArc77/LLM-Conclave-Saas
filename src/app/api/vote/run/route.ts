@@ -28,47 +28,26 @@ interface VoteRunRequest {
   sessionId?: string;
 }
 
-function getVotePrompt(locale: Locale, alternatives: string[], displayName: string): string {
+function getVotePrompt(locale: Locale, alternatives: string[]): string {
   const optionLines = alternatives
     .map((alt, i) => `${OPTION_LETTERS[i]}: ${alt}`)
     .join('\n');
 
   switch (locale) {
     case 'en':
-      return `You are ${displayName} and you have participated in the discussion above.
+      return `Choose the best option. Reply with only one line: "Vote: [letter]" (e.g., "Vote: A"). Nothing else.
 
-Now it's time to vote. Choose the best option from the following candidate solutions:
-
-${optionLines}
-
-Instructions:
-- Start your response with "Vote: [letter]" on the first line (e.g., "Vote: A")
-- Then write 1-2 sentences explaining your choice
-- Be concise and direct`;
+${optionLines}`;
 
     case 'ja':
-      return `あなたは${displayName}として上記の議論に参加しました。
+      return `最良の選択肢を選んでください。「投票：[文字]」の一行のみ返答してください（例：「投票：A」）。それ以外は不要です。
 
-次の候補から最良の選択肢に投票してください：
-
-${optionLines}
-
-指示：
-- 最初の行に「投票：[文字]」と書いてください（例：「投票：A」）
-- 次に1〜2文で選択の理由を説明してください
-- 簡潔に答えてください`;
+${optionLines}`;
 
     default: // zh-CN
-      return `你是${displayName}，你已参与了上述讨论。
+      return `请选出最优方案。只需回复一行：「投票：[字母]」（例如：「投票：A」）。不要其他任何内容。
 
-现在请从以下备选方案中投票选出最优方案：
-
-${optionLines}
-
-要求：
-- 第一行写"投票：[字母]"（例如："投票：A"）
-- 然后用 1-2 句话说明你的选择理由
-- 保持简洁直接`;
+${optionLines}`;
   }
 }
 
@@ -97,7 +76,7 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { models, alternatives, context, locale = 'zh-CN' } = body;
+  const { models, alternatives, locale = 'zh-CN' } = body;
   if (!models?.length || !alternatives?.length || alternatives.length < 2) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
   }
@@ -138,19 +117,10 @@ export async function POST(req: Request): Promise<Response> {
         }
 
         const baseUrl = model.baseUrl || provider.defaultBaseUrl;
-        const votePrompt = getVotePrompt(locale, alternatives, model.displayName);
-
-        // Build messages: conversation context + voting prompt as final user message
-        const userLabel = locale === 'en' ? 'User' : locale === 'ja' ? 'ユーザー' : '用户';
-        const historyText = context
-          .map((m) => `${m.role === 'user' ? userLabel : (m.displayName || 'AI')}:\n${m.content}`)
-          .join('\n\n');
+        const votePrompt = getVotePrompt(locale, alternatives);
 
         const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [
-          {
-            role: 'user',
-            content: historyText ? `${historyText}\n\n---\n\n${votePrompt}` : votePrompt,
-          },
+          { role: 'user', content: votePrompt },
         ];
 
         let fullContent = '';

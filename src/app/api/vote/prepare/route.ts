@@ -21,34 +21,34 @@ function getAlternativesPrompt(
 ): string {
   switch (locale) {
     case 'en':
-      return `Based on the following AI council discussion about "${query}", identify 2 to 4 distinct solution approaches or recommendations that emerged.
+      return `Based on the following AI council discussion about "${query}", identify 2 to 4 clear and distinct positions or directions that emerged.
 
-Return ONLY a JSON array of strings. Each string should be a concise (1-2 sentence) description of one alternative approach. No explanation, no markdown, just the raw JSON array.
+Return ONLY a JSON array of strings. Each string represents one distinct stance or direction — faithful to what was argued in the discussion. If opposing views emerged, reflect them. No explanation, no markdown, just the raw JSON array.
 
 Example output format:
-["Approach A description here.", "Approach B description here.", "Approach C description here."]
+["Position A", "Position B", "Position C"]
 
 Discussion:
 ${conversation}`;
 
     case 'ja':
-      return `「${query}」に関する以下のAI評議会の議論をもとに、浮かび上がった2〜4つの異なる解決策や提案を特定してください。
+      return `「${query}」に関する以下のAI評議会の議論をもとに、浮かび上がった2〜4つの明確で独自の立場や方向性を特定してください。
 
-JSONの文字列配列のみを返してください。各文字列は、1〜2文で一つの選択肢を簡潔に説明したものにしてください。説明不要、Markdown不要、生のJSON配列のみ返してください。
+JSONの文字列配列のみを返してください。各文字列は議論で主張された一つの立場や方向性を表します。対立する意見があれば忠実に反映してください。説明不要、Markdown不要、生のJSON配列のみ返してください。
 
 出力例：
-["選択肢Aの説明。", "選択肢Bの説明。", "選択肢Cの説明。"]
+["立場A", "立場B", "立場C"]
 
 議論内容：
 ${conversation}`;
 
     default: // zh-CN
-      return `根据以下关于「${query}」的AI议会讨论内容，归纳出 2 到 4 个具体的解决方案或建议方向。
+      return `根据以下关于「${query}」的AI议会讨论内容，归纳出 2 到 4 个清晰、独特的立场或方向。
 
-只返回 JSON 字符串数组，不要任何解释或 Markdown，直接返回原始 JSON 数组。每个字符串用 1-2 句话简洁描述一个备选方案。
+只返回 JSON 字符串数组，不要任何解释或 Markdown，直接返回原始 JSON 数组。每个字符串代表一个独立的立场或方向，忠实反映讨论中出现的观点，如有对立观点请如实体现。
 
 输出格式示例：
-["备选方案A的描述。", "备选方案B的描述。", "备选方案C的描述。"]
+["立场或方向A", "立场或方向B", "立场或方向C"]
 
 讨论内容：
 ${conversation}`;
