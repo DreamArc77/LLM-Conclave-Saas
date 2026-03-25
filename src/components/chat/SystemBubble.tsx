@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Download, ExternalLink } from 'lucide-react';
+import { FileText, Download, ExternalLink, Vote } from 'lucide-react';
 import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
 import { useChatStore } from '@/stores/chat-store';
 import { useT } from '@/hooks/useT';
 import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
+import { prepareVoting } from '@/lib/vote/vote-engine';
 import type { ChatMessage } from '@/types/chat';
 import type { Locale } from '@/i18n';
 
@@ -25,10 +26,46 @@ type DownloadState =
 export function SystemBubble({ message }: SystemBubbleProps) {
   const [dlState, setDlState] = useState<DownloadState>({ phase: 'idle' });
   const [markdownCache, setMarkdownCache] = useState<Partial<Record<Locale, string>>>({});
+  const [concludeLoading, setConcludeLoading] = useState(false);
   const exportFormat = useConfigStore((s) => s.exportFormat);
   const locale = useLocaleStore((s) => s.locale);
   const messages = useChatStore((s) => s.messages);
+  const activeSessionId = useChatStore((s) => s.activeSessionId);
   const t = useT();
+
+  // ── Conclude Discussion prompt ──────────────────────────────────────────
+  if (message.isConcludePrompt) {
+    const handleConclude = async () => {
+      if (!activeSessionId || concludeLoading) return;
+      setConcludeLoading(true);
+      try {
+        await prepareVoting(activeSessionId);
+      } finally {
+        setConcludeLoading(false);
+      }
+    };
+
+    return (
+      <div className="flex justify-center px-4 py-2">
+        <div className="flex items-start gap-2 max-w-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 text-sm">
+          <Vote className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
+          <div className="flex-1">
+            <p className="text-gray-600 dark:text-gray-300 text-xs mb-2">
+              {t('voting.concludeHint')}
+            </p>
+            <button
+              onClick={handleConclude}
+              disabled={concludeLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-colors"
+            >
+              <Vote className="w-3.5 h-3.5" />
+              {concludeLoading ? t('voting.loadingAlternatives') : t('voting.conclude')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
   const reportUrl = isSaas && message.sessionId

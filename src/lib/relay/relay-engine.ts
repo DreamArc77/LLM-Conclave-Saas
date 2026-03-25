@@ -131,6 +131,22 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>, relay
         if (totalTokens > COMPACT_TOKEN_THRESHOLD) {
           triggerBackgroundCompaction(sessionId).catch(() => {});
         }
+        // Append "conclude discussion" prompt so the user can start the voting/decision phase
+        const concludeId = `${sessionId}-${relayRunId}-conclude`;
+        if (!existingIds.has(concludeId)) {
+          existingIds.add(concludeId);
+          const concludeMsg: ChatMessage = {
+            id: concludeId,
+            sessionId,
+            role: 'assistant',
+            content: '',
+            timestamp: Date.now(),
+            isSystem: true,
+            isConcludePrompt: true,
+          };
+          useChatStore.getState().appendMessage(concludeMsg);
+          // Note: conclude prompt is ephemeral — not persisted to IndexedDB
+        }
         break;
       }
 
@@ -298,7 +314,10 @@ export async function executeRelay(
         models,
         priorContext,
         locale,
-        generateReport: configStore.generateReport,
+        // Report generation is now handled by the client-side voting flow.
+        // The "Conclude Discussion" button appears after relay_done and triggers
+        // report generation with voting results included.
+        generateReport: false,
       }),
       signal: abortController.signal,
     });

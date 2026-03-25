@@ -29,6 +29,7 @@ interface ChatState {
   errorRelay: (errorMsg: string) => void;
   completeRelay: () => void;
   setAbortController: (ac: AbortController | null) => void;
+  updateMessage: (id: string, updates: Partial<ChatMessage>) => void;
   clearMessages: () => void;
   applyCompaction: (summary: string, keepRecentN: number) => void;
 }
@@ -105,6 +106,11 @@ export const useChatStore = create<ChatState>()((set) => ({
   setAbortController: (ac) =>
     set((state) => ({
       relay: { ...state.relay, abortController: ac },
+    })),
+
+  updateMessage: (id, updates) =>
+    set((state) => ({
+      messages: state.messages.map((m) => (m.id === id ? { ...m, ...updates } : m)),
     })),
 
   clearMessages: () => set({ messages: [], compactedSummary: null }),

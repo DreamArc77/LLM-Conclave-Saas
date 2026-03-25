@@ -4,6 +4,7 @@ import { UserBubble } from './UserBubble';
 import { AiBubble } from './AiBubble';
 import { ErrorBubble } from './ErrorBubble';
 import { SystemBubble } from './SystemBubble';
+import { VotingBubble } from './VotingBubble';
 import type { ChatMessage } from '@/types/chat';
 
 interface MessageBubbleProps {
@@ -11,6 +12,10 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
+  if (message.voteCard) {
+    return <VotingBubble message={message} />;
+  }
+
   if (message.isSystem) {
     return <SystemBubble message={message} />;
   }
