@@ -21,36 +21,45 @@ function getAlternativesPrompt(
 ): string {
   switch (locale) {
     case 'en':
-      return `Based on the following AI council discussion about "${query}", identify 2 to 4 clear and distinct positions or directions that emerged.
+      return `You are a meeting facilitator. Based on the following discussion about "${query}", generate 2-4 decision options for a vote.
 
-Return ONLY a JSON array of strings. Each string represents one distinct stance or direction — faithful to what was argued in the discussion. If opposing views emerged, reflect them. No explanation, no markdown, just the raw JSON array.
+Steps:
+1. Identify points of consensus across participants — merge these into a shared foundation (no need to vote on what everyone agrees on)
+2. Identify the core points of disagreement — these become the basis for distinct voting options
+3. Each option should represent a complete, actionable decision direction that a decision-maker could choose and execute
 
-Example output format:
-["Position A", "Position B", "Position C"]
+Return ONLY a JSON array of strings. No explanation, no markdown:
+["Option A", "Option B", "Option C"]
 
 Discussion:
 ${conversation}`;
 
     case 'ja':
-      return `「${query}」に関する以下のAI評議会の議論をもとに、浮かび上がった2〜4つの明確で独自の立場や方向性を特定してください。
+      return `あなたは会議進行役です。「${query}」に関する以下の議論をもとに、意思決定者が投票できる2〜4つの選択肢を生成してください。
 
-JSONの文字列配列のみを返してください。各文字列は議論で主張された一つの立場や方向性を表します。対立する意見があれば忠実に反映してください。説明不要、Markdown不要、生のJSON配列のみ返してください。
+手順：
+1. 参加者間の合意点を特定する（合意事項は共通前提としてまとめる — 合意点に投票は不要）
+2. 核心的な対立点・意見の相違を特定し、それを投票選択肢の軸にする
+3. 各選択肢は、意思決定者が選んで実行できる完全な方向性を表すこと
 
-出力例：
-["立場A", "立場B", "立場C"]
+JSONの文字列配列のみを返してください。説明・Markdown不要：
+["選択肢A", "選択肢B", "選択肢C"]
 
 議論内容：
 ${conversation}`;
 
     default: // zh-CN
-      return `根据以下关于「${query}」的AI议会讨论内容，归纳出 2 到 4 个清晰、独特的立场或方向。
+      return `你是一名会议记录专员。请根据以下关于「${query}」的讨论，为决策者生成 2-4 个可供投票的决策选项。
 
-只返回 JSON 字符串数组，不要任何解释或 Markdown，直接返回原始 JSON 数组。每个字符串代表一个独立的立场或方向，忠实反映讨论中出现的观点，如有对立观点请如实体现。
+步骤：
+1. 识别讨论中各方的共识点 —— 将共识合并为共同前提（无需为共识单独设投票项）
+2. 识别核心分歧点 —— 围绕分歧点设计投票选项
+3. 每个选项应代表一种完整、可执行的决策方向，而非单一观点的复述；选项之间应存在实质性差异
 
-输出格式示例：
-["立场或方向A", "立场或方向B", "立场或方向C"]
+只返回 JSON 字符串数组，直接输出，不要解释、不要 Markdown：
+["选项A", "选项B", "选项C"]
 
-讨论内容：
+讨论记录：
 ${conversation}`;
   }
 }
