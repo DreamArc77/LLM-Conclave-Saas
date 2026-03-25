@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { Vote } from 'lucide-react';
-import { ProviderLogo } from '@/components/common/ProviderLogo';
+import { ModelLogo } from '@/components/common/ModelLogo';
 import { useT } from '@/hooks/useT';
 import { runVoting } from '@/lib/vote/vote-engine';
 import { useChatStore } from '@/stores/chat-store';
 import type { ChatMessage, VoteResult } from '@/types/chat';
-import type { ProviderId } from '@/types/config';
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
@@ -15,37 +14,15 @@ interface VotingBubbleProps {
   message: ChatMessage;
 }
 
-// Tiny model avatar — provider logo or colored initial badge
-function ModelAvatar({ providerId, displayName }: { providerId?: string; displayName: string }) {
-  if (providerId) {
-    return (
-      <ProviderLogo
-        providerId={providerId as ProviderId}
-        size={28}
-        className="rounded-full flex-shrink-0"
-      />
-    );
-  }
-  // fallback: colored initial badge
-  const colors = [
-    'bg-violet-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-500',
-    'bg-rose-500', 'bg-indigo-500',
-  ];
-  const colorIdx = displayName.charCodeAt(0) % colors.length;
-  return (
-    <div
-      className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0 ${colors[colorIdx]}`}
-    >
-      {displayName.charAt(0).toUpperCase()}
-    </div>
-  );
+function ModelAvatar({ modelId, displayName }: { modelId?: string; displayName: string }) {
+  return <ModelLogo modelId={modelId} displayName={displayName} size={28} />;
 }
 
 // A compact voter chip — avatar + name, no statement
 function VoterChip({ vote }: { vote: VoteResult }) {
   return (
     <div className="flex items-center gap-1.5">
-      <ModelAvatar providerId={vote.providerId} displayName={vote.displayName} />
+      <ModelAvatar modelId={vote.modelId} displayName={vote.displayName} />
       <span className="text-xs text-gray-500 dark:text-gray-400">{vote.displayName}</span>
     </div>
   );

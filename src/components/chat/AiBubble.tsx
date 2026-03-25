@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { ProviderLogo } from '@/components/common/ProviderLogo';
+import { ModelLogo } from '@/components/common/ModelLogo';
 import { useT } from '@/hooks/useT';
 import type { ChatMessage } from '@/types/chat';
-import type { ProviderId } from '@/types/config';
 
 // Only show collapse toggle when content is taller than this (px)
 const COLLAPSE_THRESHOLD = 160;
@@ -37,8 +36,8 @@ export function AiBubble({ message, isStreaming }: AiBubbleProps) {
     <div className="flex justify-start mb-4">
       <div className="max-w-[80%]">
         <div className="flex items-center gap-2 mb-1">
-          {message.providerId && (
-            <ProviderLogo providerId={message.providerId as ProviderId} size={20} />
+          {message.modelId && (
+            <ModelLogo modelId={message.modelId} displayName={message.displayName || message.modelId} size={20} />
           )}
           <span className="text-sm font-medium text-gray-500">
             {message.displayName || message.modelId}
