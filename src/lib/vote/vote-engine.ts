@@ -243,13 +243,14 @@ async function generateReportWithVotes(
     const res = await fetch('/api/report/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: convMessages, query, locale, voteResults: votes, alternatives }),
+      body: JSON.stringify({ messages: convMessages, query, locale }),
     });
 
     if (!res.ok) throw new Error(`/api/report/generate failed: ${res.status}`);
     const { markdown, filename } = await res.json() as { markdown: string; filename: string };
 
-    const elapsed = 0; // not tracked here
+    const startedAt = useChatStore.getState().relay.startedAt;
+    const elapsed = startedAt ? Math.round((Date.now() - startedAt) / 1000) : 0;
     const topic = query.slice(0, 30) + (query.length > 30 ? '...' : '');
     const reportId = `${sessionId}-vote-report-${nanoid(4)}`;
     const reportMsg: ChatMessage = {

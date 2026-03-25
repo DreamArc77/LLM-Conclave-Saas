@@ -17,89 +17,10 @@ import {
 } from '@/i18n/prompts';
 import type { Locale } from '@/i18n';
 import type { ProviderId } from '@/types/config';
-import type { VoteResult } from '@/types/chat';
-
 export interface ConvMessage {
   role: 'user' | 'assistant';
   content: string;
   displayName?: string;
-}
-
-export interface VoteContext {
-  alternatives: string[];
-  votes: VoteResult[];
-}
-
-const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
-
-/** Builds a Markdown voting-results section to append directly to the report. */
-function buildVoteReportSection(locale: Locale, voteCtx: VoteContext): string {
-  const { alternatives, votes } = voteCtx;
-  if (!alternatives.length || !votes.length) return '';
-
-  const tallyMap: Record<string, VoteResult[]> = {};
-  for (const letter of OPTION_LETTERS.slice(0, alternatives.length)) {
-    tallyMap[letter] = [];
-  }
-  for (const v of votes) {
-    if (!tallyMap[v.choice]) tallyMap[v.choice] = [];
-    tallyMap[v.choice].push(v);
-  }
-
-  const sorted = Object.entries(tallyMap).sort((a, b) => b[1].length - a[1].length);
-  const [winnerLetter, winnerVotes] = sorted[0];
-  const winnerAlt = alternatives[OPTION_LETTERS.indexOf(winnerLetter)];
-
-  const rows = alternatives.map((alt, i) => {
-    const letter = OPTION_LETTERS[i];
-    const optVotes = tallyMap[letter] ?? [];
-    const isWinner = letter === winnerLetter;
-    const statements = optVotes.map((v) => `  - **${v.displayName}**: "${v.statement}"`).join('\n');
-    return `### ${isWinner ? '✨ ' : ''}Option ${letter}${isWinner ? ' _(winner)_' : ''}\n${alt}\n\n**Votes: ${optVotes.length} / ${votes.length}**${statements ? '\n' + statements : ''}`;
-  });
-
-  switch (locale) {
-    case 'en':
-      return `\n\n---\n\n## 🗳️ Council Vote Results\n\n**Decision: Option ${winnerLetter}** — ${winnerAlt} *(${winnerVotes.length}/${votes.length} votes)*\n\n${rows.join('\n\n')}`;
-    case 'ja':
-      return `\n\n---\n\n## 🗳️ 投票結果\n\n**決定：案 ${winnerLetter}** — ${winnerAlt} *（${winnerVotes.length}/${votes.length} 票）*\n\n${rows.join('\n\n')}`;
-    default:
-      return `\n\n---\n\n## 🗳️ 议会投票结果\n\n**决定：方案 ${winnerLetter}** — ${winnerAlt} *（${winnerVotes.length}/${votes.length} 票）*\n\n${rows.join('\n\n')}`;
-  }
-}
-
-/** Builds a formatted voting-results block to append to the conversation context. */
-function buildVoteContextBlock(locale: Locale, voteCtx: VoteContext): string {
-  const { alternatives, votes } = voteCtx;
-  if (!alternatives.length || !votes.length) return '';
-
-  const tallyMap: Record<string, VoteResult[]> = {};
-  for (const letter of OPTION_LETTERS.slice(0, alternatives.length)) {
-    tallyMap[letter] = [];
-  }
-  for (const v of votes) {
-    if (!tallyMap[v.choice]) tallyMap[v.choice] = [];
-    tallyMap[v.choice].push(v);
-  }
-
-  const winner = Object.entries(tallyMap).sort((a, b) => b[1].length - a[1].length)[0];
-  const optionLines = alternatives
-    .map((alt, i) => {
-      const letter = OPTION_LETTERS[i];
-      const optVotes = tallyMap[letter] ?? [];
-      const voterSummary = optVotes.map((v) => `${v.displayName}: "${v.statement}"`).join(' | ');
-      return `${letter}: ${alt}${voterSummary ? ` → ${voterSummary}` : ''}`;
-    })
-    .join('\n');
-
-  switch (locale) {
-    case 'en':
-      return `\n\n=== Voting Results ===\nOptions:\n${optionLines}\nDecision: Option ${winner[0]} (${winner[1].length}/${votes.length} votes)`;
-    case 'ja':
-      return `\n\n=== 投票結果 ===\n選択肢：\n${optionLines}\n決定：案 ${winner[0]}（${winner[1].length}/${votes.length} 票）`;
-    default:
-      return `\n\n=== 投票结果 ===\n备选方案：\n${optionLines}\n决定：方案 ${winner[0]}（${winner[1].length}/${votes.length} 票）`;
-  }
 }
 
 /**
@@ -110,7 +31,6 @@ export async function generateReportMarkdown(
   fullContext: ConvMessage[],
   query: string,
   locale: Locale,
-  voteCtx?: VoteContext,
 ): Promise<string> {
   // Model selection: prefer Gemini Flash, fall back to first available preset
   let summaryApiKey: string | null = null;
@@ -187,9 +107,7 @@ export async function generateReportMarkdown(
     .replace('{{本次credit消耗}}', getCreditCostLabel(locale, 0))
     .replace(/\{\{请根据全场对话记录进行提炼。[\s\S]*?\}\}/, researchMethod);
 
-  // Append voting results block if provided
-  const voteBlock = voteCtx ? buildVoteContextBlock(locale, voteCtx) : '';
-  const summaryPrompt = getSummaryPromptFull(locale, filledTemplate, conversation + voteBlock);
+  const summaryPrompt = getSummaryPromptFull(locale, filledTemplate, conversation);
 
   // Accumulate streamed chunks into a string
   let markdown = '';
@@ -220,6 +138,5 @@ export async function generateReportMarkdown(
       throw new Error('Unknown provider protocol');
   }
 
-  const voteSection = voteCtx ? buildVoteReportSection(locale, voteCtx) : '';
-  return markdown.trim() + voteSection;
+  return markdown.trim();
 }

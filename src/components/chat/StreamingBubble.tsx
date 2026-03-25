@@ -2,7 +2,7 @@
 
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
-import { ProviderLogo } from '@/components/common/ProviderLogo';
+import { ModelLogo } from '@/components/common/ModelLogo';
 import { useT } from '@/hooks/useT';
 
 export function StreamingBubble() {
@@ -20,8 +20,8 @@ export function StreamingBubble() {
     <div className="flex justify-start mb-4">
       <div className="max-w-[80%]">
         <div className="flex items-center gap-2 mb-1">
-          {activeModel?.providerId && (
-            <ProviderLogo providerId={activeModel.providerId} size={20} />
+          {activeModel?.modelId && (
+            <ModelLogo modelId={activeModel.modelId} displayName={relay.currentModelName} size={20} />
           )}
           <span className="text-sm font-medium text-gray-500">
             {relay.currentModelName}

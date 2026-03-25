@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Zap } from 'lucide-react';
-import { ProviderLogo } from '@/components/common/ProviderLogo';
+import { ModelLogo } from '@/components/common/ModelLogo';
 import { useConfigStore } from '@/stores/config-store';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import type { ModelConfig } from '@/types/config';
@@ -59,7 +59,7 @@ export function ModelCard({ model }: ModelCardProps) {
           <GripVertical className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
 
-        <ProviderLogo providerId={model.providerId} size={18} />
+        <ModelLogo modelId={model.modelId} displayName={model.displayName} size={18} />
 
         <div
           className="flex-1 min-w-0 cursor-pointer"

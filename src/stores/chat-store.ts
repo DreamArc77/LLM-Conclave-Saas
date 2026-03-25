@@ -10,6 +10,7 @@ interface RelayState {
   streamingContent: string;
   abortController: AbortController | null;
   round: number;
+  startedAt: number | null;
 }
 
 interface ChatState {
@@ -41,6 +42,7 @@ const initialRelay: RelayState = {
   streamingContent: '',
   abortController: null,
   round: -1,
+  startedAt: null,
 };
 
 export const useChatStore = create<ChatState>()((set) => ({
@@ -70,6 +72,7 @@ export const useChatStore = create<ChatState>()((set) => ({
         currentModelName: '',
         streamingContent: '',
         round: -1,
+        startedAt: Date.now(),
       },
     })),
 
