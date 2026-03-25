@@ -32,6 +32,42 @@ export interface VoteContext {
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
+/** Builds a Markdown voting-results section to append directly to the report. */
+function buildVoteReportSection(locale: Locale, voteCtx: VoteContext): string {
+  const { alternatives, votes } = voteCtx;
+  if (!alternatives.length || !votes.length) return '';
+
+  const tallyMap: Record<string, VoteResult[]> = {};
+  for (const letter of OPTION_LETTERS.slice(0, alternatives.length)) {
+    tallyMap[letter] = [];
+  }
+  for (const v of votes) {
+    if (!tallyMap[v.choice]) tallyMap[v.choice] = [];
+    tallyMap[v.choice].push(v);
+  }
+
+  const sorted = Object.entries(tallyMap).sort((a, b) => b[1].length - a[1].length);
+  const [winnerLetter, winnerVotes] = sorted[0];
+  const winnerAlt = alternatives[OPTION_LETTERS.indexOf(winnerLetter)];
+
+  const rows = alternatives.map((alt, i) => {
+    const letter = OPTION_LETTERS[i];
+    const optVotes = tallyMap[letter] ?? [];
+    const isWinner = letter === winnerLetter;
+    const statements = optVotes.map((v) => `  - **${v.displayName}**: "${v.statement}"`).join('\n');
+    return `### ${isWinner ? '✨ ' : ''}Option ${letter}${isWinner ? ' _(winner)_' : ''}\n${alt}\n\n**Votes: ${optVotes.length} / ${votes.length}**${statements ? '\n' + statements : ''}`;
+  });
+
+  switch (locale) {
+    case 'en':
+      return `\n\n---\n\n## 🗳️ Council Vote Results\n\n**Decision: Option ${winnerLetter}** — ${winnerAlt} *(${winnerVotes.length}/${votes.length} votes)*\n\n${rows.join('\n\n')}`;
+    case 'ja':
+      return `\n\n---\n\n## 🗳️ 投票結果\n\n**決定：案 ${winnerLetter}** — ${winnerAlt} *（${winnerVotes.length}/${votes.length} 票）*\n\n${rows.join('\n\n')}`;
+    default:
+      return `\n\n---\n\n## 🗳️ 议会投票结果\n\n**决定：方案 ${winnerLetter}** — ${winnerAlt} *（${winnerVotes.length}/${votes.length} 票）*\n\n${rows.join('\n\n')}`;
+  }
+}
+
 /** Builds a formatted voting-results block to append to the conversation context. */
 function buildVoteContextBlock(locale: Locale, voteCtx: VoteContext): string {
   const { alternatives, votes } = voteCtx;
@@ -184,5 +220,6 @@ export async function generateReportMarkdown(
       throw new Error('Unknown provider protocol');
   }
 
-  return markdown.trim();
+  const voteSection = voteCtx ? buildVoteReportSection(locale, voteCtx) : '';
+  return markdown.trim() + voteSection;
 }
