@@ -45,7 +45,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
 ];
 
 /** New user welcome bonus: covers 1 round with default enabled models (deepseek 15 + gpt 250 + gemini 60 = 325) */
-export const WELCOME_CREDITS = 350;
+export const WELCOME_CREDITS = 1050;
 
 /** Extra credits granted to a new user who redeems an invite code */
 export const INVITE_INVITEE_BONUS = 100;
