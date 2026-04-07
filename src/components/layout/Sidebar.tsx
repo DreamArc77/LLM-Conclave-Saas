@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { Plus, MessageSquare, Trash2, Bot } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db/database';
@@ -164,10 +165,26 @@ export function Sidebar() {
         )}
       </div>
 
-      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex items-center gap-1.5">
         <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none font-mono">
-          {process.env.NEXT_PUBLIC_BUILD_HASH ?? 'dev'}
+          {process.env.NEXT_PUBLIC_BUILD_HASH ?? 'v0.1.0'}
         </span>
+        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">·</span>
+        <Link
+          href="/terms"
+          target="_blank"
+          className="text-[10px] text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500 transition-colors"
+        >
+          Terms
+        </Link>
+        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">·</span>
+        <Link
+          href="/privacy"
+          target="_blank"
+          className="text-[10px] text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500 transition-colors"
+        >
+          Privacy
+        </Link>
       </div>
     </div>
   );
