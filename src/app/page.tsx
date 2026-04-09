@@ -2,6 +2,6 @@
 
 import { AppShell } from '@/components/layout/AppShell';
 
-export default function Home() {
+export default function ChatConsole() {
   return <AppShell />;
 }

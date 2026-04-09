@@ -1,259 +1,259 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { FileText, Download, ExternalLink, Vote } from 'lucide-react';
-import { useConfigStore } from '@/stores/config-store';
-import { useLocaleStore } from '@/stores/locale-store';
-import { useChatStore } from '@/stores/chat-store';
-import { useT } from '@/hooks/useT';
-import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
-import { prepareVoting } from '@/lib/vote/vote-engine';
-import type { ChatMessage } from '@/types/chat';
-import type { Locale } from '@/i18n';
+import { useState, useEffect } from'react';
+import { FileText, Download, ExternalLink, Vote } from'lucide-react';
+import { useConfigStore } from'@/stores/config-store';
+import { useLocaleStore } from'@/stores/locale-store';
+import { useChatStore } from'@/stores/chat-store';
+import { useT } from'@/hooks/useT';
+import { generatePDFBlob, generatePNGBlob } from'@/lib/export/pdf-export';
+import { prepareVoting } from'@/lib/vote/vote-engine';
+import type { ChatMessage } from'@/types/chat';
+import type { Locale } from'@/i18n';
 
-const isSaas = process.env.NEXT_PUBLIC_SAAS_MODE === 'true';
+const isSaas = process.env.NEXT_PUBLIC_SAAS_MODE ==='true';
 
 interface SystemBubbleProps {
-  message: ChatMessage;
+ message: ChatMessage;
 }
 
 type DownloadState =
-  | { phase: 'idle' }
-  | { phase: 'generating' }
-  | { phase: 'ready'; blob: Blob; filename: string; mimeType: string; objectUrl: string }
-  | { phase: 'error'; message: string };
+ | { phase:'idle'}
+ | { phase:'generating'}
+ | { phase:'ready'; blob: Blob; filename: string; mimeType: string; objectUrl: string }
+ | { phase:'error'; message: string };
 
 export function SystemBubble({ message }: SystemBubbleProps) {
-  const [dlState, setDlState] = useState<DownloadState>({ phase: 'idle' });
-  const [markdownCache, setMarkdownCache] = useState<Partial<Record<Locale, string>>>({});
-  const [concludeLoading, setConcludeLoading] = useState(false);
-  const exportFormat = useConfigStore((s) => s.exportFormat);
-  const locale = useLocaleStore((s) => s.locale);
-  const messages = useChatStore((s) => s.messages);
-  const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const t = useT();
+ const [dlState, setDlState] = useState<DownloadState>({ phase:'idle'});
+ const [markdownCache, setMarkdownCache] = useState<Partial<Record<Locale, string>>>({});
+ const [concludeLoading, setConcludeLoading] = useState(false);
+ const exportFormat = useConfigStore((s) => s.exportFormat);
+ const locale = useLocaleStore((s) => s.locale);
+ const messages = useChatStore((s) => s.messages);
+ const activeSessionId = useChatStore((s) => s.activeSessionId);
+ const t = useT();
 
-  // ── Conclude Discussion prompt ──────────────────────────────────────────
-  if (message.isConcludePrompt) {
-    const handleConclude = async () => {
-      if (!activeSessionId || concludeLoading) return;
-      setConcludeLoading(true);
-      try {
-        await prepareVoting(activeSessionId);
-      } finally {
-        setConcludeLoading(false);
-      }
-    };
+ // ── Conclude Discussion prompt ──────────────────────────────────────────
+ if (message.isConcludePrompt) {
+ const handleConclude = async () => {
+ if (!activeSessionId || concludeLoading) return;
+ setConcludeLoading(true);
+ try {
+ await prepareVoting(activeSessionId);
+ } finally {
+ setConcludeLoading(false);
+ }
+ };
 
-    return (
-      <div className="flex justify-center px-4 py-2">
-        <div className="flex items-start gap-2 max-w-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 text-sm">
-          <Vote className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
-          <div className="flex-1">
-            <p className="text-gray-600 dark:text-gray-300 text-xs mb-2">
-              {t('voting.concludeHint')}
-            </p>
-            <button
-              onClick={handleConclude}
-              disabled={concludeLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium rounded-lg transition-colors"
-            >
-              <Vote className="w-3.5 h-3.5" />
-              {concludeLoading ? t('voting.loadingAlternatives') : t('voting.conclude')}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+ return (
+ <div className="flex justify-center px-4 py-2">
+ <div className="flex items-start gap-2 max-w-lg bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm">
+ <Vote className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500"/>
+ <div className="flex-1">
+ <p className="text-gray-600 text-xs mb-2">
+ {t('voting.concludeHint')}
+ </p>
+ <button
+ onClick={handleConclude}
+ disabled={concludeLoading}
+ className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-[#111111] text-xs font-medium rounded-lg transition-colors"
+ >
+ <Vote className="w-3.5 h-3.5"/>
+ {concludeLoading ? t('voting.loadingAlternatives') : t('voting.conclude')}
+ </button>
+ </div>
+ </div>
+ </div>
+ );
+ }
 
-  const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const reportUrl = isSaas && message.sessionId
-    ? `/reports/${message.sessionId}?locale=${locale}`
-    : null;
+ const isIOS = typeof navigator !=='undefined'&& /iPad|iPhone|iPod/.test(navigator.userAgent);
+ const reportUrl = isSaas && message.sessionId
+ ?`/reports/${message.sessionId}?locale=${locale}`
+ : null;
 
-  // Revoke object URL when leaving 'ready' state to avoid memory leaks
-  useEffect(() => {
-    if (dlState.phase === 'ready') {
-      return () => URL.revokeObjectURL(dlState.objectUrl);
-    }
-  }, [dlState]);
+ // Revoke object URL when leaving'ready'state to avoid memory leaks
+ useEffect(() => {
+ if (dlState.phase ==='ready') {
+ return () => URL.revokeObjectURL(dlState.objectUrl);
+ }
+ }, [dlState]);
 
-  const handleGenerate = async () => {
-    if (!message.reportMarkdown || !message.reportFilename) return;
-    const base = message.reportFilename.replace(/\.[^.]+$/, '');
-    const filename = `${base}.${exportFormat}`;
-    const mimeType = exportFormat === 'pdf' ? 'application/pdf' : 'image/png';
+ const handleGenerate = async () => {
+ if (!message.reportMarkdown || !message.reportFilename) return;
+ const base = message.reportFilename.replace(/\.[^.]+$/,'');
+ const filename =`${base}.${exportFormat}`;
+ const mimeType = exportFormat ==='pdf'?'application/pdf':'image/png';
 
-    setDlState({ phase: 'generating' });
+ setDlState({ phase:'generating'});
 
-    // Determine which markdown to use: regenerate when locale differs from report's original locale
-    let effectiveMarkdown = message.reportMarkdown;
-    const needsRegen = message.reportLocale && message.reportLocale !== locale;
+ // Determine which markdown to use: regenerate when locale differs from report's original locale
+ let effectiveMarkdown = message.reportMarkdown;
+ const needsRegen = message.reportLocale && message.reportLocale !== locale;
 
-    if (needsRegen) {
-      if (markdownCache[locale]) {
-        effectiveMarkdown = markdownCache[locale]!;
-      } else {
-        try {
-          const body = isSaas
-            ? { sessionId: message.sessionId, locale }
-            : {
-                messages: messages
-                  .filter((m) => !m.isSystem && !m.isError && !m.isCompacted)
-                  .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName })),
-                query: messages.find((m) => m.role === 'user')?.content ?? '',
-                locale,
-              };
-          const res = await fetch('/api/report/regenerate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            effectiveMarkdown = data.markdown;
-            setMarkdownCache((prev) => ({ ...prev, [locale]: data.markdown }));
-          }
-        } catch {
-          // Fall through with original markdown
-        }
-      }
-    }
+ if (needsRegen) {
+ if (markdownCache[locale]) {
+ effectiveMarkdown = markdownCache[locale]!;
+ } else {
+ try {
+ const body = isSaas
+ ? { sessionId: message.sessionId, locale }
+ : {
+ messages: messages
+ .filter((m) => !m.isSystem && !m.isError && !m.isCompacted)
+ .map((m) => ({ role: m.role, content: m.content, displayName: m.displayName })),
+ query: messages.find((m) => m.role ==='user')?.content ??'',
+ locale,
+ };
+ const res = await fetch('/api/report/regenerate', {
+ method:'POST',
+ headers: {'Content-Type':'application/json'},
+ body: JSON.stringify(body),
+ });
+ if (res.ok) {
+ const data = await res.json();
+ effectiveMarkdown = data.markdown;
+ setMarkdownCache((prev) => ({ ...prev, [locale]: data.markdown }));
+ }
+ } catch {
+ // Fall through with original markdown
+ }
+ }
+ }
 
-    try {
-      const blob = exportFormat === 'pdf'
-        ? await generatePDFBlob(effectiveMarkdown, locale)
-        : await generatePNGBlob(effectiveMarkdown, locale);
-      const objectUrl = URL.createObjectURL(blob);
-      setDlState({ phase: 'ready', blob, filename, mimeType, objectUrl });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : t('export.generateFailed');
-      setDlState({ phase: 'error', message: msg });
-    }
-  };
+ try {
+ const blob = exportFormat ==='pdf'
+ ? await generatePDFBlob(effectiveMarkdown, locale)
+ : await generatePNGBlob(effectiveMarkdown, locale);
+ const objectUrl = URL.createObjectURL(blob);
+ setDlState({ phase:'ready', blob, filename, mimeType, objectUrl });
+ } catch (err) {
+ const msg = err instanceof Error ? err.message : t('export.generateFailed');
+ setDlState({ phase:'error', message: msg });
+ }
+ };
 
-  const handleSave = (blob: Blob, filename: string, mimeType: string) => {
-    if (isIOS && typeof navigator.share === 'function') {
-      const file = new File([blob], filename, { type: mimeType });
-      navigator.share({ files: [file], title: filename }).catch((err) => {
-        if (err instanceof Error && err.name === 'AbortError') {
-          // User closed share sheet — stay on ready state
-        } else {
-          setDlState((s) =>
-            s.phase === 'ready'
-              ? { phase: 'error', message: err instanceof Error ? err.message : t('export.shareFailed') }
-              : s
-          );
-        }
-      });
-    } else {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    }
-  };
+ const handleSave = (blob: Blob, filename: string, mimeType: string) => {
+ if (isIOS && typeof navigator.share ==='function') {
+ const file = new File([blob], filename, { type: mimeType });
+ navigator.share({ files: [file], title: filename }).catch((err) => {
+ if (err instanceof Error && err.name ==='AbortError') {
+ // User closed share sheet — stay on ready state
+ } else {
+ setDlState((s) =>
+ s.phase ==='ready'
+ ? { phase:'error', message: err instanceof Error ? err.message : t('export.shareFailed') }
+ : s
+ );
+ }
+ });
+ } else {
+ const a = document.createElement('a');
+ a.href = URL.createObjectURL(blob);
+ a.download = filename;
+ a.click();
+ setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+ }
+ };
 
-  const btnBase = 'flex items-center gap-1.5 transition-colors text-xs font-medium';
+ const btnBase ='flex items-center gap-1.5 transition-colors text-xs font-medium';
 
-  const ViewOnlineLink = reportUrl ? (
-    <a
-      href={reportUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${btnBase} text-blue-500 hover:text-blue-600`}
-    >
-      <ExternalLink className="w-3.5 h-3.5" />
-      {t('export.viewOnline')}
-    </a>
-  ) : null;
+ const ViewOnlineLink = reportUrl ? (
+ <a
+ href={reportUrl}
+ target="_blank"
+ rel="noopener noreferrer"
+ className={`${btnBase} text-blue-500 hover:text-blue-600`}
+ >
+ <ExternalLink className="w-3.5 h-3.5"/>
+ {t('export.viewOnline')}
+ </a>
+ ) : null;
 
-  return (
-    <div className="flex justify-center px-4 py-2">
-      <div className="flex items-start gap-2 max-w-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-        <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400" />
-        <div className="flex-1">
-          <span className="whitespace-pre-line italic">{message.content}</span>
+ return (
+ <div className="flex justify-center px-4 py-2">
+ <div className="flex items-start gap-2 max-w-lg bg-white border border-[#E5E0D8] rounded-xl px-4 py-3 text-sm text-gray-500">
+ <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400"/>
+ <div className="flex-1">
+ <span className="whitespace-pre-line italic">{message.content}</span>
 
-          {isSaas && message.usageStats && (
-            <div className="mt-1.5 text-xs text-gray-400 flex flex-wrap gap-x-2 gap-y-0.5">
-              <span>{t('relay.creditCost', { cost: message.usageStats.creditCost })}</span>
-              {message.usageStats.refund > 0 && (() => {
-                const earlyModels = message.usageStats!.models
-                  .filter((m) => m.finishedEarly && m.roundsCompleted < message.usageStats!.maxRounds)
-                  .map((m) => m.displayName)
-                  .join(t('prompts.participantSeparator'));
-                return (
-                  <span className="text-green-500">
-                    {t('relay.refund', { amount: message.usageStats!.refund })}
-                    {earlyModels ? t('relay.finishedEarly', { models: earlyModels }) : ''}
-                  </span>
-                );
-              })()}
-            </div>
-          )}
+ {isSaas && message.usageStats && (
+ <div className="mt-1.5 text-xs text-[#5D5C5A] flex flex-wrap gap-x-2 gap-y-0.5">
+ <span>{t('relay.creditCost', { cost: message.usageStats.creditCost })}</span>
+ {message.usageStats.refund > 0 && (() => {
+ const earlyModels = message.usageStats!.models
+ .filter((m) => m.finishedEarly && m.roundsCompleted < message.usageStats!.maxRounds)
+ .map((m) => m.displayName)
+ .join(t('prompts.participantSeparator'));
+ return (
+ <span className="text-green-500">
+ {t('relay.refund', { amount: message.usageStats!.refund })}
+ {earlyModels ? t('relay.finishedEarly', { models: earlyModels }) :''}
+ </span>
+ );
+ })()}
+ </div>
+ )}
 
-          {message.reportMarkdown && (
-            <div className="mt-2 flex flex-col gap-1.5">
-              {/* iOS: show online link first as primary option */}
-              {isIOS && ViewOnlineLink}
+ {message.reportMarkdown && (
+ <div className="mt-2 flex flex-col gap-1.5">
+ {/* iOS: show online link first as primary option */}
+ {isIOS && ViewOnlineLink}
 
-              {dlState.phase === 'idle' && (
-                <button onClick={handleGenerate} className={`${btnBase} text-blue-500 hover:text-blue-600`}>
-                  <Download className="w-3.5 h-3.5" />
-                  {t('export.exportReport', {
-                    filename: message.reportFilename?.replace(/\.[^.]+$/, '') ?? '',
-                    format: exportFormat,
-                  })}
-                </button>
-              )}
-              {dlState.phase === 'generating' && (
-                <button disabled className={`${btnBase} text-gray-400 opacity-50 cursor-not-allowed`}>
-                  <Download className="w-3.5 h-3.5" />
-                  {t('export.generating')}
-                </button>
-              )}
-              {dlState.phase === 'ready' && (
-                <div className="space-y-2">
-                  {dlState.mimeType === 'image/png' && (
-                    <img
-                      src={dlState.objectUrl}
-                      alt={dlState.filename}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-600"
-                    />
-                  )}
-                  <button
-                    onClick={() => handleSave(dlState.blob, dlState.filename, dlState.mimeType)}
-                    className={`${btnBase} text-green-600 hover:text-green-700`}
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    {t('export.save', { filename: dlState.filename })}
-                  </button>
-                </div>
-              )}
-              {dlState.phase === 'error' && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-red-500 text-xs">{dlState.message}</span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setDlState({ phase: 'idle' })}
-                      className="text-blue-500 hover:text-blue-600 text-xs underline"
-                    >
-                      {t('export.retry')}
-                    </button>
-                    {ViewOnlineLink}
-                  </div>
-                </div>
-              )}
+ {dlState.phase ==='idle'&& (
+ <button onClick={handleGenerate} className={`${btnBase} text-blue-500 hover:text-blue-600`}>
+ <Download className="w-3.5 h-3.5"/>
+ {t('export.exportReport', {
+ filename: message.reportFilename?.replace(/\.[^.]+$/,'') ??'',
+ format: exportFormat,
+ })}
+ </button>
+ )}
+ {dlState.phase ==='generating'&& (
+ <button disabled className={`${btnBase} text-[#5D5C5A] opacity-50 cursor-not-allowed`}>
+ <Download className="w-3.5 h-3.5"/>
+ {t('export.generating')}
+ </button>
+ )}
+ {dlState.phase ==='ready'&& (
+ <div className="space-y-2">
+ {dlState.mimeType ==='image/png'&& (
+ <img
+ src={dlState.objectUrl}
+ alt={dlState.filename}
+ className="w-full rounded-lg border border-[#E5E0D8]"
+ />
+ )}
+ <button
+ onClick={() => handleSave(dlState.blob, dlState.filename, dlState.mimeType)}
+ className={`${btnBase} text-green-600 hover:text-green-700`}
+ >
+ <Download className="w-3.5 h-3.5"/>
+ {t('export.save', { filename: dlState.filename })}
+ </button>
+ </div>
+ )}
+ {dlState.phase ==='error'&& (
+ <div className="flex flex-col gap-1.5">
+ <span className="text-red-500 text-xs">{dlState.message}</span>
+ <div className="flex items-center gap-3">
+ <button
+ onClick={() => setDlState({ phase:'idle'})}
+ className="text-blue-500 hover:text-blue-600 text-xs underline"
+ >
+ {t('export.retry')}
+ </button>
+ {ViewOnlineLink}
+ </div>
+ </div>
+ )}
 
-              {/* Desktop: show online link after download button as secondary option */}
-              {!isIOS && dlState.phase !== 'error' && ViewOnlineLink}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+ {/* Desktop: show online link after download button as secondary option */}
+ {!isIOS && dlState.phase !=='error'&& ViewOnlineLink}
+ </div>
+ )}
+ </div>
+ </div>
+ </div>
+ );
 }
