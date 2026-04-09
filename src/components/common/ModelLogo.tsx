@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import { getLogoPath } from '@/lib/utils/model-logo';

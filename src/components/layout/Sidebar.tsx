@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -31,12 +31,12 @@ export function Sidebar() {
 
   const t = useT();
 
-  // 鈹€鈹€ Non-SaaS: live IndexedDB query 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── Non-SaaS: live IndexedDB query ──────────────────────────────────────
   const dexieSessions = useLiveQuery(() =>
     isSaasClient ? Promise.resolve([] as ChatSession[]) : db.sessions.orderBy('updatedAt').reverse().toArray()
   );
 
-  // 鈹€鈹€ SaaS: fetch from server 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── SaaS: fetch from server ──────────────────────────────────────────────
   const [cloudSessions, setCloudSessions] = useState<CloudSession[]>([]);
 
   const fetchCloudSessions = useCallback(async () => {
@@ -50,7 +50,7 @@ export function Sidebar() {
     if (isSaasClient) fetchCloudSessions();
   }, [fetchCloudSessions]);
 
-  // Re-fetch when a debate finishes (running 鈫?idle)
+  // Re-fetch when a debate finishes (running → idle)
   useEffect(() => {
     if (isSaasClient && prevRelayStatus.current === 'running' && relayStatus === 'idle') {
       fetchCloudSessions();
@@ -60,7 +60,7 @@ export function Sidebar() {
 
   const sessions = isSaasClient ? cloudSessions : (dexieSessions ?? []);
 
-  // 鈹€鈹€ Helpers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── Helpers ──────────────────────────────────────────────────────────────
   const closeMobile = () => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) setSidebarOpen(false);
   };
@@ -100,7 +100,7 @@ export function Sidebar() {
     if (activeSessionId === sessionId) handleNewSession();
   };
 
-  // 鈹€鈹€ Render 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       className={[
@@ -169,7 +169,7 @@ export function Sidebar() {
         <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none font-mono">
           {process.env.NEXT_PUBLIC_BUILD_HASH ?? 'v0.1.0'}
         </span>
-        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">路</span>
+        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">·</span>
         <Link
           href="/terms"
           target="_blank"
@@ -177,7 +177,7 @@ export function Sidebar() {
         >
           Terms
         </Link>
-        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">路</span>
+        <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none">·</span>
         <Link
           href="/privacy"
           target="_blank"

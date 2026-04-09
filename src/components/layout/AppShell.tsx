@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
@@ -30,13 +30,13 @@ export function AppShell() {
         if (sessionId && useChatStore.getState().relay.status !== 'running') {
           reconnectRelay(sessionId).catch(console.error);
         }
-      } catch { /* invalid localStorage data 鈥?ignore */ }
+      } catch { /* invalid localStorage data — ignore */ }
     };
 
     tryReconnect();
 
     // Warm resume: iOS Safari keeps the page alive but freezes JS.
-    // When the user returns, visibilitychange fires 鈥?reconnect if needed.
+    // When the user returns, visibilitychange fires — reconnect if needed.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') tryReconnect();
     };
@@ -46,7 +46,7 @@ export function AppShell() {
 
   return (
     <div className="flex h-[100dvh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden">
-      {/* Mobile backdrop 鈥?tapping it closes the sidebar */}
+      {/* Mobile backdrop — tapping it closes the sidebar */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-30 md:hidden"

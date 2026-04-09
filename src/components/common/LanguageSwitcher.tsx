@@ -1,12 +1,12 @@
-﻿'use client';
+'use client';
 
 import { useLocaleStore } from '@/stores/locale-store';
 import type { Locale } from '@/i18n';
 
 const LOCALES: { value: Locale; label: string }[] = [
   { value: 'en', label: 'EN' },
-  { value: 'zh-CN', label: '涓枃' },
-  { value: 'ja', label: '鏃ユ湰瑾? },
+  { value: 'zh-CN', label: '中文' },
+  { value: 'ja', label: '日本語' },
 ];
 
 export function LanguageSwitcher() {

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Settings, Menu, Zap } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
@@ -43,7 +43,7 @@ export function StatusBar() {
           <span>{t('status.models', { count: enabledCount })}</span>
           {isSaas && estimatedCost > 0 && (
             <span className="text-yellow-600 dark:text-yellow-400 font-medium">
-              路 {t('status.estimatedCost', { cost: estimatedCost })}
+              · {t('status.estimatedCost', { cost: estimatedCost })}
             </span>
           )}
         </div>

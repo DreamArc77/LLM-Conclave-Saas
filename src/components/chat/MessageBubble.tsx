@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { UserBubble } from './UserBubble';
 import { AiBubble } from './AiBubble';

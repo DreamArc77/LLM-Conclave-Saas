@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { AlertCircle } from 'lucide-react';
 import { ProviderLogo } from '@/components/common/ProviderLogo';

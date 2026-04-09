@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   DndContext,
@@ -25,7 +25,7 @@ export function ModelList() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // Require 8px movement before activating drag 鈥?prevents accidental
+      // Require 8px movement before activating drag — prevents accidental
       // drags when the user just wants to tap a button on mobile.
       activationConstraint: { distance: 8 },
     }),

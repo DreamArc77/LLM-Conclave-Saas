@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { FileText, Download, ExternalLink, Vote } from 'lucide-react';
@@ -33,7 +33,7 @@ export function SystemBubble({ message }: SystemBubbleProps) {
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const t = useT();
 
-  // 鈹€鈹€ Conclude Discussion prompt 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── Conclude Discussion prompt ──────────────────────────────────────────
   if (message.isConcludePrompt) {
     const handleConclude = async () => {
       if (!activeSessionId || concludeLoading) return;
@@ -138,7 +138,7 @@ export function SystemBubble({ message }: SystemBubbleProps) {
       const file = new File([blob], filename, { type: mimeType });
       navigator.share({ files: [file], title: filename }).catch((err) => {
         if (err instanceof Error && err.name === 'AbortError') {
-          // User closed share sheet 鈥?stay on ready state
+          // User closed share sheet — stay on ready state
         } else {
           setDlState((s) =>
             s.phase === 'ready'

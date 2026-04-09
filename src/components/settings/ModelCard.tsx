@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -80,7 +80,7 @@ export function ModelCard({ model }: ModelCardProps) {
             )}
           </div>
           <p className="text-xs text-gray-400 truncate">
-            {provider?.name} 路 {model.modelId}
+            {provider?.name} · {model.modelId}
           </p>
         </div>
 

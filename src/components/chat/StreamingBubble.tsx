@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';

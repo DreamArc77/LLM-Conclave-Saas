@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -8,7 +8,7 @@ import type { ChatMessage } from '@/types/chat';
 
 // Only show collapse toggle when content is taller than this (px)
 const COLLAPSE_THRESHOLD = 160;
-// Collapsed height = ~3 lines (prose line-height ~1.75 脳 16px 脳 3)
+// Collapsed height = ~3 lines (prose line-height ~1.75 × 16px × 3)
 const COLLAPSED_HEIGHT = '5.25rem';
 
 interface AiBubbleProps {

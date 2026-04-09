@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Vote } from 'lucide-react';
@@ -18,7 +18,7 @@ function ModelAvatar({ modelId, displayName }: { modelId?: string; displayName: 
   return <ModelLogo modelId={modelId} displayName={displayName} size={28} />;
 }
 
-// A compact voter chip 鈥?avatar + name, no statement
+// A compact voter chip — avatar + name, no statement
 function VoterChip({ vote }: { vote: VoteResult }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -141,7 +141,7 @@ export function VotingBubble({ message }: VotingBubbleProps) {
                         {letter}
                       </span>
                       <p className="text-sm text-gray-800 dark:text-gray-100 leading-snug">
-                        {isWinner && <span className="mr-1">鉁?/span>}
+                        {isWinner && <span className="mr-1">✨</span>}
                         {alt}
                       </p>
                     </div>
@@ -185,7 +185,7 @@ export function VotingBubble({ message }: VotingBubbleProps) {
                       <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
                         <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
                       </div>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">路路路</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 animate-pulse">···</span>
                     </div>
                   )}
 

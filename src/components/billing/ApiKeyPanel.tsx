@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Code2, Copy, Check, Trash2, RefreshCw } from 'lucide-react';
@@ -73,11 +73,11 @@ export function ApiKeyPanel() {
            className="text-blue-500 hover:underline">{t('billing.apiKeyDocs')}</a>
       </p>
 
-      {/* Newly generated key 鈥?show once */}
+      {/* Newly generated key — show once */}
       {newKey && (
         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
           <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-2">
-            鈿?{t('billing.apiKeyCopyHint')}
+            ⚠ {t('billing.apiKeyCopyHint')}
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 text-xs font-mono bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded px-2 py-1.5 break-all text-gray-800 dark:text-gray-200">
