@@ -405,7 +405,7 @@ async function generateSummary(
   let summaryApiKey: string | null = null;
   let summaryModel: RelayModelInput | null = null;
 
-  const geminiPreset = PRESET_DEFINITIONS.find((p) => p.id === 'Gemini');
+  const geminiPreset = PRESET_DEFINITIONS.find((p) => p.id === 'gemini');
   if (geminiPreset?.apiKey) {
     summaryApiKey = geminiPreset.apiKey;
     summaryModel = {

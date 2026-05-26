@@ -88,9 +88,9 @@ No auth required. Returns models available for debate selection.
 {
   "skillVersion": 2,
   "models": [
-    { "id": "gemini", "name": "Gemini3", "creditsPerRound": 60, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
-    { "id": "deepseek", "name": "deepseek-v3.2", "creditsPerRound": 15, "strengths": ["logical","concise","fast"], "tier": "lite" },
-    { "id": "openai", "name": "gpt-5.4", "creditsPerRound": 250, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" }
+    { "id": "gemini", "name": "Gemini 3 Flash", "creditsPerRound": 60, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
+    { "id": "deepseek", "name": "DeepSeek V4 Flash", "creditsPerRound": 20, "strengths": ["logical","concise","fast"], "tier": "lite" },
+    { "id": "openai", "name": "GPT-5.5", "creditsPerRound": 250, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" }
   ]
 }
 ```
@@ -170,14 +170,14 @@ The response is a stream of Server-Sent Events. Parse each `event:` / `data:` pa
   "sessionId": "uuid",
   "imMessage": "📋 研讨议题：...\n\n🔑 核心结论：\n• ...\n\n👥 参与：... | 3轮\n💰 消耗：270 credits | 余额：380\n\n📄 完整报告：https://llmconclave.com/api/agent/reports/uuid",
   "debate": [
-    { "round": 1, "model": "Gemini3", "content": "..." },
-    { "round": 1, "model": "deepseek-v3.2", "content": "..." }
+    { "round": 1, "model": "Gemini 3 Flash", "content": "..." },
+    { "round": 1, "model": "DeepSeek V4 Flash", "content": "..." }
   ],
   "summary": "## 研讨报告\n...",
   "reportUrl": "https://llmconclave.com/api/agent/reports/uuid",
   "creditsUsed": 270,
   "balance": 380,
-  "participants": ["Gemini3", "deepseek-v3.2"],
+  "participants": ["Gemini 3 Flash", "DeepSeek V4 Flash"],
   "elapsedSec": 74
 }
 ```
