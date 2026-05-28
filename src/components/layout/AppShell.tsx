@@ -45,7 +45,15 @@ export function AppShell() {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden">
+    <div
+      className="flex h-[100dvh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden"
+      style={{
+        paddingTop: 'var(--safe-inset-top)',
+        paddingBottom: 'var(--safe-inset-bottom)',
+        paddingLeft: 'var(--safe-inset-left)',
+        paddingRight: 'var(--safe-inset-right)',
+      }}
+    >
       {/* Mobile backdrop — tapping it closes the sidebar */}
       {sidebarOpen && (
         <div

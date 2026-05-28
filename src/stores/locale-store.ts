@@ -7,6 +7,14 @@ interface LocaleStore {
   setLocale: (locale: Locale) => void;
 }
 
+function isCapacitor(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return (
+    /LLMConclaveCapacitor/i.test(navigator.userAgent) ||
+    !!(window as any).Capacitor?.isNativePlatform?.()
+  );
+}
+
 function detectBrowserLocale(): Locale {
   if (typeof navigator === 'undefined') return 'zh-CN';
   const lang = navigator.language.toLowerCase();
@@ -15,10 +23,15 @@ function detectBrowserLocale(): Locale {
   return 'en';
 }
 
+function getDefaultLocale(): Locale {
+  if (isCapacitor()) return detectBrowserLocale();
+  return 'zh-CN';
+}
+
 export const useLocaleStore = create<LocaleStore>()(
   persist(
     (set) => ({
-      locale: 'zh-CN' as Locale,
+      locale: getDefaultLocale(),
       setLocale: (locale: Locale) => {
         set({ locale });
         if (typeof document !== 'undefined') {
@@ -31,11 +44,16 @@ export const useLocaleStore = create<LocaleStore>()(
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         try {
-          const raw = localStorage.getItem('llmconclave-locale');
-          const parsed = raw ? JSON.parse(raw) : null;
-          // If no locale was stored (first visit), auto-detect from browser
-          if (!parsed?.state?.locale) {
+          if (isCapacitor()) {
+            // Always detect from system language, ignore persisted value
             state.locale = detectBrowserLocale();
+          } else {
+            const raw = localStorage.getItem('llmconclave-locale');
+            const parsed = raw ? JSON.parse(raw) : null;
+            // If no locale was stored (first visit), auto-detect from browser
+            if (!parsed?.state?.locale) {
+              state.locale = detectBrowserLocale();
+            }
           }
           // Sync HTML lang attribute
           document.documentElement.lang = state.locale;

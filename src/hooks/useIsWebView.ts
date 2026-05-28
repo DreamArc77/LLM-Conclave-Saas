@@ -13,3 +13,18 @@ export function useIsWebView(): boolean {
     return /MicroMessenger|WeChat|WeCom|Weibo|DingTalk|BytedanceWebview|TikTok|FBAV|Instagram|Line\/|wv\)|\.0; wv\)|WebView/i.test(ua);
   }, []);
 }
+
+/**
+ * Detects the LLM Conclave Capacitor wrapper (our own iOS/Android app).
+ * Used to hide Google OAuth (blocked in WKWebView) and adapt UI for native app context.
+ */
+export function useIsCapacitor(): boolean {
+  return useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return (
+      /LLMConclaveCapacitor/i.test(navigator.userAgent) ||
+      !!(window as any).Capacitor?.isNativePlatform?.() ||
+      document.cookie.includes('capacitor=')
+    );
+  }, []);
+}

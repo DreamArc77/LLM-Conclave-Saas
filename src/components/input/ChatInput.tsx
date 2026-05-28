@@ -11,6 +11,7 @@ import { useLocaleStore } from '@/stores/locale-store';
 import { getMessages } from '@/i18n';
 import { isSaasClient } from '@/lib/flags';
 import { createClient } from '@/lib/supabase/client';
+import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { AuthModal } from '@/components/auth/AuthModal';
 
 export function ChatInput() {
@@ -24,6 +25,7 @@ export function ChatInput() {
   const models = useConfigStore((s) => s.models);
   const enabledModels = models.filter((m) => m.enabled);
   const t = useT();
+  const isCapacitor = useIsCapacitor();
   const locale = useLocaleStore((s) => s.locale);
   const randomPlaceholder = useMemo(() => {
     const list = getMessages(locale).input.placeholders;
@@ -94,7 +96,7 @@ export function ChatInput() {
   return (
     <>
     {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-    <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
+    <div className={`border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 ${isCapacitor ? 'py-4 pb-2' : 'py-3'}`}>
       <div className="max-w-3xl mx-auto flex items-end gap-2">
         {activeSessionId && (
           <button
@@ -120,7 +122,7 @@ export function ChatInput() {
             }
             disabled={enabledModels.length === 0}
             rows={1}
-            className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-4 py-3 pr-12 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className={`w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 ${isCapacitor ? 'px-5 py-4 min-h-[52px]' : 'px-4 py-3'} pr-12 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50`}
           />
         </div>
 

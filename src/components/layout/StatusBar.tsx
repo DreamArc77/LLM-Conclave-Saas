@@ -6,6 +6,7 @@ import { useConfigStore } from '@/stores/config-store';
 import { useUIStore } from '@/stores/ui-store';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useT } from '@/hooks/useT';
+import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { SaasUserWidget } from '@/components/billing/SaasUserWidget';
 import { AgentSkillPopover } from '@/components/common/AgentSkillPopover';
 
@@ -19,6 +20,7 @@ export function StatusBar() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const openSettings = useUIStore((s) => s.openSettings);
   const t = useT();
+  const isCapacitor = useIsCapacitor();
 
   const estimatedCost = isSaas
     ? maxRounds * models
@@ -27,13 +29,13 @@ export function StatusBar() {
     : 0;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <div className={`flex items-center justify-between px-4 ${isCapacitor ? 'py-3' : 'py-2'} border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900`}>
       <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}
           className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className={isCapacitor ? 'w-6 h-6' : 'w-5 h-5'} />
         </button>
 
         <h1 className="hidden sm:block text-base font-semibold">{t('app.name')}</h1>
@@ -77,9 +79,9 @@ export function StatusBar() {
           <span className="hidden sm:inline text-sm text-gray-400">{t('status.idle')}</span>
         )}
 
-        <SaasUserWidget />
+        {!isCapacitor && <SaasUserWidget />}
 
-        <LanguageSwitcher />
+        {!isCapacitor && <LanguageSwitcher />}
 
         <AgentSkillPopover />
 
@@ -87,7 +89,7 @@ export function StatusBar() {
           onClick={openSettings}
           className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
-          <Settings className="w-5 h-5" />
+          <Settings className={isCapacitor ? 'w-6 h-6' : 'w-5 h-5'} />
         </button>
       </div>
     </div>

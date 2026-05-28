@@ -64,6 +64,7 @@ export const ja: Messages = {
   },
   export: {
     exportReport: 'レポートをエクスポート {filename}.{format}',
+    exportFromPanel: 'エクスポート',
     generating: '生成中...',
     save: '{filename} を保存',
     retry: '再試行',
@@ -83,6 +84,7 @@ export const ja: Messages = {
     header: '議事録 · MEETING MINUTES',
     subheader: 'LLM Conclave · マルチモデル協調プラットフォーム',
     footer: 'LLM Conclave によって生成',
+    viewReport: 'レポートを表示',
   },
   prompts: {
     userRole: 'ユーザー',
@@ -109,6 +111,7 @@ export const ja: Messages = {
     apiKeyRevokeConfirm: 'この API キーを失効しますか？使用中のエージェントはすぐにアクセスを失います。',
     apiKeyRegenerate: 'キーを再生成',
     apiKeyGenerate: 'API キーを生成',
+    purchaseNotAvailableInApp: 'クレジット購入はアプリ内ではご利用いただけません。ブラウザで llmconclave.com/account にアクセスしてください。',
     txLoading: '読み込み中...',
     txNone: '取引履歴はありません。',
   },

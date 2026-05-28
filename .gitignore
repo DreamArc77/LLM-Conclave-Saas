@@ -43,3 +43,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# capacitor
+capacitor/ios/DerivedData/
+capacitor/ios/Pods/
+capacitor/ios/build/
+capacitor/node_modules/

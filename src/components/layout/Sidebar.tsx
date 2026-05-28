@@ -9,7 +9,9 @@ import { deleteSession, getSessionMessages } from '@/lib/db/operations';
 import { useChatStore } from '@/stores/chat-store';
 import { useUIStore } from '@/stores/ui-store';
 import { useT } from '@/hooks/useT';
+import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { isSaasClient } from '@/lib/flags';
+import { SidebarAccountSection } from '@/components/billing/SidebarAccountSection';
 import type { ChatSession } from '@/types/chat';
 
 interface CloudSession {
@@ -30,6 +32,7 @@ export function Sidebar() {
   const prevRelayStatus = useRef(relayStatus);
 
   const t = useT();
+  const isCapacitor = useIsCapacitor();
 
   // ── Non-SaaS: live IndexedDB query ──────────────────────────────────────
   const dexieSessions = useLiveQuery(() =>
@@ -164,6 +167,8 @@ export function Sidebar() {
           </p>
         )}
       </div>
+
+      {isCapacitor && isSaasClient && <SidebarAccountSection />}
 
       <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex items-center gap-1.5">
         <span className="text-[10px] text-gray-300 dark:text-gray-600 select-none font-mono">

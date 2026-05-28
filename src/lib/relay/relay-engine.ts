@@ -47,10 +47,36 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>, relay
   let summaryBuffer = '';
   let summaryMode = false;
   let relayHasEnded = false;
+  let pendingContent = '';
+  let flushTimer: ReturnType<typeof setTimeout> | null = null;
+  const FLUSH_INTERVAL_MS = 120;
+
+  function scheduleFlush() {
+    if (flushTimer !== null) return;
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      if (pendingContent.length > 0) {
+        useChatStore.getState().updateStreamingContent(streamingBuffer);
+        pendingContent = '';
+      }
+    }, FLUSH_INTERVAL_MS);
+  }
+
+  function flushImmediately() {
+    if (flushTimer !== null) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+    if (pendingContent.length > 0) {
+      useChatStore.getState().updateStreamingContent(streamingBuffer);
+      pendingContent = '';
+    }
+  }
 
   const handleEvent = async (event: RelaySSEEvent): Promise<void> => {
     switch (event.type) {
       case 'model_start':
+        flushImmediately();
         streamingBuffer = '';
         useChatStore.getState().setRelayRound(event.round);
         useChatStore.getState().advanceRelay(event.modelIndex, event.displayName);
@@ -66,11 +92,13 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>, relay
           summaryBuffer += event.text;
         } else {
           streamingBuffer += event.text;
-          useChatStore.getState().updateStreamingContent(streamingBuffer);
+          pendingContent += event.text;
+          scheduleFlush();
         }
         break;
 
       case 'model_done': {
+        flushImmediately();
         useChatStore.getState().updateStreamingContent('');
         streamingBuffer = '';
         if (event.content.length > 0) {
@@ -151,6 +179,7 @@ function createEventProcessor(sessionId: string, existingIds: Set<string>, relay
       }
 
       case 'error':
+        flushImmediately();
         relayHasEnded = true;
         localStorage.removeItem(ACTIVE_RELAY_KEY);
         console.error('[Relay] Server error event:', event.message);

@@ -2,10 +2,28 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
+  const ua = request.headers.get('user-agent') || '';
+  const isCapacitor = ua.includes('LLMConclaveCapacitor');
+
+  const setCapacitorCookie = (response: NextResponse) => {
+    if (isCapacitor) {
+      response.cookies.set('capacitor', '1', {
+        httpOnly: false,
+        secure: true,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    }
+  };
+
   if (process.env.SAAS_MODE !== 'true') {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    setCapacitorCookie(response);
+    return response;
   }
-  return await updateSession(request);
+
+  return await updateSession(request, { setCapacitorCookie });
 }
 
 export const config = {

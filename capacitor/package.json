@@ -1,0 +1,17 @@
+{
+  "name": "llmconclave-capacitor",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "cap:sync": "npx cap sync ios",
+    "cap:open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.2.1",
+    "@capacitor/ios": "^7.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.2.1",
+    "typescript": "5.8.2"
+  }
+}

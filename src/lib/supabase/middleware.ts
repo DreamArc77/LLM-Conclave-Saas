@@ -3,13 +3,22 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
-export async function updateSession(request: NextRequest) {
+interface UpdateSessionOptions {
+  setCapacitorCookie?: (response: NextResponse) => void;
+}
+
+export async function updateSession(
+  request: NextRequest,
+  options?: UpdateSessionOptions,
+) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   // If Supabase is not configured, pass through without auth checks
   if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.next({ request });
+    const response = NextResponse.next({ request });
+    options?.setCapacitorCookie?.(response);
+    return response;
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -42,8 +51,11 @@ export async function updateSession(request: NextRequest) {
   if (!user && pathname.startsWith('/account')) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/signin';
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    options?.setCapacitorCookie?.(response);
+    return response;
   }
 
+  options?.setCapacitorCookie?.(supabaseResponse);
   return supabaseResponse;
 }

@@ -64,6 +64,7 @@ export const zhCN: Messages = {
   },
   export: {
     exportReport: '导出报告 {filename}.{format}',
+    exportFromPanel: '导出',
     generating: '生成中...',
     save: '保存 {filename}',
     retry: '重试',
@@ -83,6 +84,7 @@ export const zhCN: Messages = {
     header: 'MEETING MINUTES · 会议纪要',
     subheader: 'LLM Conclave · 多模型协作平台',
     footer: '由 LLM Conclave 自动生成',
+    viewReport: '查看报告',
   },
   prompts: {
     userRole: '用户',
@@ -109,6 +111,7 @@ export const zhCN: Messages = {
     apiKeyRevokeConfirm: '确认撤销此 API Key？使用中的 Agent 将立即失去访问权限。',
     apiKeyRegenerate: '重新生成 Key',
     apiKeyGenerate: '生成 API Key',
+    purchaseNotAvailableInApp: '积分购买暂不支持在 App 内完成，请用浏览器访问 llmconclave.com/account。',
     txLoading: '加载中...',
     txNone: '暂无交易记录。',
   },

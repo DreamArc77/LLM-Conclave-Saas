@@ -6,8 +6,10 @@ import { useConfigStore } from '@/stores/config-store';
 import { useLocaleStore } from '@/stores/locale-store';
 import { useChatStore } from '@/stores/chat-store';
 import { useT } from '@/hooks/useT';
+import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { generatePDFBlob, generatePNGBlob } from '@/lib/export/pdf-export';
 import { prepareVoting } from '@/lib/vote/vote-engine';
+import { ReportPanel } from '@/components/chat/ReportPanel';
 import type { ChatMessage } from '@/types/chat';
 import type { Locale } from '@/i18n';
 
@@ -27,6 +29,8 @@ export function SystemBubble({ message }: SystemBubbleProps) {
   const [dlState, setDlState] = useState<DownloadState>({ phase: 'idle' });
   const [markdownCache, setMarkdownCache] = useState<Partial<Record<Locale, string>>>({});
   const [concludeLoading, setConcludeLoading] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const isCapacitor = useIsCapacitor();
   const exportFormat = useConfigStore((s) => s.exportFormat);
   const locale = useLocaleStore((s) => s.locale);
   const messages = useChatStore((s) => s.messages);
@@ -197,63 +201,128 @@ export function SystemBubble({ message }: SystemBubbleProps) {
 
           {message.reportMarkdown && (
             <div className="mt-2 flex flex-col gap-1.5">
-              {/* iOS: show online link first as primary option */}
-              {isIOS && ViewOnlineLink}
-
-              {dlState.phase === 'idle' && (
-                <button onClick={handleGenerate} className={`${btnBase} text-blue-500 hover:text-blue-600`}>
-                  <Download className="w-3.5 h-3.5" />
-                  {t('export.exportReport', {
-                    filename: message.reportFilename?.replace(/\.[^.]+$/, '') ?? '',
-                    format: exportFormat,
-                  })}
-                </button>
-              )}
-              {dlState.phase === 'generating' && (
-                <button disabled className={`${btnBase} text-gray-400 opacity-50 cursor-not-allowed`}>
-                  <Download className="w-3.5 h-3.5" />
-                  {t('export.generating')}
-                </button>
-              )}
-              {dlState.phase === 'ready' && (
-                <div className="space-y-2">
-                  {dlState.mimeType === 'image/png' && (
-                    <img
-                      src={dlState.objectUrl}
-                      alt={dlState.filename}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-600"
-                    />
-                  )}
+              {/* Capacitor: View Report primary + Export secondary */}
+              {isCapacitor ? (
+                <>
                   <button
-                    onClick={() => handleSave(dlState.blob, dlState.filename, dlState.mimeType)}
-                    className={`${btnBase} text-green-600 hover:text-green-700`}
+                    onClick={() => setShowReport(true)}
+                    className={`${btnBase} text-blue-500 hover:text-blue-600`}
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    {t('export.save', { filename: dlState.filename })}
+                    <FileText className="w-3.5 h-3.5" />
+                    {t('report.viewReport')}
                   </button>
-                </div>
-              )}
-              {dlState.phase === 'error' && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-red-500 text-xs">{dlState.message}</span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setDlState({ phase: 'idle' })}
-                      className="text-blue-500 hover:text-blue-600 text-xs underline"
-                    >
-                      {t('export.retry')}
+                  {dlState.phase === 'idle' && (
+                    <button onClick={handleGenerate} className={`${btnBase} text-gray-400 hover:text-blue-600`}>
+                      <Download className="w-3 h-3" />
+                      {t('export.exportFromPanel')}
                     </button>
-                    {ViewOnlineLink}
-                  </div>
-                </div>
-              )}
+                  )}
+                  {dlState.phase === 'generating' && (
+                    <button disabled className={`${btnBase} text-gray-400 opacity-50 cursor-not-allowed`}>
+                      <Download className="w-3 h-3" />
+                      {t('export.generating')}
+                    </button>
+                  )}
+                  {dlState.phase === 'ready' && (
+                    <div className="space-y-2">
+                      {dlState.mimeType === 'image/png' && (
+                        <img
+                          src={dlState.objectUrl}
+                          alt={dlState.filename}
+                          className="w-full rounded-lg border border-gray-200 dark:border-gray-600"
+                        />
+                      )}
+                      <button
+                        onClick={() => handleSave(dlState.blob, dlState.filename, dlState.mimeType)}
+                        className={`${btnBase} text-green-600 hover:text-green-700`}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        {t('export.save', { filename: dlState.filename })}
+                      </button>
+                    </div>
+                  )}
+                  {dlState.phase === 'error' && (
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-red-500 text-xs">{dlState.message}</span>
+                      <button
+                        onClick={() => setDlState({ phase: 'idle' })}
+                        className="text-blue-500 hover:text-blue-600 text-xs underline"
+                      >
+                        {t('export.retry')}
+                      </button>
+                    </div>
+                  )}
+                  {ViewOnlineLink}
+                </>
+              ) : (
+                <>
+                  {/* iOS: show online link first as primary option */}
+                  {isIOS && ViewOnlineLink}
 
-              {/* Desktop: show online link after download button as secondary option */}
-              {!isIOS && dlState.phase !== 'error' && ViewOnlineLink}
+                  {dlState.phase === 'idle' && (
+                    <button onClick={handleGenerate} className={`${btnBase} text-blue-500 hover:text-blue-600`}>
+                      <Download className="w-3.5 h-3.5" />
+                      {t('export.exportReport', {
+                        filename: message.reportFilename?.replace(/\.[^.]+$/, '') ?? '',
+                        format: exportFormat,
+                      })}
+                    </button>
+                  )}
+                  {dlState.phase === 'generating' && (
+                    <button disabled className={`${btnBase} text-gray-400 opacity-50 cursor-not-allowed`}>
+                      <Download className="w-3.5 h-3.5" />
+                      {t('export.generating')}
+                    </button>
+                  )}
+                  {dlState.phase === 'ready' && (
+                    <div className="space-y-2">
+                      {dlState.mimeType === 'image/png' && (
+                        <img
+                          src={dlState.objectUrl}
+                          alt={dlState.filename}
+                          className="w-full rounded-lg border border-gray-200 dark:border-gray-600"
+                        />
+                      )}
+                      <button
+                        onClick={() => handleSave(dlState.blob, dlState.filename, dlState.mimeType)}
+                        className={`${btnBase} text-green-600 hover:text-green-700`}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        {t('export.save', { filename: dlState.filename })}
+                      </button>
+                    </div>
+                  )}
+                  {dlState.phase === 'error' && (
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-red-500 text-xs">{dlState.message}</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setDlState({ phase: 'idle' })}
+                          className="text-blue-500 hover:text-blue-600 text-xs underline"
+                        >
+                          {t('export.retry')}
+                        </button>
+                        {ViewOnlineLink}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Desktop: show online link after download button as secondary option */}
+                  {!isIOS && dlState.phase !== 'error' && ViewOnlineLink}
+                </>
+              )}
             </div>
           )}
         </div>
       </div>
     </div>
+      {showReport && message.reportMarkdown && (
+        <ReportPanel
+          markdown={message.reportMarkdown}
+          filename={message.reportFilename ?? 'report.md'}
+          locale={locale}
+          onClose={() => setShowReport(false)}
+        />
+      )}
   );
 }

@@ -4,11 +4,24 @@ import { useState } from 'react';
 import { CREDIT_PACKAGES, totalCredits } from '@/config/credit-packages';
 import { Zap, Gift } from 'lucide-react';
 import { useT } from '@/hooks/useT';
+import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { interpolate } from '@/i18n';
 
 export function BuyCreditsPanel() {
   const t = useT();
+  const isCapacitor = useIsCapacitor();
   const [loading, setLoading] = useState<string | null>(null);
+
+  if (isCapacitor) {
+    return (
+      <div className="space-y-3">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{t('billing.buyCreditsTitle')}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {t('billing.purchaseNotAvailableInApp')}
+        </p>
+      </div>
+    );
+  }
 
   const handleBuy = async (packageId: string) => {
     setLoading(packageId);
