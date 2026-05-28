@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { LogIn, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useT } from '@/hooks/useT';
 import { CreditBalance } from './CreditBalance';
@@ -31,13 +31,6 @@ export function SidebarAccountSection() {
     }
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await createClient().auth.signOut();
-    } catch { /* ignore */ }
-    setUser(null);
-  };
-
   if (user === undefined) return null;
 
   if (!user) {
@@ -45,7 +38,7 @@ export function SidebarAccountSection() {
       <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-700">
         <Link
           href="/auth/signin"
-          className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+          className="flex items-center justify-center gap-2 w-full py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
         >
           <LogIn className="w-4 h-4" />
           {t('auth.signIn')}
@@ -55,10 +48,10 @@ export function SidebarAccountSection() {
   }
 
   return (
-    <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-700 space-y-2.5">
+    <div className="px-3 py-3 border-t border-gray-200 dark:border-gray-700">
       <Link
         href="/account"
-        className="flex items-center gap-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2 transition-colors"
+        className="flex items-center gap-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-2.5 transition-colors"
       >
         <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white select-none flex-shrink-0">
           {user.initial}
@@ -69,16 +62,8 @@ export function SidebarAccountSection() {
           </p>
           <CreditBalance />
         </div>
-        <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <Settings className="w-5 h-5 text-gray-400 flex-shrink-0" />
       </Link>
-
-      <button
-        onClick={handleSignOut}
-        className="w-full flex items-center justify-center gap-2 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-      >
-        <LogOut className="w-3.5 h-3.5" />
-        {t('auth.signOut')}
-      </button>
     </div>
   );
 }

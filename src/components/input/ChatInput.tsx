@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Send, Square, Trash2 } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
@@ -93,6 +93,11 @@ export function ChatInput() {
     ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => textareaRef.current?.focus(), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
     {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
@@ -129,7 +134,9 @@ export function ChatInput() {
         {isRunning ? (
           <button
             onClick={handleStop}
-            className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+            className={`rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex-shrink-0 ${
+              isCapacitor ? 'p-3.5 min-w-[52px] min-h-[52px]' : 'p-2'
+            }`}
             title={t('input.stopRelay')}
           >
             <Square className="w-5 h-5" />
@@ -138,7 +145,9 @@ export function ChatInput() {
           <button
             onClick={handleSend}
             disabled={!canSend}
-            className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className={`rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0 ${
+              isCapacitor ? 'p-3.5 min-w-[52px] min-h-[52px]' : 'p-2'
+            }`}
             title={t('input.sendMessage')}
           >
             <Send className="w-5 h-5" />

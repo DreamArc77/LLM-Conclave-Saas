@@ -13,7 +13,11 @@ interface Transaction {
   created_at: string;
 }
 
-export function TransactionHistory() {
+interface TransactionHistoryProps {
+  limit?: number;
+}
+
+export function TransactionHistory({ limit = 20 }: TransactionHistoryProps) {
   const t = useT();
   const [txns, setTxns] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +31,7 @@ export function TransactionHistory() {
         .select('id, amount, type, description, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(limit);
       if (data) setTxns(data as Transaction[]);
       setLoading(false);
     });

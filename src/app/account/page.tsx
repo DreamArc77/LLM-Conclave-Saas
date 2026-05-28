@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { BuyCreditsPanel } from '@/components/billing/BuyCreditsPanel';
 import { InvitePanel } from '@/components/billing/InvitePanel';
@@ -15,6 +16,9 @@ export default async function AccountPage() {
   if (!user) {
     redirect('/auth/signin');
   }
+
+  const cookieStore = await cookies();
+  const isCapacitor = cookieStore.get('capacitor')?.value != null;
 
   const admin = createAdminClient();
   let { data: credits } = await admin
@@ -57,19 +61,21 @@ export default async function AccountPage() {
           <InvitePanel />
         </div>
 
-        {/* Agent API Key */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <ApiKeyPanel />
-        </div>
+        {/* Agent API Key — hidden on Capacitor */}
+        {!isCapacitor && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <ApiKeyPanel />
+          </div>
+        )}
 
         {/* Transaction history */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <TransactionHistory />
+          <TransactionHistory limit={isCapacitor ? 5 : 20} />
         </div>
 
         {/* Sign out */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 pb-2">
-          <SignOutButton />
+        <div className={isCapacitor ? 'pt-6' : 'border-t border-gray-200 dark:border-gray-700 pt-6 pb-2'}>
+          <SignOutButton fullWidth={isCapacitor} />
         </div>
       </div>
     </div>

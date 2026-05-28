@@ -46,7 +46,7 @@ export function AppShell() {
 
   return (
     <div
-      className="flex h-[100dvh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden"
+      className="fixed inset-0 flex bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden"
       style={{
         paddingTop: 'var(--safe-inset-top)',
         paddingBottom: 'var(--safe-inset-bottom)',
