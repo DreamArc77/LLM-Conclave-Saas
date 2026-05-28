@@ -1,6 +1,6 @@
 'use client';
 
-import { Settings, Menu, Zap } from 'lucide-react';
+import { Cpu, Menu, Zap } from 'lucide-react';
 import { useChatStore } from '@/stores/chat-store';
 import { useConfigStore } from '@/stores/config-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -89,7 +89,7 @@ export function StatusBar() {
           onClick={openSettings}
           className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
         >
-          <Settings className={isCapacitor ? 'w-6 h-6' : 'w-5 h-5'} />
+          <Cpu className={isCapacitor ? 'w-6 h-6' : 'w-5 h-5'} />
         </button>
       </div>
     </div>
