@@ -174,7 +174,7 @@ export function SystemBubble({ message }: SystemBubbleProps) {
     </a>
   ) : null;
 
-  return (
+  return (<>
     <div className="flex justify-center px-4 py-2">
       <div className="flex items-start gap-2 max-w-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
         <FileText className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-400" />
@@ -324,5 +324,5 @@ export function SystemBubble({ message }: SystemBubbleProps) {
           onClose={() => setShowReport(false)}
         />
       )}
-  );
+  </>);
 }
