@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   output: 'standalone',
+  serverExternalPackages: ['@supabase/ssr', '@supabase/auth-js'],
 };
 
 export default nextConfig;

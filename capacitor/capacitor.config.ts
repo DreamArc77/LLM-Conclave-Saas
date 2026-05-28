@@ -3,7 +3,6 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.llmconclave.ios',
   appName: 'LLM Conclave',
-  packageManager: 'spm',
   webDir: 'www',
   server: {
     url: 'https://llmconclave.com',
