@@ -8,6 +8,7 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useT } from '@/hooks/useT';
 import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { SaasUserWidget } from '@/components/billing/SaasUserWidget';
+import { CreditBalance } from '@/components/billing/CreditBalance';
 import { AgentSkillPopover } from '@/components/common/AgentSkillPopover';
 
 const isSaas = process.env.NEXT_PUBLIC_SAAS_MODE === 'true';
@@ -48,9 +49,20 @@ export function StatusBar() {
               · {t('status.estimatedCost', { cost: estimatedCost })}
             </span>
           )}
+          {isSaas && isCapacitor && (
+            <span className="text-gray-400">
+              / <CreditBalance compact />
+            </span>
+          )}
         </div>
 
-        {isSaas && estimatedCost > 0 && (
+        {isSaas && isCapacitor && (
+          <span className="sm:hidden text-xs font-medium text-yellow-600 dark:text-yellow-400">
+            {estimatedCost > 0 && <>{t('status.estimatedCost', { cost: estimatedCost })} <span className="text-gray-400">/</span> </>}
+            <CreditBalance compact />
+          </span>
+        )}
+        {isSaas && !isCapacitor && estimatedCost > 0 && (
           <span className="sm:hidden text-xs font-medium text-yellow-600 dark:text-yellow-400">
             {t('status.estimatedCost', { cost: estimatedCost })}
           </span>

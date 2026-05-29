@@ -3,7 +3,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Zap } from 'lucide-react';
 
-export function CreditBalance() {
+interface CreditBalanceProps {
+  compact?: boolean;
+}
+
+export function CreditBalance({ compact }: CreditBalanceProps) {
   const [balance, setBalance] = useState<number | null>(null);
 
   const refresh = useCallback(() => {
@@ -15,9 +19,7 @@ export function CreditBalance() {
 
   useEffect(() => {
     refresh();
-    // Re-fetch after relay completes (credits deducted)
     window.addEventListener('credits-changed', refresh);
-    // Re-fetch when user returns from Stripe checkout (window regains focus)
     window.addEventListener('focus', refresh);
     return () => {
       window.removeEventListener('credits-changed', refresh);
@@ -26,6 +28,10 @@ export function CreditBalance() {
   }, [refresh]);
 
   if (balance === null) return null;
+
+  if (compact) {
+    return <span className="font-medium text-yellow-600 dark:text-yellow-400">{balance.toLocaleString()}</span>;
+  }
 
   return (
     <div className="flex items-center gap-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400">
