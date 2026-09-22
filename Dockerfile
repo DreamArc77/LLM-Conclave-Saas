@@ -42,6 +42,9 @@ COPY --from=builder /app/public ./public
 # Template file used for report generation
 COPY --from=builder /app/src/AI智囊团专题研讨交付MD.md ./src/AI智囊团专题研讨交付MD.md
 
+# Short-lived Railway Cron task used to keep the Supabase Free project active
+COPY --from=builder /app/scripts/supabase-keepalive.mjs ./scripts/supabase-keepalive.mjs
+
 USER nextjs
 
 EXPOSE 3000

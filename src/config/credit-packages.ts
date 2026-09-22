@@ -44,7 +44,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
 ];
 
-/** New user welcome bonus: covers 1 round with default enabled models (deepseek-v4-flash 20 + gpt-5.5 250 + gemini-3-flash 60 = 330) */
+/** New user welcome bonus: covers 1 round with default enabled models (45 + 450 + 80 = 575 credits). */
 export const WELCOME_CREDITS = 1050;
 
 /** Extra credits granted to a new user who redeems an invite code */

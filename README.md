@@ -119,6 +119,17 @@ Create a **Cache Rule** in Cloudflare Dashboard:
 
 This prevents Cloudflare from buffering SSE events.
 
+### Supabase Keepalive on Railway
+
+For a Supabase Free project, create a separate Railway service from this repository and configure it as a Cron Job:
+
+- Start command: `node scripts/supabase-keepalive.mjs`
+- Cron schedule: `17 3,15 * * *` (UTC)
+- Variables: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+The task performs a read-only request against the existing `credits` table. Do not configure
+`SUPABASE_SERVICE_ROLE_KEY` on this service. Keep the existing web service start command as `node server.js`.
+
 ---
 
 ## Tech Stack
