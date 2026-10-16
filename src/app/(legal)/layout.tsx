@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Legal — LLM Conclave',
+  title: 'Legal',
 };
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {

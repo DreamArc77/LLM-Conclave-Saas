@@ -112,6 +112,28 @@ export const en = {
     purchaseNotAvailableInApp: 'Credit purchases are not available in the app. Please visit llmconclave.com/account in a browser.',
     txLoading: 'Loading...',
     txNone: 'No transactions yet.',
+    // --- Payment guidance / recovery (added: Alipay & WeChat Pay cross-border declines) ---
+    payNoticeTitle: 'Payment tip',
+    payNoticeBody:
+      'Alipay and WeChat Pay are settled through international acquiring. If the linked bank card does not support cross-border payments (non-Visa / Mastercard), your bank may decline the charge. "Pay by card" is recommended — UnionPay cards are accepted.',
+    payNoticeDismiss: 'Got it',
+    payWithCard: 'Pay by card (UnionPay accepted)',
+    recoverChecking: 'Checking your last payment…',
+    recoverTitleFailed: 'Payment failed',
+    recoverTitleUnfinished: 'Payment not completed',
+    recoverBodyFailed: 'Your last top-up was declined: {reason}',
+    recoverBodyUnfinished: 'Your last top-up was not completed — no credits have been added yet.',
+    recoverReasonHint:
+      'Alipay / WeChat Pay are settled through international acquiring. Cards that do not support cross-border payments (non-Visa / Mastercard) are usually declined.',
+    recoverMethodHint: 'Last attempt used: {method}',
+    recoverCtaCard: 'Switch to card payment (UnionPay accepted)',
+    recoverCtaRetry: 'Try the same payment again',
+    recoverDismiss: 'Later',
+    paymentSuccessTitle: 'Payment successful',
+    paymentSuccessBody: 'Your payment went through — credits are being added to your balance.',
+    methodAlipay: 'Alipay',
+    methodWechat: 'WeChat Pay',
+    methodCard: 'Card',
   },
   voting: {
     conclude: 'Conclude Discussion, Start Decision',
@@ -188,6 +210,131 @@ export const en = {
     redeemInvalid: 'Invalid or expired invite code.',
     redeemAlreadyUsed: 'You have already redeemed an invite code.',
     redeemOwnCode: 'You cannot use your own invite code.',
+  },
+  home: {
+    nav: {
+      features: 'Features',
+      how: 'How It Works',
+      faq: 'FAQ',
+      about: 'About Us',
+      contact: 'Contact',
+      cta: 'Start Free',
+    },
+    hero: {
+      badge: 'A Multi-AI Debate & Decision Platform',
+      title: 'Make Better Decisions',
+      titleAccent: 'with Multi-AI Debates',
+      subtitle:
+        'LLM Conclave is an easy-to-use AI collaboration platform where multiple top AI models discuss and analyze your questions to deliver balanced insights for research, decisions, and study.',
+      promptLabel: 'Try your first debate',
+      promptPlaceholder: 'Ask anything — watch top AIs debate it',
+      promptCta: 'Start Debate',
+      promptNote: 'Free to start · No credit card required',
+      modelsCaption: 'Powered by 12 leading AI models',
+    },
+    how: {
+      title: 'How It Works',
+      subtitle: 'From question to consensus in three steps.',
+      step1Title: 'Ask Once',
+      step1Desc: 'Pose any question, dilemma, or topic — business, research, or everyday life.',
+      step2Title: 'Watch AIs Debate',
+      step2Desc:
+        'Multiple top models answer in turn, challenge each other’s reasoning, and refine their positions across rounds.',
+      step3Title: 'Get the Consensus Report',
+      step3Desc:
+        'Receive a structured, decision-ready report with the council’s verdict — no messy chat history.',
+    },
+    features: {
+      title: 'Why LLM Conclave?',
+      subtitle:
+        'A radical upgrade to your interaction workflow, engineered specifically for rigorous problem-solving.',
+      items: [
+        {
+          title: 'No More Single-AI Bias',
+          desc: 'Get multiple perspectives instead of one limited opinion. Let AI models debate to refine the final answer.',
+        },
+        {
+          title: 'Super Convenient',
+          desc: 'No need to jump between ChatGPT, Claude, Gemini, etc. Connect them all in a single interface.',
+        },
+        {
+          title: 'Ready-To-Use Reports',
+          desc: 'No messy chat history. Everything is automatically organized into professional, structured reports.',
+        },
+        {
+          title: 'Empowering Your Decisions',
+          desc: 'Perfect for making better work decisions, solving daily dilemmas, and exploring topics deeply.',
+        },
+      ],
+    },
+    comparison: {
+      title: 'One AI answers. A council decides.',
+      subtitle:
+        'When you ask ChatGPT, Claude, or Gemini separately, you get one opinion per prompt. LLM Conclave puts them in the same room to debate your question until they converge on a balanced answer.',
+      left: 'Single AI Chat',
+      right: 'LLM Conclave',
+      rows: [
+        { label: 'Perspectives', left: 'One model’s single viewpoint', right: 'Multiple independent viewpoints' },
+        { label: 'Bias', left: 'Prone to single-model bias', right: 'Models challenge and correct each other' },
+        { label: 'Output', left: 'Chat history you have to dig through', right: 'Structured, decision-ready report' },
+        {
+          label: 'Model coverage',
+          left: 'Whatever one model knows',
+          right: 'Combined strengths of GPT, Claude, Gemini and more',
+        },
+      ],
+    },
+    about: {
+      title: 'SurpriseMan',
+      desc: 'SurpriseMan is an AI application startup. We provide various creative AI tools to help everyone use AI more efficiently.',
+    },
+    faq: {
+      title: 'Frequently Asked Questions',
+      items: [
+        {
+          q: 'What is LLM Conclave?',
+          a: 'LLM Conclave is a multi-AI debate and decision platform. Instead of asking one chatbot, you submit a question and multiple top AI models — such as GPT, Claude, and Gemini — debate it across rounds until they converge on a balanced, well-reasoned answer delivered as a structured report.',
+        },
+        {
+          q: 'How is it different from using ChatGPT or Claude directly?',
+          a: 'A single model gives you a single viewpoint. In LLM Conclave, models answer independently, critique each other’s reasoning, and revise their positions — which reduces single-model bias and surfaces angles you would not get from one chat alone.',
+        },
+        {
+          q: 'Which AI models are supported?',
+          a: 'Conclave connects leading models including OpenAI GPT, Anthropic Claude, Google Gemini, xAI Grok, DeepSeek, Qwen, GLM, Kimi, MiniMax, and Doubao, with new models added regularly.',
+        },
+        {
+          q: 'Do I need an account to try it?',
+          a: 'Yes — creating an account is free and takes seconds. New accounts start with welcome credits, and no credit card is required.',
+        },
+        {
+          q: 'How much does it cost?',
+          a: 'You get free welcome credits when you sign up, and you only spend credits when you run debates. When you need more, you can buy credit packs — heavier usage comes with bonus credits.',
+        },
+        {
+          q: 'What does a debate look like?',
+          a: 'Each debate runs in rounds: models answer your question in turn, read and challenge each other’s arguments, and refine their answers. Afterwards everything is compiled into a meeting-minutes-style report, and the council can vote on the best option.',
+        },
+        {
+          q: 'Can my AI agent use LLM Conclave?',
+          a: 'Yes. LLM Conclave offers an agent API with Bearer-key authentication. Your agent can read the skill documentation at /skill.md and run debates autonomously on your behalf.',
+        },
+        {
+          q: 'How is my data handled?',
+          a: 'Conversations are stored in your browser by default, and cloud sessions are only used to sync and resume debates. See our Privacy Policy for the full details.',
+        },
+      ],
+    },
+    footer: {
+      tagline:
+        'A Multi-AI Debate & Decision Platform. Gathering insights from multiple AIs to empower your work, life, and learning decisions.',
+      contact: 'Contact',
+      legal: 'Legal',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+      copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
+      powered: 'Powered by SurpriseMan.',
+    },
   },
 };
 

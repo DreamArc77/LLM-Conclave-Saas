@@ -114,6 +114,28 @@ export const ja: Messages = {
     purchaseNotAvailableInApp: 'クレジット購入はアプリ内ではご利用いただけません。ブラウザで llmconclave.com/account にアクセスしてください。',
     txLoading: '読み込み中...',
     txNone: '取引履歴はありません。',
+    // --- 決済ガイダンス / 失敗リカバリ（Alipay・WeChat Pay の越境取引拒否対策） ---
+    payNoticeTitle: 'お支払いのヒント',
+    payNoticeBody:
+      'Alipay / WeChat Pay は国際アクワイアリング経由で処理されます。紐づけられた銀行カードが国外取引に対応していない場合（Visa / Mastercard 以外など）、カード会社に拒否されることがあります。「カード払い」をご利用ください（銀聯カード対応）。',
+    payNoticeDismiss: '了解',
+    payWithCard: 'カードで支払う（銀聯対応）',
+    recoverChecking: '前回のお支払い状況を確認しています…',
+    recoverTitleFailed: 'お支払いが失敗しました',
+    recoverTitleUnfinished: 'お支払いが完了していません',
+    recoverBodyFailed: '前回のチャージは拒否されました：{reason}',
+    recoverBodyUnfinished: '前回のチャージは完了していません。クレジットはまだ付与されていません。',
+    recoverReasonHint:
+      'Alipay / WeChat Pay は国際アクワイアリング経由です。国外取引に対応していないカード（Visa / Mastercard 以外など）は拒否される傾向があります。',
+    recoverMethodHint: '前回の支払い方法：{method}',
+    recoverCtaCard: 'カード払いに切り替える（銀聯対応）',
+    recoverCtaRetry: '同じ方法でもう一度試す',
+    recoverDismiss: '後で',
+    paymentSuccessTitle: 'お支払いが完了しました',
+    paymentSuccessBody: '決済が完了しました。クレジットを反映しています。',
+    methodAlipay: 'Alipay',
+    methodWechat: 'WeChat Pay',
+    methodCard: 'カード',
   },
   voting: {
     conclude: '討論を終了し、決定を始める',
@@ -190,5 +212,124 @@ export const ja: Messages = {
     redeemInvalid: '無効または期限切れの招待コードです。',
     redeemAlreadyUsed: 'すでに招待コードを使用済みです。',
     redeemOwnCode: '自分の招待コードは使用できません。',
+  },
+  home: {
+    nav: {
+      features: '機能',
+      how: '使い方',
+      faq: 'よくある質問',
+      about: '私たちについて',
+      contact: 'お問い合わせ',
+      cta: '無料で始める',
+    },
+    hero: {
+      badge: 'マルチAIディベート&意思決定プラットフォーム',
+      title: 'より良い意思決定を、',
+      titleAccent: 'マルチAIディベートで',
+      subtitle:
+        'LLM Conclave は、複数の最先端 AI モデルがあなたの質問を討論・分析し、研究・意思決定・学習に役立つバランスの取れた洞察を届ける、使いやすい AI コラボレーションプラットフォームです。',
+      promptLabel: '最初のディベートを試す',
+      promptPlaceholder: '何でも質問どうぞ — 主要AIの討論が見られます',
+      promptCta: 'ディベートを開始',
+      promptNote: '無料で開始 · クレジットカード不要',
+      modelsCaption: '12の主要AIモデルを搭載',
+    },
+    how: {
+      title: '使い方',
+      subtitle: '質問から合意形成まで、3ステップ。',
+      step1Title: '質問する',
+      step1Desc: '仕事、研究、日常の悩みなど、どんなテーマでも入力するだけ。',
+      step2Title: 'AIの討論を見る',
+      step2Desc:
+        '複数の主要モデルが順に回答し、互いの論理に異議を唱え、ラウンドを重ねて結論を磨き上げます。',
+      step3Title: '合意レポートを受け取る',
+      step3Desc:
+        '散らかったチャット履歴ではなく、構造化されたそのまま使える意思決定レポートを受け取れます。',
+    },
+    features: {
+      title: 'LLM Conclave が選ばれる理由',
+      subtitle: '厳密な問題解決のために設計された、ワークフローの大幅アップグレード。',
+      items: [
+        {
+          title: '単一AIのバイアスを排除',
+          desc: '限られた一つの意見ではなく、多角的な視点を。AIモデル同士の討論が最終回答を磨き上げます。',
+        },
+        {
+          title: 'すべてを一つに',
+          desc: 'ChatGPT、Claude、Gemini などを切り替える必要はありません。主要モデルを一つの画面で接続。',
+        },
+        {
+          title: 'そのまま使えるレポート',
+          desc: '散らかったチャット履歴とは無縁。すべてがプロフェッショナルな構造化レポートに自動整理されます。',
+        },
+        {
+          title: '意思決定を強力に支援',
+          desc: '仕事の意思決定、日常の選択、テーマの深掘りまで、より良い判断をサポートします。',
+        },
+      ],
+    },
+    comparison: {
+      title: '1つのAIが答え、カウンシルが決める。',
+      subtitle:
+        'ChatGPT、Claude、Gemini に個別に質問すれば、一度に得られるのは一社分の意見だけ。LLM Conclave はそれらを同じ場に集め、バランスの取れた回答に収束するまで討論させます。',
+      left: '単一AIチャット',
+      right: 'LLM Conclave',
+      rows: [
+        { label: '視点', left: '1モデルの単一視点', right: '複数の独立した視点' },
+        { label: 'バイアス', left: '単一モデルのバイアスに偏りがち', right: 'モデル同士が反論・検証し合う' },
+        { label: '成果物', left: '自分で探すチャット履歴', right: '構造化された意思決定レポート' },
+        { label: '対応モデル', left: '1モデルの知識だけ', right: 'GPT、Claude、Gemini などの強みを結集' },
+      ],
+    },
+    about: {
+      title: 'SurpriseMan',
+      desc: 'SurpriseMan は AI アプリケーションのスタートアップです。創造性豊かな様々な AI ツールを提供し、誰もが AI をより効率的に使えるようにします。',
+    },
+    faq: {
+      title: 'よくある質問',
+      items: [
+        {
+          q: 'LLM Conclave とは何ですか？',
+          a: 'LLM Conclave はマルチAIディベート&意思決定プラットフォームです。ひとつのチャットボットに質問する代わりに、質問を投稿すると GPT、Claude、Gemini などの主要 AI モデルが複数ラウンドにわたって討論し、バランスの取れた根拠ある回答を構造化レポートとして届けます。',
+        },
+        {
+          q: 'ChatGPT や Claude を直接使うのと何が違いますか？',
+          a: '単一のモデルから得られるのは単一の視点だけです。LLM Conclave では各モデルが独立に回答し、互いの論理を批評し、立場を修正します。これにより単一モデルのバイアスが減り、ひとりのチャットでは出てこない視点が表れます。',
+        },
+        {
+          q: 'どの AI モデルに対応していますか？',
+          a: 'OpenAI GPT、Anthropic Claude、Google Gemini、xAI Grok、DeepSeek、Qwen、GLM、Kimi、MiniMax、豆包（Doubao）などの主要モデルに対応しており、随時追加しています。',
+        },
+        {
+          q: '試すにはアカウントが必要ですか？',
+          a: 'はい。アカウント作成は無料で数秒で完了します。新規アカウントにはウェルカムクレジットが付与され、クレジットカードは不要です。',
+        },
+        {
+          q: '料金はいくらですか？',
+          a: '登録時に無料のウェルカムクレジットがもらえ、クレジットはディベート実行時のみ消費します。不足したらクレジットパックを購入できます。利用量が多いほどボーナスクレジットが付きます。',
+        },
+        {
+          q: 'ディベートはどのように進みますか？',
+          a: '各ディベートはラウンド制で進行します。モデルが順に回答し、互いの主張を読んで反論し、回答を修正。その後、すべてが議事録スタイルのレポートにまとめられ、カウンシルが最良の選択肢に投票することもできます。',
+        },
+        {
+          q: '自分の AI エージェントからも使えますか？',
+          a: 'はい。LLM Conclave は Bearer キー認証のエージェント API を提供しています。エージェントは /skill.md のスキルドキュメントを読み取り、あなたに代わって自律的にディベートを実行できます。',
+        },
+        {
+          q: 'データはどのように扱われますか？',
+          a: '会話はデフォルトでブラウザ内に保存され、クラウドセッションはディベートの同期と再開のためだけに使われます。詳細はプライバシーポリシーをご覧ください。',
+        },
+      ],
+    },
+    footer: {
+      tagline: 'マルチAIディベート&意思決定プラットフォーム。複数の AI の洞察を集め、仕事・生活・学習の意思決定を支援します。',
+      contact: 'お問い合わせ',
+      legal: '法務',
+      privacy: 'プライバシーポリシー',
+      terms: '利用規約',
+      copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
+      powered: 'Powered by SurpriseMan.',
+    },
   },
 };

@@ -1,0 +1,23 @@
+# LLM Conclave
+
+> Multi-AI debate & decision platform. One topic goes to multiple leading LLMs (GPT, Claude, Gemini, Grok, DeepSeek, Qwen, GLM and more); they debate in rounds and converge into a structured consensus report.
+
+## Pages
+
+- [Home](https://llmconclave.com/): Product overview, features, comparison and FAQ
+- [中文首页](https://llmconclave.com/zh): Chinese homepage
+- [日本語ホーム](https://llmconclave.com/ja): Japanese homepage
+- [Agent skill documentation](https://llmconclave.com/skill.md): How AI agents can run debates via the API
+- [Terms of Service](https://llmconclave.com/terms)
+- [Privacy Policy](https://llmconclave.com/privacy)
+
+## Agent API
+
+LLM Conclave exposes a debate API for autonomous agents:
+
+- `GET /api/agent/models` — list available models
+- `GET /api/agent/balance` — remaining credits
+- `POST /api/agent/debate` — run a debate (SSE streaming, `Idempotency-Key` supported)
+- `GET /api/agent/reports/{id}` — fetch a finished report
+
+Auth: Bearer API key (prefix `llmc_`). See [/skill.md](https://llmconclave.com/skill.md) for the full spec.

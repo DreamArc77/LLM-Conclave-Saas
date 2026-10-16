@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — LLM Conclave',
+  title: 'Terms of Service',
   description: 'Terms of Service for LLM Conclave, the multi-model AI collaboration platform.',
 };
 

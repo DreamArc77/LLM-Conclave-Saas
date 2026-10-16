@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { User } from '@supabase/supabase-js';
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -7,10 +8,15 @@ interface UpdateSessionOptions {
   setCapacitorCookie?: (response: NextResponse) => void;
 }
 
+export interface UpdateSessionResult {
+  response: NextResponse;
+  user: User | null;
+}
+
 export async function updateSession(
   request: NextRequest,
   options?: UpdateSessionOptions,
-) {
+): Promise<UpdateSessionResult> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -18,7 +24,7 @@ export async function updateSession(
   if (!supabaseUrl || !supabaseKey) {
     const response = NextResponse.next({ request });
     options?.setCapacitorCookie?.(response);
-    return response;
+    return { response, user: null };
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -53,9 +59,9 @@ export async function updateSession(
     url.pathname = '/auth/signin';
     const response = NextResponse.redirect(url);
     options?.setCapacitorCookie?.(response);
-    return response;
+    return { response, user: null };
   }
 
   options?.setCapacitorCookie?.(supabaseResponse);
-  return supabaseResponse;
+  return { response: supabaseResponse, user };
 }

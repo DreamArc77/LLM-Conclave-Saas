@@ -1,7 +1,9 @@
-'use client';
+import { HomePage } from '@/components/home/HomePage';
+import { en } from '@/i18n/messages/en';
+import { homeMetadata } from '@/lib/seo';
 
-import { AppShell } from '@/components/layout/AppShell';
+export const metadata = homeMetadata('en');
 
-export default function ChatConsole() {
-  return <AppShell />;
+export default function MarketingHome() {
+  return <HomePage locale="en" t={en.home} />;
 }

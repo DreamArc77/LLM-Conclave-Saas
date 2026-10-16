@@ -114,6 +114,28 @@ export const zhCN: Messages = {
     purchaseNotAvailableInApp: '积分购买暂不支持在 App 内完成，请用浏览器访问 llmconclave.com/account。',
     txLoading: '加载中...',
     txNone: '暂无交易记录。',
+    // --- 支付引导 / 失败挽回（支付宝、微信支付跨境收单被拒） ---
+    payNoticeTitle: '支付提示',
+    payNoticeBody:
+      '支付宝 / 微信支付走的是国际收单通道，若绑定的银行卡不支持境外交易（非 Visa / Mastercard 等），可能被发卡行拒绝。推荐使用「银行卡支付」，支持银联卡。',
+    payNoticeDismiss: '知道了',
+    payWithCard: '用银行卡支付（支持银联）',
+    recoverChecking: '正在确认上一次支付状态…',
+    recoverTitleFailed: '支付失败',
+    recoverTitleUnfinished: '支付未完成',
+    recoverBodyFailed: '上一次充值被拒绝：{reason}',
+    recoverBodyUnfinished: '上一次充值没有完成，额度尚未到账。',
+    recoverReasonHint:
+      '支付宝 / 微信支付走国际收单通道，绑定的银行卡若不支持境外交易（非 Visa / Mastercard 等），会被发卡行拒绝。',
+    recoverMethodHint: '上次使用的支付方式：{method}',
+    recoverCtaCard: '改用银行卡支付（支持银联）',
+    recoverCtaRetry: '用原方式重新支付',
+    recoverDismiss: '稍后再说',
+    paymentSuccessTitle: '支付成功',
+    paymentSuccessBody: '支付已完成，额度正在到账中。',
+    methodAlipay: '支付宝',
+    methodWechat: '微信支付',
+    methodCard: '银行卡',
   },
   voting: {
     conclude: '结束讨论，开始决策',
@@ -190,5 +212,122 @@ export const zhCN: Messages = {
     redeemInvalid: '邀请码无效或已过期。',
     redeemAlreadyUsed: '每个账户仅限兑换一次邀请码。',
     redeemOwnCode: '不能使用自己的邀请码。',
+  },
+  home: {
+    nav: {
+      features: '功能亮点',
+      how: '工作原理',
+      faq: '常见问题',
+      about: '关于我们',
+      contact: '联系我们',
+      cta: '免费开始',
+    },
+    hero: {
+      badge: '多模型 AI 辩论与决策平台',
+      title: '更好的决策，',
+      titleAccent: '来自多模型 AI 辩论',
+      subtitle:
+        'LLM Conclave 是一个简单易用的 AI 协作平台：多个顶级大模型围绕你的问题展开辩论与交叉分析，为研究、决策和学习提供更均衡的洞察。',
+      promptLabel: '发起你的第一场辩论',
+      promptPlaceholder: '输入任何问题，看多个顶级 AI 现场辩论',
+      promptCta: '开始辩论',
+      promptNote: '免费开始 · 无需信用卡',
+      modelsCaption: '汇聚 12 家主流 AI 模型',
+    },
+    how: {
+      title: '工作原理',
+      subtitle: '从提问到达成共识，只需三步。',
+      step1Title: '提出问题',
+      step1Desc: '输入任何问题、难题或话题——工作、研究或日常生活皆可。',
+      step2Title: '围观 AI 辩论',
+      step2Desc: '多个顶级模型轮流作答、互相质疑、多轮迭代，不断逼近更可靠的结论。',
+      step3Title: '获得共识报告',
+      step3Desc: '输出结构化、可直接使用的结论报告——告别混乱的聊天记录。',
+    },
+    features: {
+      title: '为什么选择 LLM Conclave？',
+      subtitle: '为严谨的问题求解而生的交互方式升级。',
+      items: [
+        {
+          title: '告别单一 AI 偏见',
+          desc: '获得多元视角而非单一观点。让多个 AI 模型相互辩论，打磨出更可靠的最终答案。',
+        },
+        {
+          title: '一站直达',
+          desc: '无需在 ChatGPT、Claude、Gemini 之间来回切换，一个界面连接所有主流模型。',
+        },
+        {
+          title: '开箱即用的报告',
+          desc: '告别混乱的聊天记录，所有内容自动整理为专业、结构化的报告。',
+        },
+        {
+          title: '为决策赋能',
+          desc: '无论是工作决策、生活难题，还是深度探索话题，都能助你一臂之力。',
+        },
+      ],
+    },
+    comparison: {
+      title: '一个 AI 回答，一个「议会」决策。',
+      subtitle:
+        '分别去问 ChatGPT、Claude 或 Gemini，每次只能得到一家观点。LLM Conclave 让它们坐在同一张桌上，围绕你的问题辩论，直到收敛出均衡的答案。',
+      left: '单一 AI 对话',
+      right: 'LLM Conclave',
+      rows: [
+        { label: '视角', left: '单一模型的单一观点', right: '多个独立视角' },
+        { label: '偏见', left: '容易受单一模型偏见影响', right: '模型之间相互质疑与纠错' },
+        { label: '产出', left: '需要自己翻找的聊天记录', right: '结构化、可直接使用的报告' },
+        { label: '模型覆盖', left: '仅限单一模型所知', right: 'GPT、Claude、Gemini 等多家之长' },
+      ],
+    },
+    about: {
+      title: 'SurpriseMan',
+      desc: 'SurpriseMan 是一家 AI 应用创业公司，我们打造各种有创造力的 AI 工具，帮助每个人更高效地使用 AI。',
+    },
+    faq: {
+      title: '常见问题',
+      items: [
+        {
+          q: 'LLM Conclave 是什么？',
+          a: 'LLM Conclave 是一个多模型 AI 辩论与决策平台。你不是向单个聊天机器人提问，而是提交一个问题，由 GPT、Claude、Gemini 等多个顶级 AI 模型进行多轮辩论，直到收敛出均衡、论证充分的答案，并整理为结构化报告。',
+        },
+        {
+          q: '和直接使用 ChatGPT 或 Claude 有什么区别？',
+          a: '单一模型只能给你单一视角。在 LLM Conclave 中，各模型独立作答、互相批评对方的推理、并修正自己的立场——这能降低单一模型偏见，呈现你从单独一次对话中得不到的角度。',
+        },
+        {
+          q: '支持哪些 AI 模型？',
+          a: 'Conclave 接入了 OpenAI GPT、Anthropic Claude、Google Gemini、xAI Grok、DeepSeek、Qwen、GLM、Kimi、MiniMax、豆包等主流模型，并持续新增。',
+        },
+        {
+          q: '试用需要注册账号吗？',
+          a: '需要——注册免费且只需几秒钟。新账号会获赠欢迎算力，无需绑定信用卡。',
+        },
+        {
+          q: '收费如何？',
+          a: '注册即赠免费算力，只有发起辩论时才消耗。需要更多时可购买算力包，用量越大赠送越多。',
+        },
+        {
+          q: '一场辩论是什么样的？',
+          a: '每场辩论分多轮进行：各模型轮流回答你的问题，阅读并质疑彼此的论据，再修正自己的答案。结束后全部内容会汇编成会议纪要式的报告，模型议会还可以对最佳方案投票。',
+        },
+        {
+          q: '我的 AI Agent 可以使用 LLM Conclave 吗？',
+          a: '可以。LLM Conclave 提供基于 Bearer Key 认证的 Agent API，你的 Agent 可以阅读 /skill.md 技能文档，自主代你发起辩论。',
+        },
+        {
+          q: '我的数据如何处理？',
+          a: '对话默认保存在你的浏览器本地，云端会话仅用于同步和恢复辩论。详情请参阅我们的隐私政策。',
+        },
+      ],
+    },
+    footer: {
+      tagline: '多模型 AI 辩论与决策平台。汇聚多家 AI 的洞察，助力你的工作、生活与学习决策。',
+      contact: '联系我们',
+      legal: '法律条款',
+      privacy: '隐私政策',
+      terms: '服务条款',
+      copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
+      powered: 'Powered by SurpriseMan.',
+    },
   },
 };

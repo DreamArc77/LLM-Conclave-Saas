@@ -13,9 +13,26 @@ import { isSaasClient } from '@/lib/flags';
 import { createClient } from '@/lib/supabase/client';
 import { useIsCapacitor } from '@/hooks/useIsWebView';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { PENDING_PROMPT_KEY } from '@/lib/pending-prompt';
+
+// Self-gating: the key is only ever written by the marketing homepage's
+// debate prompt box, so this stays empty for every other entry path.
+function consumePendingPrompt(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const pending = sessionStorage.getItem(PENDING_PROMPT_KEY);
+    if (pending) {
+      sessionStorage.removeItem(PENDING_PROMPT_KEY);
+      return pending;
+    }
+  } catch {
+    // Storage unavailable (private mode etc.) — skip the handoff.
+  }
+  return '';
+}
 
 export function ChatInput() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(consumePendingPrompt);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — LLM Conclave',
+  title: 'Privacy Policy',
   description: 'Privacy Policy for LLM Conclave. Learn how we handle your data.',
 };
 
