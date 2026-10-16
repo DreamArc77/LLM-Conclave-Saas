@@ -8,6 +8,8 @@ import { ApiKeyPanel } from '@/components/billing/ApiKeyPanel';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { AccountHeader } from '@/components/account/AccountHeader';
 import { CreditsCard } from '@/components/account/CreditsCard';
+import { PaymentRecoveryBanner } from '@/components/billing/PaymentRecoveryBanner';
+import { PAY_NOTICE_COOKIE } from '@/lib/pending-checkout';
 
 export default async function AccountPage() {
   const supabase = await createServerClient();
@@ -19,6 +21,7 @@ export default async function AccountPage() {
 
   const cookieStore = await cookies();
   const isCapacitor = cookieStore.get('capacitor')?.value != null;
+  const payNoticeDismissed = cookieStore.get(PAY_NOTICE_COOKIE)?.value != null;
 
   const admin = createAdminClient();
   let { data: credits } = await admin
@@ -44,6 +47,9 @@ export default async function AccountPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-4 py-8">
       <div className="max-w-2xl mx-auto space-y-8">
+        {/* Payment failure / abandonment recovery — shown first so it can't be missed */}
+        <PaymentRecoveryBanner />
+
         <AccountHeader email={user.email ?? ''} />
 
         {/* Credits balance */}
@@ -53,7 +59,7 @@ export default async function AccountPage() {
 
         {/* Buy credits */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <BuyCreditsPanel />
+          <BuyCreditsPanel payNoticeDismissed={payNoticeDismissed} />
         </div>
 
         {/* Invite friends */}

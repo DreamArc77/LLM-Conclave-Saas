@@ -1,3 +1,4 @@
+import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { CREDIT_PACKAGES, totalCredits } from '@/config/credit-packages';
@@ -11,9 +12,11 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   let packageId: string;
+  let paymentMethod: string | undefined;
   try {
     const body = await req.json();
     packageId = body.packageId;
+    paymentMethod = typeof body.paymentMethod === 'string' ? body.paymentMethod : undefined;
   } catch {
     return Response.json({ error: 'Invalid body' }, { status: 400 });
   }
@@ -61,20 +64,31 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const params: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'payment',
-      success_url: `${appUrl}/account?payment=success`,
-      cancel_url: `${appUrl}/account?payment=cancelled`,
+      // `{CHECKOUT_SESSION_ID}` is expanded by Stripe — lets /account verify the
+      // real outcome instead of trusting the redirect alone.
+      success_url: `${appUrl}/account?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/account?payment=cancelled&session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         userId: user.id,
         packageId: pkg.id,
         credits: String(totalCredits(pkg)),
       },
-    });
+    };
 
-    return Response.json({ url: session.url });
+    // Optional: restrict to card only. UnionPay cards are accepted by Stripe's
+    // card method, so this is the reliable fallback when Alipay / WeChat Pay are
+    // declined for cross-border reasons.
+    if (paymentMethod === 'card') {
+      params.payment_method_types = ['card'];
+    }
+
+    const session = await stripe.checkout.sessions.create(params);
+
+    return Response.json({ url: session.url, sessionId: session.id });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Stripe error';
     return Response.json({ error: message }, { status: 500 });
