@@ -224,13 +224,20 @@ function formatWebhookPayload(url: string, text: string): Record<string, unknown
   return { text };
 }
 
-export async function sendPipelineAlert(text: string): Promise<void> {
+/**
+ * Fan-out alert. Email is opt-in per call: failure alerts enable it, while the
+ * healthy canary / recovery notices go to the webhook only so the inbox stays
+ * quiet when everything is fine.
+ */
+export async function sendPipelineAlert(text: string, options: { email?: boolean } = {}): Promise<void> {
+  const emailEnabled = options.email !== false;
   const [webhookSent, emailSent] = await Promise.all([
     sendPipelineAlertWebhook(text),
-    sendPipelineAlertEmail(text),
+    emailEnabled ? sendPipelineAlertEmail(text) : Promise.resolve(false),
   ]);
-  if (!webhookSent && !emailSent) {
-    logger.error('[PipelineCheck] 告警未送达（webhook 与邮件均未配置或均失败），内容如下：\n' + text);
+  if (!webhookSent && !(emailEnabled && emailSent)) {
+    const channels = emailEnabled ? 'webhook 与邮件均' : 'webhook';
+    logger.error(`[PipelineCheck] 告警未送达（${channels}未配置或失败），内容如下：\n` + text);
   }
 }
 
@@ -372,13 +379,13 @@ async function runScheduledCheck(trigger: 'startup' | 'daily'): Promise<void> {
   const recovered = lastOverall === 'fail';
   lastOverall = 'ok';
   if (recovered) {
-    await sendPipelineAlert(`✅ LLM Conclave 模型链路已恢复\n${okCount}/${results.length} 预设模型探针通过\n时间：${beijingTime()}（UTC+8）`);
+    await sendPipelineAlert(`✅ LLM Conclave 模型链路已恢复\n${okCount}/${results.length} 预设模型探针通过\n时间：${beijingTime()}（UTC+8）`, { email: false });
     lastHealthyPingAt = now;
     return;
   }
   if (trigger === 'startup' && now - lastHealthyPingAt >= HEALTHY_PING_MIN_GAP_MS) {
-    // Canary ping: proves the alerter itself works after each deploy
-    await sendPipelineAlert(`✅ LLM Conclave 启动自检通过：${okCount}/${results.length} 预设模型可用\n时间：${beijingTime()}（UTC+8）`);
+    // Canary ping: proves the alerter itself works after each deploy (webhook only)
+    await sendPipelineAlert(`✅ LLM Conclave 启动自检通过：${okCount}/${results.length} 预设模型可用\n时间：${beijingTime()}（UTC+8）`, { email: false });
     lastHealthyPingAt = now;
   }
 }

@@ -143,9 +143,9 @@ nothing in the app notices until a user reports it. The built-in health check cl
 - Sends one tiny real completion per preset model (`max_tokens: 16`, ≈ $0.01/month total for 8 models),
   classifying failures: `key-invalid` (401) · `credits-out` (402) · `model-missing` (404) · upstream/network errors.
 - Also verifies `INTERNAL_RELAY_SECRET` is set in SaaS mode (agent debates 500 without it).
-- On failure it sends a webhook and/or email alert (re-alerting daily while unresolved, throttled
-  to 1/30min); on recovery it sends a ✅ notice. A healthy post-deploy canary ping is sent at
-  most once per 6h.
+- On failure it alerts via webhook and email (re-alerting daily while unresolved, throttled
+  to 1/30min). The recovery ✅ notice and the healthy post-deploy canary ping go to the
+  webhook only — email is reserved for failures so the inbox stays quiet when all is well.
 
 **Setup** — add to the web service:
 
@@ -153,7 +153,7 @@ nothing in the app notices until a user reports it. The built-in health check cl
 HEALTH_CHECK_SECRET=<random string>          # protects the manual probe endpoint
 PIPELINE_ALERT_WEBHOOK=<webhook URL>         # webhook channel; leave empty to skip
 RESEND_API_KEY=re_...                        # email channel; leave empty to skip
-PIPELINE_ALERT_EMAIL=you@example.com         # where alert emails are sent
+PIPELINE_ALERT_EMAIL=you@example.com         # receives failure alerts only
 PIPELINE_ALERT_EMAIL_FROM=LLM Conclave <ops@your-domain.com>   # optional; resend.dev sender by default
 ```
 
