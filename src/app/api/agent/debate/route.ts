@@ -178,9 +178,10 @@ export async function POST(req: Request) {
   // ── 5. Resolve models ─────────────────────────────────────────────────────
   const maxRounds = Math.min(body.maxRounds ?? 3, MAX_ROUNDS_HARD_LIMIT);
   const availablePresets = PRESET_DEFINITIONS.filter((p) => p.apiKey);
+  // Default selection = presets marked defaultEnabled (same trio new web users get)
   let selectedPresets = body.models?.length
     ? availablePresets.filter((p) => body.models!.includes(p.id))
-    : availablePresets.filter((p) => (p.agentMeta?.tier === 'standard' || p.agentMeta?.tier === 'lite') && p.defaultEnabled);
+    : availablePresets.filter((p) => p.defaultEnabled);
 
   if (selectedPresets.length === 0) selectedPresets = availablePresets.slice(0, 3);
   if (selectedPresets.length === 0) {

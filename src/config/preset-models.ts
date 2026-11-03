@@ -16,7 +16,7 @@ export interface PresetDefinition {
   /** Metadata for AI agents selecting models via /api/agent/models. */
   agentMeta?: {
     strengths: string[];
-    /** 'lite' ≤40 cr/r | 'standard' ≤100 cr/r | 'pro' = flagship */
+    /** 'lite' = budget | 'standard' = balanced | 'pro' = flagship */
     tier: 'lite' | 'standard' | 'pro';
   };
 }
@@ -44,6 +44,19 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     defaultEnabled: true,
     badge: 'Balance',
     agentMeta: { strengths: ['analytical', 'creative', 'balanced'], tier: 'standard' },
+  },
+  {
+    id: 'gemini-argon',
+    providerId: 'custom',
+    modelId: 'google/gemini-4-argon',
+    displayName: 'Gemini 4 Argon',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    // $2/$10 per 1M, priced at the same credit/price multiple as Gemini 3.8 Flash
+    creditsPerRound: 195,
+    defaultEnabled: false,
+    badge: 'Flagship',
+    agentMeta: { strengths: ['deep-reasoning', 'multimodal', 'long-context'], tier: 'pro' },
   },
   {
     id: 'openai',

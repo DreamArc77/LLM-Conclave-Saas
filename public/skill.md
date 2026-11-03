@@ -88,14 +88,20 @@ No auth required. Returns models available for debate selection.
 {
   "skillVersion": 2,
   "models": [
-    { "id": "gemini", "name": "Gemini 3 Flash", "creditsPerRound": 60, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
-    { "id": "deepseek", "name": "DeepSeek V4 Flash", "creditsPerRound": 20, "strengths": ["logical","concise","fast"], "tier": "lite" },
-    { "id": "openai", "name": "GPT-5.5", "creditsPerRound": 250, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" }
+    { "id": "gemini", "name": "Gemini 3.8 Flash", "creditsPerRound": 80, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
+    { "id": "gemini-argon", "name": "Gemini 4 Argon", "creditsPerRound": 195, "strengths": ["deep-reasoning","multimodal","long-context"], "tier": "pro" },
+    { "id": "openai", "name": "GPT-6.1 Sol Pro", "creditsPerRound": 90, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" },
+    { "id": "deepseek", "name": "DeepSeek V4.1 Flash", "creditsPerRound": 45, "strengths": ["logical","concise","fast"], "tier": "lite" },
+    { "id": "claude", "name": "Claude Opus 5.5", "creditsPerRound": 335, "strengths": ["nuanced-reasoning","writing","safety"], "tier": "pro" },
+    { "id": "xAI", "name": "Grok 4.7", "creditsPerRound": 375, "strengths": ["real-time-knowledge","wit","systems-thinking"], "tier": "pro" },
+    { "id": "minimax", "name": "MiniMax M3.1 Flash", "creditsPerRound": 28, "strengths": ["multi-agent","coding","chinese"], "tier": "standard" },
+    { "id": "kimi", "name": "Kimi K3.1 Pro", "creditsPerRound": 308, "strengths": ["long-context","research","coding"], "tier": "standard" },
+    { "id": "Qwen", "name": "Qwen 3.8 Max Prime", "creditsPerRound": 330, "strengths": ["agentic","coding","chinese"], "tier": "pro" }
   ]
 }
 ```
 
-Tiers: `lite` (≤40 cr/round), `standard` (≤100 cr/round), `pro` (flagship models).
+Tiers: `lite` (budget) · `standard` (balanced) · `pro` (flagship).
 
 ---
 
@@ -132,7 +138,7 @@ Idempotency-Key: <your-unique-uuid>
 ```json
 {
   "query": "Your topic or question",
-  "models": ["gemini", "deepseek"],
+  "models": ["gemini", "openai", "deepseek"],
   "maxRounds": 3,
   "locale": "zh-CN"
 }
@@ -266,7 +272,7 @@ curl -X POST https://llmconclave.com/api/agent/debate \
   --no-buffer \
   -d '{
     "query": "AI对金融行业未来5年的影响",
-    "models": ["gemini", "deepseek"],
+    "models": ["gemini", "openai", "deepseek"],
     "maxRounds": 3,
     "locale": "zh-CN"
   }'
