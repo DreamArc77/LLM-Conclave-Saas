@@ -8,7 +8,10 @@ import { isSaas } from '@/lib/flags';
 export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  // Post-auth destination: the console by default (the model picker / pending
+  // prompt live there). Only same-origin paths are honored.
+  const rawNext = searchParams.get('next') ?? '/app';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/app';
 
   // Use forwarded host headers to get the real public origin.
   // Railway proxies requests internally on 0.0.0.0:PORT so request.url gives the

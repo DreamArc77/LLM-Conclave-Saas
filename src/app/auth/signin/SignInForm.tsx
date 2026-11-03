@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useT } from '@/hooks/useT';
 import { useIsWebView, useIsCapacitor } from '@/hooks/useIsWebView';
+import { requestModelDrawerOnNextAppEntry } from '@/lib/model-drawer';
 
 export default function SignInForm() {
   const t = useT();
@@ -30,12 +31,13 @@ export default function SignInForm() {
       return;
     }
 
-    router.push('/');
+    router.push('/app');
     router.refresh();
   };
 
   const handleGoogleSignIn = async () => {
     setError('');
+    requestModelDrawerOnNextAppEntry();
     try {
       const supabase = createClient();
       const { error: err } = await supabase.auth.signInWithOAuth({

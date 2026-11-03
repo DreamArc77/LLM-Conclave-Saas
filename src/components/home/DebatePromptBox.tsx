@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { PENDING_PROMPT_KEY } from '@/lib/pending-prompt';
+import { requestModelDrawerOnNextAppEntry } from '@/lib/model-drawer';
 
 interface DebatePromptBoxProps {
   placeholder: string;
@@ -27,6 +28,9 @@ export function DebatePromptBox({ placeholder, cta, note }: DebatePromptBoxProps
     } catch {
       // Private mode etc. — still continue to sign-up without the handoff.
     }
+    // Landing → signup → (Google/email) login lands in the console with the
+    // model picker open, so new users see which AIs are available.
+    requestModelDrawerOnNextAppEntry();
     router.push('/auth/signup');
   }, [value, router]);
 

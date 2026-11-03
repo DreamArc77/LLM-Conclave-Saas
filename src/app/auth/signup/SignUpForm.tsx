@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useT } from '@/hooks/useT';
 import { useIsWebView, useIsCapacitor } from '@/hooks/useIsWebView';
+import { requestModelDrawerOnNextAppEntry } from '@/lib/model-drawer';
 
 export default function SignUpForm() {
   const t = useT();
@@ -24,6 +25,10 @@ export default function SignUpForm() {
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Arrive in the console with the model picker open (survives same-tab
+    // email-confirmation; other devices are covered by the console's first-visit rule).
+    requestModelDrawerOnNextAppEntry();
 
     const supabase = createClient();
     const { error: err } = await supabase.auth.signUp({
@@ -53,6 +58,7 @@ export default function SignUpForm() {
   };
 
   const handleGoogleSignIn = async () => {
+    requestModelDrawerOnNextAppEntry();
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',

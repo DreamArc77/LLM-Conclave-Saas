@@ -11,6 +11,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useConfigStore } from '@/stores/config-store';
 import { useChatStore } from '@/stores/chat-store';
 import { reconnectRelay } from '@/lib/relay/relay-engine';
+import { consumeModelDrawerRequest } from '@/lib/model-drawer';
 
 export function AppShell() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
@@ -20,16 +21,20 @@ export function AppShell() {
     // Sync preset models from server
     useConfigStore.getState().syncPresets();
 
-    // First visit (or zero enabled models): open the model-selection drawer by
-    // default — otherwise users don't realize they can pick which AIs debate.
-    // "First visit" is tracked per browser, matching where the model config itself lives.
+    // Open the model-selection drawer when: the user just came through an auth
+    // flow / the landing debate box (one-shot marker), the browser's first /app
+    // visit, or no model is enabled (the input would otherwise be disabled).
+    const requested = consumeModelDrawerRequest();
+    let firstVisit = false;
     try {
-      const hasEnabledModels = useConfigStore.getState().models.some((m) => m.enabled);
-      if (localStorage.getItem('llmconclave-model-drawer-seen') !== '1' || !hasEnabledModels) {
-        localStorage.setItem('llmconclave-model-drawer-seen', '1');
-        useUIStore.getState().openSettings();
-      }
-    } catch { /* storage unavailable — skip auto-open */ }
+      firstVisit = localStorage.getItem('llmconclave-model-drawer-seen') !== '1';
+      if (firstVisit) localStorage.setItem('llmconclave-model-drawer-seen', '1');
+    } catch { /* storage unavailable — fall back to the request marker */ }
+
+    const hasEnabledModels = useConfigStore.getState().models.some((m) => m.enabled);
+    if (requested || firstVisit || !hasEnabledModels) {
+      useUIStore.getState().openSettings();
+    }
 
     // Cold reload: resume any relay that was active when the page was last killed.
     const tryReconnect = () => {
