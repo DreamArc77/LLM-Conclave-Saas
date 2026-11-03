@@ -20,6 +20,17 @@ export function AppShell() {
     // Sync preset models from server
     useConfigStore.getState().syncPresets();
 
+    // First visit (or zero enabled models): open the model-selection drawer by
+    // default — otherwise users don't realize they can pick which AIs debate.
+    // "First visit" is tracked per browser, matching where the model config itself lives.
+    try {
+      const hasEnabledModels = useConfigStore.getState().models.some((m) => m.enabled);
+      if (localStorage.getItem('llmconclave-model-drawer-seen') !== '1' || !hasEnabledModels) {
+        localStorage.setItem('llmconclave-model-drawer-seen', '1');
+        useUIStore.getState().openSettings();
+      }
+    } catch { /* storage unavailable — skip auto-open */ }
+
     // Cold reload: resume any relay that was active when the page was last killed.
     const tryReconnect = () => {
       try {
