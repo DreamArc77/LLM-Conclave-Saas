@@ -26,7 +26,10 @@ export interface PresetDefinition {
  * This file is server-side only; API keys are never sent to browsers.
  *
  * Pricing config (operator-editable):
- *   creditsPerRound  — fixed credit cost per model per round
+ *   creditsPerRound  — fixed credit cost per model per round. When swapping in a
+ *                      newer model, scale it by the OpenRouter price ratio of the
+ *                      two models (4:1 input:output token blend) so each slot's
+ *                      credit/price multiple stays constant.
  *   defaultEnabled   — whether new users get this model turned on by default
  */
 export const PRESET_DEFINITIONS: PresetDefinition[] = [
@@ -45,11 +48,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'openai',
     providerId: 'custom',
-    modelId: 'openai/gpt-6-astra',
-    displayName: 'GPT-6 Astra',
+    modelId: 'openai/gpt-6.1-sol-pro',
+    displayName: 'GPT-6.1 Sol Pro',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 450,
+    creditsPerRound: 90,
     defaultEnabled: true,
     badge: 'Flagship',
     agentMeta: { strengths: ['reasoning', 'coding', 'instruction-following'], tier: 'pro' },
@@ -71,11 +74,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'claude',
     providerId: 'custom',
-    modelId: 'anthropic/claude-fable-5.1',
-    displayName: 'Claude Fable 5.1',
+    modelId: 'anthropic/claude-opus-5.5',
+    displayName: 'Claude Opus 5.5',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 835,
+    creditsPerRound: 335,
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['nuanced-reasoning', 'writing', 'safety'], tier: 'pro' },
@@ -84,8 +87,8 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'xAI',
     providerId: 'custom',
-    modelId: 'x-ai/grok-4.6',
-    displayName: 'Grok 4.6',
+    modelId: 'x-ai/grok-4.7',
+    displayName: 'Grok 4.7',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 375,
@@ -96,11 +99,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'minimax',
     providerId: 'custom',
-    modelId: 'minimax/minimax-m3',
-    displayName: 'MiniMax M3',
+    modelId: 'minimax/minimax-m3.1-flash',
+    displayName: 'MiniMax M3.1 Flash',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 55,
+    creditsPerRound: 28,
     defaultEnabled: false,
     badge: 'Balance',
     agentMeta: { strengths: ['multi-agent', 'coding', 'chinese'], tier: 'standard' },
@@ -108,11 +111,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'kimi',
     providerId: 'custom',
-    modelId: 'moonshotai/kimi-k3',
-    displayName: 'Kimi K3',
+    modelId: 'moonshotai/kimi-k3.1-pro',
+    displayName: 'Kimi K3.1 Pro',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 270,
+    creditsPerRound: 308,
     defaultEnabled: false,
     badge: 'Balance',
     agentMeta: { strengths: ['long-context', 'research', 'coding'], tier: 'standard' },
@@ -121,11 +124,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
   {
     id: 'Qwen',
     providerId: 'custom',
-    modelId: 'qwen/qwen3.8-max-0902',
-    displayName: 'Qwen 3.8 Max (0902)',
+    modelId: 'qwen/qwen3.8-max-prime',
+    displayName: 'Qwen 3.8 Max Prime',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 165,
+    creditsPerRound: 330,
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['agentic', 'coding', 'chinese'], tier: 'pro' },
