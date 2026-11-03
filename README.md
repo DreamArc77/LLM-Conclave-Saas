@@ -130,6 +130,50 @@ For a Supabase Free project, create a separate Railway service from this reposit
 The task performs a read-only request against the existing `credits` table. Do not configure
 `SUPABASE_SERVICE_ROLE_KEY` on this service. Keep the existing web service start command as `node server.js`.
 
+### Model Pipeline Health Check (daily + post-deploy)
+
+Preset models depend on a single provider key (e.g. `OPENROUTER_API_KEY`). If that key is revoked,
+expires, or the account runs out of credits, every debate fails with a raw provider error — and
+nothing in the app notices until a user reports it. The built-in health check closes that gap.
+
+**What it does** (no external cron needed — it runs inside the web service):
+
+- On every server start (i.e. after each deploy): self-check ~90s after boot, then daily.
+- Validates each unique provider key via the gateway's free `GET /auth/key` endpoint.
+- Sends one tiny real completion per preset model (`max_tokens: 16`, ≈ $0.01/month total for 8 models),
+  classifying failures: `key-invalid` (401) · `credits-out` (402) · `model-missing` (404) · upstream/network errors.
+- Also verifies `INTERNAL_RELAY_SECRET` is set in SaaS mode (agent debates 500 without it).
+- On failure it sends a webhook and/or email alert (re-alerting daily while unresolved, throttled
+  to 1/30min); on recovery it sends a ✅ notice. A healthy post-deploy canary ping is sent at
+  most once per 6h.
+
+**Setup** — add to the web service:
+
+```
+HEALTH_CHECK_SECRET=<random string>          # protects the manual probe endpoint
+PIPELINE_ALERT_WEBHOOK=<webhook URL>         # webhook channel; leave empty to skip
+RESEND_API_KEY=re_...                        # email channel; leave empty to skip
+PIPELINE_ALERT_EMAIL=you@example.com         # where alert emails are sent
+PIPELINE_ALERT_EMAIL_FROM=LLM Conclave <ops@your-domain.com>   # optional; resend.dev sender by default
+```
+
+Both channels are optional and independent — configure whichever you use. Supported webhook targets
+(auto-detected from the URL): Feishu / Lark, DingTalk, WeCom (企业微信), Slack, Telegram
+(append `?chat_id=<id>` to the URL), Bark (`https://api.day.app/<key>`), or any endpoint accepting
+`{"text": "..."}`. The email channel uses [Resend](https://resend.com) (free tier is plenty for
+failure alerts) — verify your domain in Resend and set `PIPELINE_ALERT_EMAIL_FROM` to an address
+on it; without that, Resend only delivers to your own Resend account email.
+
+**Manual / external probe** (also handy right after rotating the provider key):
+
+```bash
+curl "https://your-domain/api/health/pipeline?secret=<HEALTH_CHECK_SECRET>"
+# 200 {ok:true} = every preset model reachable; 503 = details per model
+```
+
+For full dead-man coverage, point a free uptime monitor (UptimeRobot etc.) at both
+`/api/health` (server up) and `/api/health/pipeline?secret=...` (pipeline healthy).
+
 ---
 
 ## Tech Stack
