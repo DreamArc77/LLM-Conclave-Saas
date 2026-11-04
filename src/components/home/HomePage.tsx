@@ -2,7 +2,7 @@ import type { Messages } from '@/i18n/messages/en';
 import { en } from '@/i18n/messages/en';
 import { zhCN } from '@/i18n/messages/zh-CN';
 import { ja } from '@/i18n/messages/ja';
-import { publishedSports, publishedVerdicts } from '@/lib/content';
+import { publishedVerdicts } from '@/lib/content';
 import { HomeNavbar } from './HomeNavbar';
 import { HomeHero } from './HomeHero';
 import { HowItWorks } from './HowItWorks';
@@ -28,9 +28,7 @@ export async function HomePage({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: H
   // Content navigation only appears once real (non-sample) content exists,
   // so no public surface ever renders placeholder pages.
   const verdicts = await publishedVerdicts(locale);
-  const sports = await publishedSports(locale);
   const showVerdicts = verdicts.length > 0;
-  const showPredictions = sports.length > 0;
 
   return (
     <main className="min-h-screen bg-white text-gray-900 selection:bg-blue-100 font-sans overflow-x-hidden">
@@ -41,33 +39,15 @@ export async function HomePage({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: H
           }}
         />
       )}
-      <HomeNavbar
-        locale={locale}
-        t={t}
-        showVerdicts={showVerdicts}
-        showPredictions={showPredictions}
-      />
+      <HomeNavbar locale={locale} t={t} showVerdicts={showVerdicts} />
       <HomeHero t={t} />
       <HowItWorks t={t} />
       <HomeFeatures t={t} />
       <Comparison t={t} />
-      {showVerdicts && (
-        <HomeVerdicts
-          locale={locale}
-          verdicts={verdicts}
-          t={m.verdicts}
-          tp={m.predictions}
-          showPredictions={showPredictions}
-        />
-      )}
+      {showVerdicts && <HomeVerdicts locale={locale} verdicts={verdicts} t={m.verdicts} />}
       <HomeAbout t={t} />
       <HomeFAQ t={t} />
-      <HomeFooter
-        locale={locale}
-        t={t}
-        showVerdicts={showVerdicts}
-        showPredictions={showPredictions}
-      />
+      <HomeFooter locale={locale} t={t} showVerdicts={showVerdicts} />
       <JsonLd t={t} />
     </main>
   );

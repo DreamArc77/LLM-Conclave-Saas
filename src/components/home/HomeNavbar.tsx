@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Messages } from '@/i18n/messages/en';
-import { PREDICTIONS_BASE, VERDICTS_BASE } from '@/lib/content';
+import { VERDICTS_BASE } from '@/lib/content';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 type HomeMessages = Messages['home'];
@@ -15,12 +15,10 @@ export function HomeNavbar({
   locale,
   t,
   showVerdicts,
-  showPredictions,
 }: {
   locale: 'en' | 'zh' | 'ja';
   t: HomeMessages;
   showVerdicts: boolean;
-  showPredictions: boolean;
 }) {
   return (
     <nav className="fixed top-0 inset-x-0 h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md z-50">
@@ -43,11 +41,6 @@ export function HomeNavbar({
           {showVerdicts && (
             <Link href={VERDICTS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
               {t.nav.verdicts}
-            </Link>
-          )}
-          {showPredictions && (
-            <Link href={PREDICTIONS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
-              {t.nav.predictions}
             </Link>
           )}
           <a href="#how" className="hover:text-cyan-600 transition-colors">{t.nav.how}</a>

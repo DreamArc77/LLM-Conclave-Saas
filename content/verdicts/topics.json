@@ -90,6 +90,36 @@
     }
   },
   {
+    "slug": "how-should-students-choose-their-first-laptop",
+    "status": "ready",
+    "domain": "life",
+    "queries": {
+      "en": "What should a student look for in a first laptop?",
+      "zh-CN": "学生买第一台笔记本电脑，应该看哪些关键点？",
+      "ja": "学生が最初のノートPCを選ぶとき、何を基準にすべき？"
+    }
+  },
+  {
+    "slug": "nba-2026-27-title-contenders",
+    "status": "ready",
+    "domain": "sports",
+    "queries": {
+      "en": "Which teams are the real contenders for the 2026-27 NBA title, and who is most likely to win it all?",
+      "zh-CN": "2026-27 赛季 NBA 总冠军，哪些球队是真正的争冠者？谁最有希望夺冠？",
+      "ja": "2026-27シーズンのNBA優勝候補は？本命はどこ？"
+    }
+  },
+  {
+    "slug": "champions-league-2026-27-favorites",
+    "status": "ready",
+    "domain": "sports",
+    "queries": {
+      "en": "Who are the favorites to win the 2026-27 Champions League, and why?",
+      "zh-CN": "2026-27 赛季欧冠冠军热门是谁？为什么？",
+      "ja": "2026-27チャンピオンズリーグの優勝候補とその理由は？"
+    }
+  },
+  {
     "slug": "competitive-advantage-as-a-late-entrant",
     "status": "backlog",
     "domain": "startup",
@@ -147,16 +177,6 @@
       "en": "EV or gas car in 2026?",
       "zh-CN": "2026 年买车：电车还是油车？",
       "ja": "2026年に車を買うならEVとガソリン車どっち？"
-    }
-  },
-  {
-    "slug": "laptop-for-college",
-    "status": "backlog",
-    "domain": "life",
-    "queries": {
-      "en": "Which laptop should a student buy?",
-      "zh-CN": "上大学该买什么笔记本电脑？",
-      "ja": "大学生が買うべきノートPCは？"
     }
   },
   {
@@ -287,6 +307,16 @@
       "en": "Where should a startup be based?",
       "zh-CN": "创业公司该选在哪个城市落地？",
       "ja": "スタートアップの拠点はどこに置くべき？"
+    }
+  },
+  {
+    "slug": "premier-league-title-race",
+    "status": "backlog",
+    "domain": "sports",
+    "queries": {
+      "en": "Who will win the Premier League title this season?",
+      "zh-CN": "本赛季英超冠军会是谁？",
+      "ja": "今季のプレミアリーグ優勝はどこ？"
     }
   }
 ]

@@ -220,7 +220,6 @@ export const en = {
       contact: 'Contact',
       cta: 'Start Free',
       verdicts: 'Verdicts',
-      predictions: 'Predictions',
     },
     hero: {
       badge: 'A Multi-AI Debate & Decision Platform',
@@ -337,7 +336,6 @@ export const en = {
       copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
       powered: 'Powered by SurpriseMan.',
       verdicts: 'Verdicts',
-      predictions: 'Predictions',
     },
   },
   verdicts: {
@@ -363,26 +361,6 @@ export const en = {
     backToHub: 'All verdicts',
     disclaimer:
       'AI-generated analysis for research and entertainment. Not financial, legal or betting advice.',
-  },
-  predictions: {
-    nav: 'Predictions',
-    hubTitle: 'AI Council Predictions',
-    hubIntro:
-      'Match predictions debated by a council of frontier models. One page per sport, refreshed as new slates are selected — never one page per match.',
-    sports: { nba: 'NBA', football: 'Football', esports: 'Esports', keirin: 'Keirin' },
-    latestSlate: 'Latest slate',
-    noSlate: 'No predictions yet — new slates are generated as matches are selected.',
-    weeklyTitle: 'Weekly archive',
-    noWeekly: 'No weekly archive yet.',
-    openSport: 'View predictions',
-    updatedOn: 'Updated {date}',
-    ctaTitle: 'Predict with your own council',
-    ctaDesc: 'Ask any matchup — multiple top AI models debate it and deliver a structured report.',
-    ctaButton: 'Start free',
-    sampleBadge: 'Sample',
-    backToHub: 'All sports',
-    disclaimer:
-      'AI-generated analysis for entertainment and research purposes. Not betting advice.',
   },
 };
 

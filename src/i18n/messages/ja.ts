@@ -222,7 +222,6 @@ export const ja: Messages = {
       contact: 'お問い合わせ',
       cta: '無料で始める',
       verdicts: 'カウンシル判定',
-      predictions: '試合予測',
     },
     hero: {
       badge: 'マルチAIディベート&意思決定プラットフォーム',
@@ -333,7 +332,6 @@ export const ja: Messages = {
       copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
       powered: 'Powered by SurpriseMan.',
       verdicts: 'カウンシル判定',
-      predictions: '試合予測',
     },
   },
   verdicts: {
@@ -357,24 +355,5 @@ export const ja: Messages = {
     noVerdicts: '新しい判定を準備中です。',
     backToHub: 'すべての判定',
     disclaimer: 'AIによる分析は研究・娯楽目的であり、金融・法律・賭博の助言ではありません。',
-  },
-  predictions: {
-    nav: '試合予測',
-    hubTitle: 'AIカウンシル試合予測',
-    hubIntro:
-      '複数の最先端モデルによるカウンシルが討論して出す試合予測。スポーツごとに1ページ、日程に合わせて更新——試合ごとの個別ページは作りません。',
-    sports: { nba: 'NBA', football: 'サッカー', esports: 'eスポーツ', keirin: '競輪' },
-    latestSlate: '最新の予測',
-    noSlate: '予測はまだありません。カードが選定され次第生成されます。',
-    weeklyTitle: '週次アーカイブ',
-    noWeekly: '週次アーカイブはまだありません。',
-    openSport: '予測を見る',
-    updatedOn: '{date}更新',
-    ctaTitle: '自分のカウンシルで予測する',
-    ctaDesc: '任意のカードを入力すると、複数のトップAIモデルが討論し構造化レポートを届けます。',
-    ctaButton: '無料で始める',
-    sampleBadge: 'サンプル',
-    backToHub: 'すべてのスポーツ',
-    disclaimer: 'AIによる分析は娯楽・研究目的であり、賭博の助言ではありません。',
   },
 };

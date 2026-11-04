@@ -8,7 +8,7 @@ const HREFLANG: Record<HomeLocale, string> = {
 };
 
 /**
- * Metadata for content pages (verdicts / predictions).
+ * Metadata for content pages (verdicts).
  * `alternates` maps each locale that actually has the page to its path —
  * locales without content are excluded from hreflang.
  */

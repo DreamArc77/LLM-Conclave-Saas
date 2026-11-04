@@ -3,26 +3,14 @@ import { SITE_URL, type HomeLocale } from '@/lib/seo';
 import {
   allVerdictSlugs,
   getVerdict,
-  listWeekly,
-  PREDICTIONS_BASE,
-  predictionsDisabled,
-  publishedSports,
   publishedVerdicts,
-  SPORTS,
-  sportHasPublished,
-  sportUrl,
   VERDICTS_BASE,
   verdictLocales,
   verdictUrl,
-  weeklyLocales,
-  weeklyUrl,
 } from '@/lib/content';
 
 const LOCALES: HomeLocale[] = ['en', 'zh', 'ja'];
 const HREFLANG: Record<HomeLocale, string> = { en: 'en', zh: 'zh-CN', ja: 'ja' };
-
-/** How many recent weekly prediction pages per sport stay in the sitemap. */
-const WEEKLY_SITEMAP_LIMIT = 8;
 
 // Built at deploy time from content/*.md. Kept static on purpose: the
 // standalone runtime image does not ship the content/ directory, so runtime
@@ -73,54 +61,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
         alternates: { languages: languages(altMap) },
       });
-    }
-  }
-
-  /* --- Predictions (skipped entirely by the kill switch) --- */
-  if (!predictionsDisabled()) {
-    for (const locale of LOCALES) {
-      const sports = await publishedSports(locale);
-      if (sports.length === 0) continue;
-      entries.push({
-        url: `${SITE_URL}${PREDICTIONS_BASE[locale]}`,
-        changeFrequency: 'daily',
-        priority: 0.8,
-      });
-    }
-
-    for (const sport of SPORTS) {
-      const altMap: Partial<Record<HomeLocale, string>> = {};
-      for (const locale of LOCALES) altMap[locale] = sportUrl(locale, sport);
-
-      for (const locale of LOCALES) {
-        if (!(await sportHasPublished(locale, sport))) continue;
-        entries.push({
-          url: `${SITE_URL}${sportUrl(locale, sport)}`,
-          changeFrequency: 'daily',
-          priority: 0.7,
-          alternates: { languages: languages(altMap) },
-        });
-      }
-
-      for (const locale of LOCALES) {
-        const weekly = (await listWeekly(sport, locale))
-          .filter((w) => !w.sample)
-          .slice(0, WEEKLY_SITEMAP_LIMIT);
-
-        for (const w of weekly) {
-          const locales = await weeklyLocales(sport, w.period);
-          const weeklyAlt: Partial<Record<HomeLocale, string>> = {};
-          for (const l of locales) weeklyAlt[l] = weeklyUrl(l, sport, w.period);
-
-          entries.push({
-            url: `${SITE_URL}${weeklyUrl(locale, sport, w.period)}`,
-            lastModified: w.updated || undefined,
-            changeFrequency: 'weekly',
-            priority: 0.5,
-            alternates: { languages: languages(weeklyAlt) },
-          });
-        }
-      }
     }
   }
 

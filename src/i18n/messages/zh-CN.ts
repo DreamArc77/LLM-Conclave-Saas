@@ -222,7 +222,6 @@ export const zhCN: Messages = {
       contact: '联系我们',
       cta: '免费开始',
       verdicts: '议会裁决',
-      predictions: '赛事预测',
     },
     hero: {
       badge: '多模型 AI 辩论与决策平台',
@@ -331,7 +330,6 @@ export const zhCN: Messages = {
       copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
       powered: 'Powered by SurpriseMan.',
       verdicts: '议会裁决',
-      predictions: '赛事预测',
     },
   },
   verdicts: {
@@ -354,24 +352,5 @@ export const zhCN: Messages = {
     noVerdicts: '新的裁决正在准备中。',
     backToHub: '全部裁决',
     disclaimer: 'AI 生成分析，仅供研究与娱乐参考，不构成金融、法律或博彩建议。',
-  },
-  predictions: {
-    nav: '赛事预测',
-    hubTitle: 'AI 议会赛事预测',
-    hubIntro:
-      '由多个前沿模型组成的议会逐场辩论给出的赛事预测。每个运动一个页面、随赛程更新——不逐场开页。',
-    sports: { nba: 'NBA', football: '足球', esports: '电竞', keirin: '竞轮' },
-    latestSlate: '最新预测',
-    noSlate: '暂无预测——选定赛程后会自动生成。',
-    weeklyTitle: '周度存档',
-    noWeekly: '暂无周度存档。',
-    openSport: '查看预测',
-    updatedOn: '更新于 {date}',
-    ctaTitle: '用你自己的议会做预测',
-    ctaDesc: '输入任意对阵，多个顶级 AI 模型展开辩论并输出结构化报告。',
-    ctaButton: '免费开始',
-    sampleBadge: '示例',
-    backToHub: '全部赛事',
-    disclaimer: 'AI 生成分析，仅供娱乐与研究参考，不构成任何博彩建议。',
   },
 };
