@@ -11,7 +11,17 @@ const LOCALE_HOME: Record<'en' | 'zh' | 'ja', string> = {
   ja: '/ja',
 };
 
-export function HomeNavbar({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: HomeMessages }) {
+export function HomeNavbar({
+  locale,
+  t,
+  showVerdicts,
+  showPredictions,
+}: {
+  locale: 'en' | 'zh' | 'ja';
+  t: HomeMessages;
+  showVerdicts: boolean;
+  showPredictions: boolean;
+}) {
   return (
     <nav className="fixed top-0 inset-x-0 h-16 border-b border-gray-100 bg-white/80 backdrop-blur-md z-50">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
@@ -27,15 +37,19 @@ export function HomeNavbar({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: HomeM
           <span className="font-bold text-lg tracking-tight text-gray-900">LLM Conclave</span>
         </Link>
 
-        {/* Links */}
+        {/* Links — content links appear only when real content exists */}
         <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-500">
           <a href="#features" className="hover:text-cyan-600 transition-colors">{t.nav.features}</a>
-          <Link href={VERDICTS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
-            {t.nav.verdicts}
-          </Link>
-          <Link href={PREDICTIONS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
-            {t.nav.predictions}
-          </Link>
+          {showVerdicts && (
+            <Link href={VERDICTS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+              {t.nav.verdicts}
+            </Link>
+          )}
+          {showPredictions && (
+            <Link href={PREDICTIONS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+              {t.nav.predictions}
+            </Link>
+          )}
           <a href="#how" className="hover:text-cyan-600 transition-colors">{t.nav.how}</a>
           <a href="#faq" className="hover:text-cyan-600 transition-colors">{t.nav.faq}</a>
           <a href="#about" className="hover:text-cyan-600 transition-colors">{t.nav.about}</a>

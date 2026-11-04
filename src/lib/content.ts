@@ -188,8 +188,32 @@ export async function allVerdictSlugs(): Promise<string[]> {
   return [...slugs].sort();
 }
 
+/** Slugs that have at least one published (non-sample) file in any locale. */
+export async function publishedVerdictSlugs(): Promise<string[]> {
+  const out: string[] = [];
+  for (const slug of await allVerdictSlugs()) {
+    const locales = await verdictLocales(slug);
+    for (const locale of locales) {
+      const verdict = await getVerdict(locale, slug);
+      if (verdict && !verdict.sample) {
+        out.push(slug);
+        break;
+      }
+    }
+  }
+  return out;
+}
+
 export function verdictUrl(locale: HomeLocale, slug: string): string {
   return `${VERDICTS_BASE[locale]}/${slug}`;
+}
+
+/**
+ * Public listing: samples are staging artifacts and must never be shown
+ * publicly. A hub only exists once it has real (non-sample) content.
+ */
+export async function publishedVerdicts(locale: HomeLocale): Promise<Verdict[]> {
+  return (await listVerdicts(locale)).filter((v) => !v.sample);
 }
 
 /* ------------------------------------------------------------------ */
@@ -273,6 +297,25 @@ async function parseDaily(sport: Sport, locale: HomeLocale): Promise<DailySlate 
 
 export async function getDaily(sport: Sport, locale: HomeLocale): Promise<DailySlate | null> {
   return parseDaily(sport, locale);
+}
+
+/** Sports that actually have published (non-sample) prediction content. */
+export async function publishedSports(locale: HomeLocale): Promise<Sport[]> {
+  if (predictionsDisabled()) return [];
+  const out: Sport[] = [];
+  for (const sport of SPORTS) {
+    const slate = await getDaily(sport, locale);
+    const weekly = await listWeekly(sport, locale);
+    if ((slate && !slate.sample) || weekly.some((w) => !w.sample)) out.push(sport);
+  }
+  return out;
+}
+
+export async function sportHasPublished(locale: HomeLocale, sport: Sport): Promise<boolean> {
+  if (predictionsDisabled()) return false;
+  const slate = await getDaily(sport, locale);
+  const weekly = await listWeekly(sport, locale);
+  return Boolean((slate && !slate.sample) || weekly.some((w) => !w.sample));
 }
 
 export function weeklyUrl(locale: HomeLocale, sport: Sport, period: string): string {

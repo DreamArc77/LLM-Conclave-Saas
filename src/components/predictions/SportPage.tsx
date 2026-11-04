@@ -21,7 +21,9 @@ export async function SportPage({
   slate: DailySlate | null;
   weekly: WeeklyPrediction[];
 }) {
-  const slateHtml = slate ? await marked.parse(slate.body) : null;
+  const visibleSlate = slate && !slate.sample ? slate : null;
+  const visibleWeekly = weekly.filter((w) => !w.sample);
+  const slateHtml = visibleSlate ? await marked.parse(visibleSlate.body) : null;
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -41,14 +43,9 @@ export async function SportPage({
         <section className="mt-10">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-bold text-gray-900">{t.latestSlate}</h2>
-            {slate?.sample && (
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                {t.sampleBadge}
-              </span>
-            )}
-            {slate?.updated && (
+            {visibleSlate?.updated && (
               <span className="text-xs text-gray-400">
-                {interpolate(t.updatedOn, { date: slate.updated })}
+                {interpolate(t.updatedOn, { date: visibleSlate.updated })}
               </span>
             )}
           </div>
@@ -61,11 +58,11 @@ export async function SportPage({
 
         <section className="mt-12">
           <h2 className="text-lg font-bold text-gray-900">{t.weeklyTitle}</h2>
-          {weekly.length === 0 ? (
+          {visibleWeekly.length === 0 ? (
             <p className="mt-4 text-sm text-gray-500">{t.noWeekly}</p>
           ) : (
             <ul className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-100">
-              {weekly.map((w) => (
+              {visibleWeekly.map((w) => (
                 <li key={w.period}>
                   <Link
                     href={weeklyUrl(locale, sport, w.period)}
@@ -73,11 +70,6 @@ export async function SportPage({
                   >
                     <span className="flex items-center gap-2 text-sm font-medium text-gray-800">
                       {w.title}
-                      {w.sample && (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                          {t.sampleBadge}
-                        </span>
-                      )}
                     </span>
                     <span className="text-xs text-gray-400">
                       {interpolate(t.updatedOn, { date: w.updated })}

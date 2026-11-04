@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { HomeLocale } from '@/lib/seo';
-import { SPORTS, PREDICTIONS_BASE, sportUrl } from '@/lib/content';
+import { PREDICTIONS_BASE, sportUrl, type Sport } from '@/lib/content';
 import type { Messages } from '@/i18n/messages/en';
 
 type PredictionsMessages = Messages['predictions'];
@@ -16,10 +16,12 @@ export function PredictionsHub({
   locale,
   t,
   homeHref,
+  availableSports,
 }: {
   locale: HomeLocale;
   t: PredictionsMessages;
   homeHref: string;
+  availableSports: Sport[];
 }) {
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -34,7 +36,7 @@ export function PredictionsHub({
         <p className="mt-4 max-w-3xl text-lg leading-relaxed text-gray-600">{t.hubIntro}</p>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
-          {SPORTS.map((sport) => (
+          {availableSports.map((sport) => (
             <Link
               key={sport}
               href={sportUrl(locale, sport)}

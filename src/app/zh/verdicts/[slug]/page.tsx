@@ -3,10 +3,10 @@ import type { Metadata } from 'next';
 import { VerdictArticle } from '@/components/verdicts/VerdictArticle';
 import { LangFix } from '@/components/common/LangFix';
 import {
-  allVerdictSlugs,
   getVerdict,
   isIndexable,
   listVerdicts,
+  publishedVerdictSlugs,
   verdictLocales,
   VERDICTS_BASE,
 } from '@/lib/content';
@@ -17,7 +17,7 @@ import { pageMetadata } from '@/lib/content-seo';
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return (await allVerdictSlugs()).map((slug) => ({ slug }));
+  return (await publishedVerdictSlugs()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -45,7 +45,7 @@ export async function generateMetadata({
 export default async function VerdictPageZh({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const verdict = await getVerdict('zh', slug);
-  if (!verdict) notFound();
+  if (!verdict || verdict.sample) notFound();
 
   const related = (await listVerdicts('zh')).filter((v) => v.slug !== slug).slice(0, 2);
 

@@ -6,6 +6,7 @@ import {
   getDaily,
   listWeekly,
   predictionsDisabled,
+  sportHasPublished,
   SPORTS,
   type Sport,
 } from '@/lib/content';
@@ -54,6 +55,7 @@ export default async function SportPredictionsPageZh({
 }) {
   const { sport } = await params;
   if (!isSport(sport)) notFound();
+  if (!(await sportHasPublished('zh', sport))) notFound();
 
   const [slate, weekly] = await Promise.all([getDaily(sport, 'zh'), listWeekly(sport, 'zh')]);
 

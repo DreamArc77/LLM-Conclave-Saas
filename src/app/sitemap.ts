@@ -2,12 +2,14 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL, type HomeLocale } from '@/lib/seo';
 import {
   allVerdictSlugs,
-  getDaily,
   getVerdict,
   listWeekly,
   PREDICTIONS_BASE,
   predictionsDisabled,
+  publishedSports,
+  publishedVerdicts,
   SPORTS,
+  sportHasPublished,
   sportUrl,
   VERDICTS_BASE,
   verdictLocales,
@@ -45,8 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  /* --- Verdicts --- */
+  /* --- Verdicts (hubs only exist once real content is published) --- */
   for (const locale of LOCALES) {
+    const published = await publishedVerdicts(locale);
+    if (published.length === 0) continue;
     entries.push({
       url: `${SITE_URL}${VERDICTS_BASE[locale]}`,
       changeFrequency: 'weekly',
@@ -75,6 +79,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   /* --- Predictions (skipped entirely by the kill switch) --- */
   if (!predictionsDisabled()) {
     for (const locale of LOCALES) {
+      const sports = await publishedSports(locale);
+      if (sports.length === 0) continue;
       entries.push({
         url: `${SITE_URL}${PREDICTIONS_BASE[locale]}`,
         changeFrequency: 'daily',
@@ -87,10 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const locale of LOCALES) altMap[locale] = sportUrl(locale, sport);
 
       for (const locale of LOCALES) {
-        const slate = await getDaily(sport, locale);
-        const weekly = await listWeekly(sport, locale);
-        const hasReal = Boolean((slate && !slate.sample) || weekly.some((w) => !w.sample));
-        if (!hasReal) continue;
+        if (!(await sportHasPublished(locale, sport))) continue;
         entries.push({
           url: `${SITE_URL}${sportUrl(locale, sport)}`,
           changeFrequency: 'daily',

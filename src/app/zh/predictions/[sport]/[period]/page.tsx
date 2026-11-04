@@ -5,7 +5,6 @@ import { LangFix } from '@/components/common/LangFix';
 import {
   allWeekly,
   getWeekly,
-  isIndexable,
   predictionsDisabled,
   PREDICTIONS_BASE,
   SPORTS,
@@ -53,7 +52,7 @@ export async function generateMetadata({
     description: weekly.summary || weekly.title,
     path: `/zh/predictions/${sport}/${period}`,
     alternates,
-    index: isIndexable(weekly.sample) && !predictionsDisabled(),
+    index: !predictionsDisabled(),
   });
 }
 
@@ -66,7 +65,7 @@ export default async function WeeklyPredictionPageZh({
   if (!isSport(sport)) notFound();
 
   const weekly = await getWeekly(sport, period, 'zh');
-  if (!weekly) notFound();
+  if (!weekly || weekly.sample) notFound();
 
   return (
     <>

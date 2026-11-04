@@ -4,7 +4,6 @@ import { WeeklyPage } from '@/components/predictions/WeeklyPage';
 import {
   allWeekly,
   getWeekly,
-  isIndexable,
   predictionsDisabled,
   PREDICTIONS_BASE,
   SPORTS,
@@ -52,7 +51,7 @@ export async function generateMetadata({
     description: weekly.summary || weekly.title,
     path: `/predictions/${sport}/${period}`,
     alternates,
-    index: isIndexable(weekly.sample) && !predictionsDisabled(),
+    index: !predictionsDisabled(),
   });
 }
 
