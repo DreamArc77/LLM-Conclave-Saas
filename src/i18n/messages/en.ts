@@ -351,7 +351,7 @@ export const en = {
     ctaButton: 'Start free',
     methodologyTitle: 'How the council works',
     methodologyDesc:
-      'Each verdict is produced by {count} frontier models debating in {rounds} rounds. Models answer independently, challenge each other’s reasoning, and converge on a balanced recommendation.',
+      'Each verdict is produced by {count} frontier models debating in {rounds} rounds. Models answer independently, challenge each other’s reasoning, and converge on a balanced recommendation. The full round-by-round transcript is shown below.',
     modelsLabel: 'Council',
     roundsLabel: '{count} rounds',
     debatedOn: 'Debated {date}',

@@ -343,7 +343,7 @@ export const zhCN: Messages = {
     ctaButton: '免费开始',
     methodologyTitle: '议会如何工作',
     methodologyDesc:
-      '每个裁决由 {count} 个前沿模型经过 {rounds} 轮辩论产生：模型独立作答、相互质疑彼此的推理，最终收敛出均衡建议。',
+      '每个裁决由 {count} 个前沿模型经过 {rounds} 轮辩论产生：模型独立作答、相互质疑彼此的推理，最终收敛出均衡建议。完整的两轮辩论实录在页面下方。',
     modelsLabel: '参与议会',
     roundsLabel: '{count} 轮',
     debatedOn: '辩论于 {date}',

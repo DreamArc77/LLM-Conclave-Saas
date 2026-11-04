@@ -56,6 +56,13 @@ body {
 .prose-lc h2 { font-size: 1.35rem; }
 .prose-lc h3 { font-size: 1.15rem; }
 .prose-lc h4 { font-size: 1rem; }
+/* Debate transcript: model answers under an h4 get a left rail */
+.prose-lc h4 {
+  margin-top: 1.9em;
+  padding-left: 0.75em;
+  border-left: 3px solid #a5f3fc;
+}
+.prose-lc h4 + p { margin-top: 0.4em; padding-left: 0.75em; }
 .prose-lc > :first-child { margin-top: 0; }
 .prose-lc p { margin: 0.9em 0; }
 .prose-lc ul,

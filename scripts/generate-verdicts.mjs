@@ -309,7 +309,41 @@ async function debate({ query, locale }) {
   return {
     report,
     participants: MODELS.map(shortModelName),
+    round1,
+    round2,
   };
+}
+
+/** Full debate transcript appended to the page: rounds → models → verbatim answers. */
+const DEBATE_LABELS = {
+  en: {
+    title: 'The debate, round by round',
+    r1: 'Round 1 — Independent answers',
+    r2: 'Round 2 — Cross-examination',
+  },
+  'zh-CN': {
+    title: '辩论实录',
+    r1: '第 1 轮 · 独立作答',
+    r2: '第 2 轮 · 交叉质询',
+  },
+  ja: {
+    title: 'ディベートの記録',
+    r1: 'ラウンド1・独立回答',
+    r2: 'ラウンド2・相互質疑',
+  },
+};
+
+function transcriptSection(locale, round1, round2) {
+  const labels = DEBATE_LABELS[locale];
+  const block = (heading, entries) =>
+    [`### ${heading}`, '', ...entries.flatMap(({ model, text }) => [`#### ${shortModelName(model)}`, '', text.trim(), ''])].join('\n');
+
+  return [
+    `## ${labels.title}`,
+    '',
+    block(labels.r1, round1),
+    block(labels.r2, round2),
+  ].join('\n');
 }
 
 /* ------------------------------------------------------------------ */
@@ -360,8 +394,9 @@ async function main() {
       }
 
       console.log(`generating: ${topic.slug} [${locale}]`);
-      const { report: rawReport, participants } = await debate({ query, locale });
+      const { report: rawReport, participants, round1, round2 } = await debate({ query, locale });
       const report = localizeHeadings(rawReport, locale);
+      const body = `${report}\n\n${transcriptSection(locale, round1, round2)}`;
 
       const summaryLine =
         report
@@ -383,7 +418,7 @@ async function main() {
         '',
       ].join('\n');
 
-      await writeFile(target, `${frontmatter}${report}\n`);
+      await writeFile(target, `${frontmatter}${body}\n`);
       debates += 1;
       console.log(`  wrote → ${path.relative(ROOT, target)}`);
     }

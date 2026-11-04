@@ -346,7 +346,7 @@ export const ja: Messages = {
     ctaButton: '無料で始める',
     methodologyTitle: 'カウンシルの仕組み',
     methodologyDesc:
-      '各判定は{count}の最先端モデルが{rounds}ラウンド討論して生成されます。モデルは独立に回答し、互いの論理に異議を唱え、バランスの取れた提言に収束します。',
+      '各判定は{count}の最先端モデルが{rounds}ラウンド討論して生成されます。モデルは独立に回答し、互いの論理に異議を唱え、バランスの取れた提言に収束します。ラウンドごとの全記録をページ下部に掲載しています。',
     modelsLabel: '参加モデル',
     roundsLabel: '{count}ラウンド',
     debatedOn: '{date}に討論',
