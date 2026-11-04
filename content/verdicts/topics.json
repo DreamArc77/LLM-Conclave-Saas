@@ -1,0 +1,292 @@
+[
+  {
+    "slug": "is-gold-still-worth-buying-2026",
+    "status": "ready",
+    "domain": "investing",
+    "queries": {
+      "en": "Is gold still worth buying in 2026?",
+      "zh-CN": "2026 年还值得买黄金吗？",
+      "ja": "2026年、金はまだ買う価値がある？"
+    }
+  },
+  {
+    "slug": "should-you-sell-your-rental-property-now",
+    "status": "ready",
+    "domain": "investing",
+    "queries": {
+      "en": "Should I sell my rental property now?",
+      "zh-CN": "现在应该卖掉投资房吗？",
+      "ja": "投資用不動産は今売るべき？"
+    }
+  },
+  {
+    "slug": "is-the-ai-boom-a-bubble",
+    "status": "ready",
+    "domain": "investing",
+    "queries": {
+      "en": "Is the AI boom a bubble in 2026?",
+      "zh-CN": "2026 年的 AI 热潮是泡沫吗？",
+      "ja": "2026年のAIブームはバブルなのか？"
+    }
+  },
+  {
+    "slug": "b2b-or-b2c-first",
+    "status": "ready",
+    "domain": "startup",
+    "queries": {
+      "en": "B2B or B2C first: how should a new startup choose?",
+      "zh-CN": "创业初期，应该先做 2B 还是 2C？",
+      "ja": "スタートアップ初期はBtoBとBtoCのどちらを優先すべき？"
+    }
+  },
+  {
+    "slug": "how-to-price-a-new-product",
+    "status": "ready",
+    "domain": "startup",
+    "queries": {
+      "en": "How should you price a new product with no comparables?",
+      "zh-CN": "没有对标产品的新品，该如何定价？",
+      "ja": "比較対象がない新製品の価格はどう決めるべき？"
+    }
+  },
+  {
+    "slug": "quit-your-job-to-build-a-startup",
+    "status": "ready",
+    "domain": "career",
+    "queries": {
+      "en": "Should I quit my job to build a startup?",
+      "zh-CN": "该不该辞职去创业？",
+      "ja": "起業のために会社を辞めるべきか？"
+    }
+  },
+  {
+    "slug": "rag-or-paste-documents",
+    "status": "ready",
+    "domain": "ai-tech",
+    "queries": {
+      "en": "RAG or just paste the documents into the model?",
+      "zh-CN": "小团队做 AI 知识库，自建 RAG 还是直接把文档发给大模型？",
+      "ja": "小規模チームのAIナレッジベースは、RAG構築と文書直投入のどちらが良い？"
+    }
+  },
+  {
+    "slug": "python-or-javascript-first",
+    "status": "ready",
+    "domain": "learning",
+    "queries": {
+      "en": "Should you learn Python or JavaScript first?",
+      "zh-CN": "第一门编程语言学 Python 还是 JavaScript？",
+      "ja": "最初に学ぶプログラミング言語はPythonとJavaScriptどっち？"
+    }
+  },
+  {
+    "slug": "does-ai-weaken-independent-thinking",
+    "status": "ready",
+    "domain": "society",
+    "queries": {
+      "en": "Does AI weaken independent thinking?",
+      "zh-CN": "AI 会削弱人的独立思考能力吗？",
+      "ja": "AIは人の独立思考を弱めるのか？"
+    }
+  },
+  {
+    "slug": "competitive-advantage-as-a-late-entrant",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "How does a late entrant build a competitive advantage?",
+      "zh-CN": "后发入场的公司如何建立自己的竞争优势？",
+      "ja": "後発企業はどうやって競争優位を築く？"
+    }
+  },
+  {
+    "slug": "when-to-cut-ad-spend",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "When should a company cut its paid acquisition spend?",
+      "zh-CN": "买量回本周期变长时，该不该收缩投放？",
+      "ja": "広告の回収期間が延びたら、出稿を減らすべき？"
+    }
+  },
+  {
+    "slug": "mba-for-founders",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Is an MBA worth it for a startup founder?",
+      "zh-CN": "创业者读 MBA 值不值？",
+      "ja": "起業家にとってMBAは価値がある？"
+    }
+  },
+  {
+    "slug": "masters-degree-or-job",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Take the job offer or the master's degree?",
+      "zh-CN": "拿到好工作，还要去读研吗？",
+      "ja": "良い仕事のオファーと大学院、どちらを選ぶ？"
+    }
+  },
+  {
+    "slug": "save-money-or-travel-first",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Save money first or travel while you're young?",
+      "zh-CN": "年轻人该先攒钱还是先出去看世界？",
+      "ja": "若いうちは貯金と旅行、どちらを優先すべき？"
+    }
+  },
+  {
+    "slug": "ev-or-gas-car",
+    "status": "backlog",
+    "domain": "life",
+    "queries": {
+      "en": "EV or gas car in 2026?",
+      "zh-CN": "2026 年买车：电车还是油车？",
+      "ja": "2026年に車を買うならEVとガソリン車どっち？"
+    }
+  },
+  {
+    "slug": "laptop-for-college",
+    "status": "backlog",
+    "domain": "life",
+    "queries": {
+      "en": "Which laptop should a student buy?",
+      "zh-CN": "上大学该买什么笔记本电脑？",
+      "ja": "大学生が買うべきノートPCは？"
+    }
+  },
+  {
+    "slug": "learn-3d-modeling-from-zero",
+    "status": "backlog",
+    "domain": "learning",
+    "queries": {
+      "en": "How do you start learning 3D modeling from scratch?",
+      "zh-CN": "零基础学 3D 建模从哪里开始？",
+      "ja": "3Dモデリングをゼロから学ぶには？"
+    }
+  },
+  {
+    "slug": "home-gym-or-gym-membership",
+    "status": "backlog",
+    "domain": "life",
+    "queries": {
+      "en": "Home gym or gym membership?",
+      "zh-CN": "在家健身还是办健身卡？",
+      "ja": "自宅トレとジム通い、どっちが良い？"
+    }
+  },
+  {
+    "slug": "remote-office-or-hybrid",
+    "status": "backlog",
+    "domain": "work",
+    "queries": {
+      "en": "Remote, office, or hybrid: what should a team choose?",
+      "zh-CN": "团队该远程、坐班还是混合办公？",
+      "ja": "チームはリモート・出社・ハイブリッドのどれを選ぶべき？"
+    }
+  },
+  {
+    "slug": "crypto-or-index-funds",
+    "status": "backlog",
+    "domain": "investing",
+    "queries": {
+      "en": "Crypto or index funds for long-term investing?",
+      "zh-CN": "长期投资选加密货币还是指数基金？",
+      "ja": "長期投資は暗号資産とインデックスファンドどっち？"
+    }
+  },
+  {
+    "slug": "side-hustle-worth-it",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Is a side hustle actually worth the time?",
+      "zh-CN": "副业到底值不值得做？",
+      "ja": "副業は本当に時間に見合うのか？"
+    }
+  },
+  {
+    "slug": "first-1000-customers",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "How do you get your first 1,000 customers?",
+      "zh-CN": "如何获得前 1000 个客户？",
+      "ja": "最初の1,000人の顧客はどう獲得する？"
+    }
+  },
+  {
+    "slug": "choosing-between-two-brand-names",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "How do you choose between two product names?",
+      "zh-CN": "两个品牌名二选一，怎么定？",
+      "ja": "2つの製品名、どちらを選ぶべき？"
+    }
+  },
+  {
+    "slug": "hire-fast-or-hire-slow",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "Should an early startup hire fast or hire slow?",
+      "zh-CN": "早期创业公司该快速招人还是谨慎招人？",
+      "ja": "初期スタートアップは採用を急ぐべきか慎重にすべきか？"
+    }
+  },
+  {
+    "slug": "should-companies-pay-for-ai-tools",
+    "status": "backlog",
+    "domain": "ai-tech",
+    "queries": {
+      "en": "Should companies pay for AI tools for every employee?",
+      "zh-CN": "公司是否应该为所有员工提供 AI 工具？",
+      "ja": "全社員にAIツールを会社負担で提供すべき？"
+    }
+  },
+  {
+    "slug": "buy-or-rent-a-home",
+    "status": "backlog",
+    "domain": "investing",
+    "queries": {
+      "en": "Buy a home or keep renting?",
+      "zh-CN": "买房还是继续租房？",
+      "ja": "家を買うべきか、賃貸を続けるべきか？"
+    }
+  },
+  {
+    "slug": "learn-to-code-at-30",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Is 30 too late to learn to code and switch careers?",
+      "zh-CN": "30 岁开始学编程转行，晚吗？",
+      "ja": "30歳からプログラミングを学んで転職するのは遅い？"
+    }
+  },
+  {
+    "slug": "freelance-or-fulltime",
+    "status": "backlog",
+    "domain": "career",
+    "queries": {
+      "en": "Freelance or take a full-time job?",
+      "zh-CN": "自由职业还是全职上班？",
+      "ja": "フリーランスと正社員、どちらを選ぶ？"
+    }
+  },
+  {
+    "slug": "where-to-base-a-startup",
+    "status": "backlog",
+    "domain": "startup",
+    "queries": {
+      "en": "Where should a startup be based?",
+      "zh-CN": "创业公司该选在哪个城市落地？",
+      "ja": "スタートアップの拠点はどこに置くべき？"
+    }
+  }
+]

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Messages } from '@/i18n/messages/en';
+import { PREDICTIONS_BASE, VERDICTS_BASE } from '@/lib/content';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 type HomeMessages = Messages['home'];
@@ -27,12 +28,17 @@ export function HomeNavbar({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: HomeM
         </Link>
 
         {/* Links */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+        <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-500">
           <a href="#features" className="hover:text-cyan-600 transition-colors">{t.nav.features}</a>
+          <Link href={VERDICTS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+            {t.nav.verdicts}
+          </Link>
+          <Link href={PREDICTIONS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+            {t.nav.predictions}
+          </Link>
           <a href="#how" className="hover:text-cyan-600 transition-colors">{t.nav.how}</a>
           <a href="#faq" className="hover:text-cyan-600 transition-colors">{t.nav.faq}</a>
           <a href="#about" className="hover:text-cyan-600 transition-colors">{t.nav.about}</a>
-          <a href="#contact" className="hover:text-cyan-600 transition-colors">{t.nav.contact}</a>
         </div>
 
         <div className="flex items-center gap-3">

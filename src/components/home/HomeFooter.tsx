@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { Mail, MapPin } from 'lucide-react';
 import type { Messages } from '@/i18n/messages/en';
+import { PREDICTIONS_BASE, VERDICTS_BASE } from '@/lib/content';
 
 type HomeMessages = Messages['home'];
 
-export function HomeFooter({ t }: { t: HomeMessages }) {
+export function HomeFooter({ locale, t }: { locale: 'en' | 'zh' | 'ja'; t: HomeMessages }) {
   return (
     <footer id="contact" className="pt-16 pb-8 border-t border-gray-100 relative bg-white">
       <div className="max-w-7xl mx-auto px-6">
@@ -23,6 +24,14 @@ export function HomeFooter({ t }: { t: HomeMessages }) {
               <span className="font-bold text-lg tracking-tight text-gray-900">LLM Conclave</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">{t.footer.tagline}</p>
+            <div className="mt-4 flex gap-4 text-sm font-medium text-gray-500">
+              <Link href={VERDICTS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+                {t.footer.verdicts}
+              </Link>
+              <Link href={PREDICTIONS_BASE[locale]} className="hover:text-cyan-600 transition-colors">
+                {t.footer.predictions}
+              </Link>
+            </div>
           </div>
 
           {/* Contact */}

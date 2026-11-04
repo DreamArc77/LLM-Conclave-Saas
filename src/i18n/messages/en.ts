@@ -219,6 +219,8 @@ export const en = {
       about: 'About Us',
       contact: 'Contact',
       cta: 'Start Free',
+      verdicts: 'Verdicts',
+      predictions: 'Predictions',
     },
     hero: {
       badge: 'A Multi-AI Debate & Decision Platform',
@@ -334,7 +336,53 @@ export const en = {
       terms: 'Terms of Service',
       copyright: '© {year} Shanghai SurpriseMan Technology Co., LTD. All rights reserved.',
       powered: 'Powered by SurpriseMan.',
+      verdicts: 'Verdicts',
+      predictions: 'Predictions',
     },
+  },
+  verdicts: {
+    nav: 'Verdicts',
+    hubTitle: 'AI Council Verdicts',
+    hubIntro:
+      'Recurring high-stakes decisions, debated by a council of frontier AI models in multiple rounds — with the consensus and the dissent preserved.',
+    latest: 'Latest verdicts',
+    readVerdict: 'Read the full verdict',
+    ctaTitle: 'Put your own decision to the council',
+    ctaDesc:
+      'Ask anything — multiple top AI models debate it in rounds and deliver a structured consensus report.',
+    ctaButton: 'Start free',
+    methodologyTitle: 'How the council works',
+    methodologyDesc:
+      'Each verdict is produced by {count} frontier models debating in {rounds} rounds. Models answer independently, challenge each other’s reasoning, and converge on a balanced recommendation.',
+    modelsLabel: 'Council',
+    roundsLabel: '{count} rounds',
+    debatedOn: 'Debated {date}',
+    sampleBadge: 'Sample',
+    relatedTitle: 'More verdicts',
+    noVerdicts: 'New verdicts are being prepared.',
+    backToHub: 'All verdicts',
+    disclaimer:
+      'AI-generated analysis for research and entertainment. Not financial, legal or betting advice.',
+  },
+  predictions: {
+    nav: 'Predictions',
+    hubTitle: 'AI Council Predictions',
+    hubIntro:
+      'Match predictions debated by a council of frontier models. One page per sport, refreshed as new slates are selected — never one page per match.',
+    sports: { nba: 'NBA', football: 'Football', esports: 'Esports', keirin: 'Keirin' },
+    latestSlate: 'Latest slate',
+    noSlate: 'No predictions yet — new slates are generated as matches are selected.',
+    weeklyTitle: 'Weekly archive',
+    noWeekly: 'No weekly archive yet.',
+    openSport: 'View predictions',
+    updatedOn: 'Updated {date}',
+    ctaTitle: 'Predict with your own council',
+    ctaDesc: 'Ask any matchup — multiple top AI models debate it and deliver a structured report.',
+    ctaButton: 'Start free',
+    sampleBadge: 'Sample',
+    backToHub: 'All sports',
+    disclaimer:
+      'AI-generated analysis for entertainment and research purposes. Not betting advice.',
   },
 };
 

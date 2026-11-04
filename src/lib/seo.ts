@@ -13,13 +13,13 @@ const HOME_PATH: Record<HomeLocale, string> = {
 const HOME_TITLE: Record<HomeLocale, string> = {
   en: 'LLM Conclave — Multi-AI Debate & Decision Platform',
   zh: 'LLM Conclave — 多模型 AI 辩论与决策平台',
-  ja: 'LLM Conclave — マルチAIディベート&意思決定プラットフォーム',
+  ja: 'LLM Conclave｜複数のAIが討論して意思決定を支援する無料ツール',
 };
 
 const HOME_DESCRIPTION: Record<HomeLocale, string> = {
   en: 'LLM Conclave lets GPT, Claude, Gemini and more debate your questions in rounds and deliver structured consensus reports for better decisions. Free to start.',
   zh: '让 GPT、Claude、Gemini 等多个顶级 AI 模型围绕你的问题展开多轮辩论，输出结构化共识报告，为研究、工作与生活决策提供更均衡的洞察。免费开始。',
-  ja: 'GPT、Claude、Gemini など複数の主要 AI モデルがあなたの質問を多ラウンドで討論し、構造化された合意レポートをお届け。より良い意思決定を、無料で始められます。',
+  ja: 'GPT、Claude、Gemini など複数の主要AIモデルがあなたの質問を多ラウンドで討論し、構造化された合意レポートをお届け。仕事・研究・人生の意思決定を支援します。無料で始められます。',
 };
 
 const OG_LOCALE: Record<HomeLocale, string> = {
