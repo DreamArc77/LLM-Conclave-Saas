@@ -1,4 +1,5 @@
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
+import { hasPaidAccess } from '@/lib/credits/access';
 
 export async function GET(): Promise<Response> {
   const supabase = await createServerClient();
@@ -9,6 +10,7 @@ export async function GET(): Promise<Response> {
   }
 
   const admin = createAdminClient();
+  const unlocked = await hasPaidAccess(user.id, admin);
   const { data } = await admin
     .from('credits')
     .select('balance')
@@ -26,8 +28,11 @@ export async function GET(): Promise<Response> {
       .select('balance')
       .eq('user_id', user.id)
       .maybeSingle();
-    return Response.json({ balance: seeded ? (seeded.balance as number) : WELCOME_CREDITS });
+    return Response.json({
+      balance: seeded ? (seeded.balance as number) : WELCOME_CREDITS,
+      unlocked,
+    });
   }
 
-  return Response.json({ balance: data.balance as number });
+  return Response.json({ balance: data.balance as number, unlocked });
 }

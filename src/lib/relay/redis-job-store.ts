@@ -7,6 +7,29 @@ const MAX_POLL_MS = 295_000; // 295s — safely under Railway/Vercel 300s limit
 const eventsKey = (sid: string) => `relay:${sid}:events`;
 const statusKey = (sid: string) => `relay:${sid}:status`;
 const abortKey  = (sid: string) => `relay:${sid}:abort`;
+const userLockKey = (uid: string) => `relay:user:${uid}:active`;
+
+/** SET NX — returns true only for the request that won the lock. */
+export async function acquireUserLock(
+  userId: string,
+  sessionId: string,
+  ttlSec: number
+): Promise<boolean> {
+  const result = await getRedis().set(userLockKey(userId), sessionId, { nx: true, ex: ttlSec });
+  return result === 'OK';
+}
+
+export async function getUserLock(userId: string): Promise<string | null> {
+  return getRedis().get<string>(userLockKey(userId));
+}
+
+export async function releaseUserLock(userId: string, sessionId: string): Promise<void> {
+  const current = await getRedis().get<string>(userLockKey(userId));
+  if (current === sessionId) {
+    await getRedis().del(userLockKey(userId));
+  }
+}
+
 
 export async function createJob(sessionId: string): Promise<void> {
   await getRedis().set(statusKey(sessionId), 'running', { ex: EVENT_TTL });

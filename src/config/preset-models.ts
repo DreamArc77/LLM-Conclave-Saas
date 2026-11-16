@@ -11,6 +11,12 @@ export interface PresetDefinition {
   creditsPerRound: number;
   /** Whether this model is enabled by default when first synced to a new user's config. */
   defaultEnabled?: boolean;
+  /**
+   * Whether the model is usable with welcome/free credits. Only the free-tier trio
+   * (DeepSeek + Gemini + GPT-6 Luna) may be used before the user has ever purchased credits;
+   * every other preset requires a credit purchase. Locked models are also rejected server-side.
+   */
+  freeTier?: boolean;
   /** Badge label shown on the model card (e.g. "官方", "精选"). Omit to show no badge. */
   badge?: string;
   /** Metadata for AI agents selecting models via /api/agent/models. */
@@ -31,8 +37,29 @@ export interface PresetDefinition {
  *                      two models (4:1 input:output token blend) so each slot's
  *                      credit/price multiple stays constant.
  *   defaultEnabled   — whether new users get this model turned on by default
+ *   freeTier         — whether welcome/free credits may use this model (paid unlocks the rest)
+ *
+ * Pricing audit (2026-11-16, OpenRouter list prices in USD per 1M tokens):
+ *   blended = (4 × input + 1 × output) / 5
+ *   Gemini 3.8 Flash ($0.825 / $4.125) is the anchor at 80 credits → 53.87 credits per blended $/1M.
+ *   Every slot below sits at or above that anchor-derived floor. GPT-6.1 Sol Pro was below
+ *   cost at 90 credits (floor ≈ 194) and Claude Opus 5.5 was marginally below at 335 (floor ≈ 388),
+ *   so both were raised. DeepSeek/MiniMax/Grok/Kimi/Qwen keep their existing (above-floor) prices.
  */
 export const PRESET_DEFINITIONS: PresetDefinition[] = [
+  {
+    id: 'deepseek',
+    providerId: 'custom',
+    modelId: 'deepseek/deepseek-v4.1-flash',
+    displayName: 'DeepSeek V4.1 Flash',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 45, // $0.14 / $0.42 per 1M — floor ≈ 11
+    defaultEnabled: true,
+    freeTier: true,
+    badge: 'Lite',
+    agentMeta: { strengths: ['logical', 'concise', 'fast'], tier: 'lite' },
+  },
   {
     id: 'gemini',
     providerId: 'custom',
@@ -40,10 +67,24 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Gemini 3.8 Flash',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 80,
+    creditsPerRound: 80, // pricing anchor: $0.825 / $4.125 per 1M
     defaultEnabled: true,
+    freeTier: true,
     badge: 'Balance',
     agentMeta: { strengths: ['analytical', 'creative', 'balanced'], tier: 'standard' },
+  },
+  {
+    id: 'gpt-luna',
+    providerId: 'custom',
+    modelId: 'openai/gpt-6-luna',
+    displayName: 'GPT-6 Luna',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    creditsPerRound: 10, // $0.10 / $0.50 per 1M — floor ≈ 10
+    defaultEnabled: true,
+    freeTier: true,
+    badge: 'Balance',
+    agentMeta: { strengths: ['balanced', 'instruction-following', 'fast'], tier: 'standard' },
   },
   {
     id: 'gemini-argon',
@@ -52,8 +93,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Gemini 4 Argon',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    // $2/$10 per 1M, priced at the same credit/price multiple as Gemini 3.8 Flash
-    creditsPerRound: 195,
+    creditsPerRound: 195, // $2 / $10 per 1M — floor ≈ 194
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['deep-reasoning', 'multimodal', 'long-context'], tier: 'pro' },
@@ -65,25 +105,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'GPT-6.1 Sol Pro',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 90,
-    defaultEnabled: true,
+    creditsPerRound: 194, // $2 / $10 per 1M — floor ≈ 194 (raised from 90, which was below cost)
+    defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['reasoning', 'coding', 'instruction-following'], tier: 'pro' },
   },
-
-  {
-    id: 'deepseek',
-    providerId: 'custom',
-    modelId: 'deepseek/deepseek-v4.1-flash',
-    displayName: 'DeepSeek V4.1 Flash',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 45,
-    defaultEnabled: true,
-    badge: 'Lite',
-    agentMeta: { strengths: ['logical', 'concise', 'fast'], tier: 'lite' },
-  },
-
   {
     id: 'claude',
     providerId: 'custom',
@@ -91,12 +117,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Claude Opus 5.5',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 335,
+    creditsPerRound: 388, // $4 / $20 per 1M — floor ≈ 388 (raised from 335, which was below cost)
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['nuanced-reasoning', 'writing', 'safety'], tier: 'pro' },
   },
-
   {
     id: 'xAI',
     providerId: 'custom',
@@ -104,7 +129,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Grok 4.7',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 375,
+    creditsPerRound: 375, // $2 / $6 per 1M — floor ≈ 151
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['real-time-knowledge', 'wit', 'systems-thinking'], tier: 'pro' },
@@ -116,7 +141,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'MiniMax M3.1 Flash',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 28,
+    creditsPerRound: 28, // $0.15 / $0.60 per 1M — floor ≈ 13
     defaultEnabled: false,
     badge: 'Balance',
     agentMeta: { strengths: ['multi-agent', 'coding', 'chinese'], tier: 'standard' },
@@ -128,12 +153,11 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Kimi K3.1 Pro',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 308,
+    creditsPerRound: 308, // $0.2403 / $8.4023 per 1M — floor ≈ 101
     defaultEnabled: false,
     badge: 'Balance',
     agentMeta: { strengths: ['long-context', 'research', 'coding'], tier: 'standard' },
   },
-
   {
     id: 'Qwen',
     providerId: 'custom',
@@ -141,7 +165,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     displayName: 'Qwen 3.8 Max Prime',
     baseUrl: 'https://openrouter.ai/api/v1',
     apiKey: process.env.OPENROUTER_API_KEY || '',
-    creditsPerRound: 330,
+    creditsPerRound: 330, // $4 / $12 per 1M — floor ≈ 302
     defaultEnabled: false,
     badge: 'Flagship',
     agentMeta: { strengths: ['agentic', 'coding', 'chinese'], tier: 'pro' },

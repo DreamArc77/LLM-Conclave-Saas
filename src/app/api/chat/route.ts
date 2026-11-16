@@ -3,6 +3,9 @@ import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { logger } from '@/lib/logger';
+import { isSaas } from '@/lib/flags';
+import { createServerClient, createAdminClient } from '@/lib/supabase/server';
+import { hasPaidAccess, isPresetLocked } from '@/lib/credits/access';
 import type { ChatProxyRequest } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
@@ -10,11 +13,42 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request): Promise<Response> {
   const presetId = req.headers.get('x-preset-id');
   let apiKey = req.headers.get('x-api-key');
-  const baseUrl = req.headers.get('x-base-url');
+  let baseUrl: string | null = req.headers.get('x-base-url');
+
+  const preset = presetId
+    ? PRESET_DEFINITIONS.find((p) => p.id === presetId)
+    : undefined;
 
   if (presetId) {
-    const preset = PRESET_DEFINITIONS.find((p) => p.id === presetId);
     apiKey = preset ? (preset.apiKey || null) : null;
+    // Presets always use the operator-configured endpoint — never the client header.
+    // This prevents using the server as an SSRF proxy with the platform key.
+    baseUrl = preset?.baseUrl ?? null;
+  }
+
+  if (isSaas) {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (preset) {
+      const paidAccess = await hasPaidAccess(user.id, createAdminClient());
+      if (isPresetLocked(preset.id, paidAccess)) {
+        return new Response(JSON.stringify({
+          error: 'SUBSCRIPTION_REQUIRED',
+          lockedModels: [preset.id],
+          topUpUrl: '/account',
+        }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    }
   }
 
   if (!apiKey) {
@@ -50,13 +84,13 @@ export async function POST(req: Request): Promise<Response> {
       console.log(`[API/chat] provider=${provider} model=${model}`);
       switch (provider) {
         case 'openai-compatible':
-          await streamFromOpenAI({ apiKey, baseUrl, model, system, messages, writeSSE });
+          await streamFromOpenAI({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
           break;
         case 'anthropic':
-          await streamFromAnthropic({ apiKey, baseUrl, model, system, messages, writeSSE });
+          await streamFromAnthropic({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
           break;
         case 'google-gemini':
-          await streamFromGemini({ apiKey, baseUrl, model, system, messages, writeSSE });
+          await streamFromGemini({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
           break;
         default:
           await writeSSE({ type: 'error', message: `Unknown provider: ${provider}` });

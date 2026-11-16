@@ -1,5 +1,6 @@
-import { createServerClient, createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { isSaas } from '@/lib/flags';
+import { requireApiUser } from '@/lib/auth/api-auth';
 import { generateReportMarkdown } from '@/lib/report/regenerate';
 import type { ConvMessage } from '@/lib/report/regenerate';
 import type { Locale } from '@/i18n';
@@ -19,6 +20,9 @@ export const dynamic = 'force-dynamic';
  * Response: { markdown: string, filename: string }
  */
 export async function POST(request: Request): Promise<Response> {
+  const auth = await requireApiUser();
+  if (!auth.ok) return auth.response;
+
   const body = await request.json().catch(() => ({}));
   const { locale = 'en', sessionId, messages, query } = body as {
     locale?: Locale;
@@ -31,20 +35,22 @@ export async function POST(request: Request): Promise<Response> {
   let originalQuery: string;
 
   if (sessionId) {
-    // Fetch conversation messages from Supabase
-    if (isSaas) {
-      const supabase = await createServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Fetch conversation messages from Supabase. In SaaS the user_id filter doubles
+    // as the ownership check, so a logged-in user can never read another transcript.
+    if (isSaas && !auth.userId) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const admin = createAdminClient();
-    const { data: msgs } = await admin
+    const query = admin
       .from('chat_messages')
       .select('role, content, display_name')
       .eq('session_id', sessionId)
-      .eq('is_system', false)
-      .order('created_at', { ascending: true });
+      .eq('is_system', false);
+    const scopedQuery = isSaas && auth.userId
+      ? query.eq('user_id', auth.userId)
+      : query;
+    const { data: msgs } = await scopedQuery.order('created_at', { ascending: true });
 
     if (!msgs || msgs.length === 0) {
       return Response.json({ error: 'No messages found' }, { status: 404 });
@@ -58,6 +64,9 @@ export async function POST(request: Request): Promise<Response> {
     originalQuery = (msgs.find((m) => m.role === 'user')?.content as string) ?? '';
   } else if (Array.isArray(messages) && typeof query === 'string') {
     // Non-SaaS: client provides messages directly
+    if (isSaas) {
+      return Response.json({ error: 'sessionId required in SaaS mode' }, { status: 400 });
+    }
     fullContext = messages;
     originalQuery = query;
   } else {

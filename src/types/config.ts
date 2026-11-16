@@ -36,4 +36,6 @@ export interface ModelConfig {
   badge?: string;
   /** Server-supplied default enabled state (used only during initial preset sync). */
   defaultEnabled?: boolean;
+  /** Server-supplied: usable with welcome/free credits (default trio only). */
+  freeTier?: boolean;
 }

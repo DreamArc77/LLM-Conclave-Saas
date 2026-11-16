@@ -9,6 +9,38 @@ export interface RelayJob {
 
 const jobs = new Map<string, RelayJob>();
 
+/**
+ * Per-user "one active relay" lock. In-memory variant for REDIS_DISABLED deployments;
+ * the Redis variant uses SET NX so multiple instances agree.
+ */
+const userLocks = new Map<string, { sessionId: string; expiresAt: number }>();
+
+export function acquireUserLock(userId: string, sessionId: string, ttlSec: number): boolean {
+  const now = Date.now();
+  const existing = userLocks.get(userId);
+  if (existing && existing.expiresAt > now) return false;
+  userLocks.set(userId, { sessionId, expiresAt: now + ttlSec * 1000 });
+  return true;
+}
+
+export function getUserLock(userId: string): string | null {
+  const existing = userLocks.get(userId);
+  if (!existing) return null;
+  if (existing.expiresAt <= Date.now()) {
+    userLocks.delete(userId);
+    return null;
+  }
+  return existing.sessionId;
+}
+
+export function releaseUserLock(userId: string, sessionId: string): void {
+  const existing = userLocks.get(userId);
+  if (existing && existing.sessionId === sessionId) {
+    userLocks.delete(userId);
+  }
+}
+
+
 export function createJob(sessionId: string): RelayJob {
   const job: RelayJob = {
     events: [],

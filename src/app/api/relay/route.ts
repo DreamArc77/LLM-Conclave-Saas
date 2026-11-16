@@ -7,6 +7,7 @@ import { jobStore } from '@/lib/relay/job-store-factory';
 import { isSaas } from '@/lib/flags';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { checkAndDeductCredits, refundCredits } from '@/lib/credits/deduct';
+import { hasPaidAccess, isPresetLocked } from '@/lib/credits/access';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -30,6 +31,9 @@ import type { ProviderId } from '@/types/config';
 import type { RelayUsageStats } from '@/types/chat';
 
 export const dynamic = 'force-dynamic';
+
+/** How long a user's "one active relay" slot is held before the TTL releases it. */
+const RELAY_USER_LOCK_TTL_SEC = 20 * 60;
 
 interface RelayModelInput {
   id: string;
@@ -87,79 +91,125 @@ export async function POST(req: Request): Promise<Response> {
     const agentUserId = req.headers.get('x-agent-user-id');
     const agentSecret = req.headers.get('x-agent-secret');
     const internalSecret = process.env.INTERNAL_RELAY_SECRET;
-    if (agentUserId && internalSecret && agentSecret === internalSecret) {
-      saasUserId = agentUserId;
+    const isInternalAgent = !!(agentUserId && internalSecret && agentSecret === internalSecret);
+
+    let requestUserId: string;
+    if (isInternalAgent) {
+      requestUserId = agentUserId as string;
       // Skip cookie auth + credit deduction — already handled by the caller
     } else {
-    const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
+      const supabase = await createServerClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      requestUserId = user.id;
+    }
+    saasUserId = requestUserId;
+
+    // Welcome/free credits only cover the default trio. Premium presets require a purchase.
+    const adminClient = createAdminClient();
+    const paidAccess = await hasPaidAccess(requestUserId, adminClient);
+    const lockedModels = models
+      .filter((m) => m.isPreset && isPresetLocked(m.id, paidAccess))
+      .map((m) => m.id);
+    if (lockedModels.length > 0) {
+      return new Response(JSON.stringify({
+        error: 'SUBSCRIPTION_REQUIRED',
+        lockedModels,
+        topUpUrl: '/account',
+      }), {
+        status: 403,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    saasUserId = user.id;
 
-    // Pre-check: user must have at least 1 credit
-    const adminClient = createAdminClient();
-    const { data: creditRow } = await adminClient
-      .from('credits')
-      .select('balance')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    // One in-flight relay per user. This closes the concurrent pre-check/deduct race:
+    // parallel requests can no longer all pass the balance check and overspend.
+    const acquired = await jobStore.acquireUserLock(requestUserId, sessionId, RELAY_USER_LOCK_TTL_SEC);
+    if (!acquired) {
+      const activeSessionId = await jobStore.getUserLock(requestUserId);
+      return new Response(JSON.stringify({
+        error: 'DEBATE_ALREADY_RUNNING',
+        activeSessionId,
+      }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-    let currentBalance = creditRow ? (creditRow.balance as number) : null;
-
-    if (currentBalance === null) {
-      // No row yet — auto-seed welcome credits
-      const { addWelcomeCredits } = await import('@/lib/credits/deduct');
-      const { WELCOME_CREDITS } = await import('@/config/credit-packages');
-      await addWelcomeCredits({ userId: user.id, supabase: adminClient, amount: WELCOME_CREDITS });
-      // Re-query to confirm the write succeeded
-      const { data: seeded } = await adminClient
+    // Internal agent path already pre-paid in /api/agent/debate.
+    if (!isInternalAgent) {
+      // Pre-check: user must have at least 1 credit
+      const { data: creditRow } = await adminClient
         .from('credits')
         .select('balance')
-        .eq('user_id', user.id)
+        .eq('user_id', requestUserId)
         .maybeSingle();
-      currentBalance = seeded ? (seeded.balance as number) : 0;
-    }
 
-    // Pre-check: user must be able to afford the full expected session cost (maxRounds × per-round cost)
-    const minRoundCost = models
-      .filter((m) => m.isPreset)
-      .reduce((sum, m) => {
-        const preset = PRESET_DEFINITIONS.find((p) => p.id === m.id);
-        return sum + (preset?.creditsPerRound ?? 0);
-      }, 0);
-    const totalExpectedCost = maxRounds * minRoundCost;
+      let currentBalance = creditRow ? (creditRow.balance as number) : null;
 
-    if (currentBalance < Math.max(1, totalExpectedCost)) {
-      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: currentBalance }), {
-        status: 402,
-        headers: { 'Content-Type': 'application/json' },
+      if (currentBalance === null) {
+        // No row yet — auto-seed welcome credits
+        const { addWelcomeCredits } = await import('@/lib/credits/deduct');
+        const { WELCOME_CREDITS } = await import('@/config/credit-packages');
+        await addWelcomeCredits({ userId: requestUserId, supabase: adminClient, amount: WELCOME_CREDITS });
+        // Re-query to confirm the write succeeded
+        const { data: seeded } = await adminClient
+          .from('credits')
+          .select('balance')
+          .eq('user_id', requestUserId)
+          .maybeSingle();
+        currentBalance = seeded ? (seeded.balance as number) : 0;
+      }
+
+      // Pre-check: user must be able to afford the full expected session cost (maxRounds × per-round cost)
+      const minRoundCost = models
+        .filter((m) => m.isPreset)
+        .reduce((sum, m) => {
+          const preset = PRESET_DEFINITIONS.find((p) => p.id === m.id);
+          return sum + (preset?.creditsPerRound ?? 0);
+        }, 0);
+      const totalExpectedCost = maxRounds * minRoundCost;
+
+      if (currentBalance < Math.max(1, totalExpectedCost)) {
+        await jobStore.releaseUserLock(requestUserId, sessionId);
+        return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: currentBalance }), {
+          status: 402,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Pre-deduct the full expected cost upfront — unused portion is refunded in the finally block
+      const preDeductResult = await checkAndDeductCredits({
+        userId: requestUserId,
+        cost: totalExpectedCost,
+        relaySessionId: sessionId,
+        supabase: adminClient,
       });
+      if (!preDeductResult.ok) {
+        await jobStore.releaseUserLock(requestUserId, sessionId);
+        return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: preDeductResult.remaining }), {
+          status: 402,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      preDeductedCost = totalExpectedCost;
     }
-
-    // Pre-deduct the full expected cost upfront — unused portion is refunded in the finally block
-    const preDeductResult = await checkAndDeductCredits({
-      userId: user.id,
-      cost: totalExpectedCost,
-      relaySessionId: sessionId,
-      supabase: adminClient,
-    });
-    if (!preDeductResult.ok) {
-      return new Response(JSON.stringify({ error: 'CREDITS_INSUFFICIENT', required: totalExpectedCost, balance: currentBalance }), {
-        status: 402,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    preDeductedCost = totalExpectedCost;
-    } // end else (normal auth path)
   }
 
   // Create a job for this relay session. The relay runs independently of the HTTP connection.
-  await jobStore.createJob(sessionId);
+  try {
+    await jobStore.createJob(sessionId);
+  } catch (err) {
+    if (saasUserId) {
+      try { await jobStore.releaseUserLock(saasUserId, sessionId); } catch { /* TTL will release it */ }
+    }
+    throw err;
+  }
   const startTime = Date.now();
 
   // writeRelaySSE writes to the job store (buffered + broadcast to all SSE subscribers).
@@ -353,6 +403,11 @@ export async function POST(req: Request): Promise<Response> {
         `[TOKEN] session=${sessionId} TOTAL in=${totalInputTokens} out=${totalOutputTokens}` +
         ` sum=${totalInputTokens + totalOutputTokens} credits=${totalCreditCost}`
       );
+      // Spending is final here (summary done). Release the user slot before signalling
+      // completion so an immediate follow-up turn does not collide with this run.
+      if (isSaas && saasUserId) {
+        try { await jobStore.releaseUserLock(saasUserId, sessionId); } catch { /* TTL will release it */ }
+      }
       await writeRelaySSE({ type: 'relay_done', totalInputTokens, totalOutputTokens });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -381,6 +436,10 @@ export async function POST(req: Request): Promise<Response> {
       } catch {}
       const wasAborted = await jobStore.isJobAborted(sessionId);
       await jobStore.finishJob(sessionId, wasAborted ? 'error' : 'done');
+      // Release the per-user slot as soon as the relay settles.
+      if (isSaas && saasUserId) {
+        try { await jobStore.releaseUserLock(saasUserId, sessionId); } catch { /* TTL will release it */ }
+      }
     }
   })();
 

@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
+import { requireApiUser } from '@/lib/auth/api-auth';
 import type { ProviderId } from '@/types/config';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,9 @@ interface CompactRequest {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const auth = await requireApiUser();
+  if (!auth.ok) return auth.response;
+
   let body: CompactRequest;
   try {
     body = await req.json();

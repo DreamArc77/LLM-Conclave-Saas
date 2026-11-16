@@ -9,7 +9,7 @@ metadata: {"llmconclave":{"emoji":"⚖️","category":"research","api_base":"htt
 # LLM Conclave — Agent Skill
 
 **Base URL:** `https://llmconclave.com`
-**Skill Version: 2**
+**Skill Version: 3**
 
 > **Version check:** Every API response includes a `skillVersion` field (JSON) or `X-Skill-Version` header.
 > If the value does not match the version above, immediately re-fetch this document before making further API calls.
@@ -86,22 +86,25 @@ No auth required. Returns models available for debate selection.
 **Response:**
 ```json
 {
-  "skillVersion": 2,
+  "skillVersion": 3,
   "models": [
-    { "id": "gemini", "name": "Gemini 3.8 Flash", "creditsPerRound": 80, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
-    { "id": "gemini-argon", "name": "Gemini 4 Argon", "creditsPerRound": 195, "strengths": ["deep-reasoning","multimodal","long-context"], "tier": "pro" },
-    { "id": "openai", "name": "GPT-6.1 Sol Pro", "creditsPerRound": 90, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" },
-    { "id": "deepseek", "name": "DeepSeek V4.1 Flash", "creditsPerRound": 45, "strengths": ["logical","concise","fast"], "tier": "lite" },
-    { "id": "claude", "name": "Claude Opus 5.5", "creditsPerRound": 335, "strengths": ["nuanced-reasoning","writing","safety"], "tier": "pro" },
-    { "id": "xAI", "name": "Grok 4.7", "creditsPerRound": 375, "strengths": ["real-time-knowledge","wit","systems-thinking"], "tier": "pro" },
-    { "id": "minimax", "name": "MiniMax M3.1 Flash", "creditsPerRound": 28, "strengths": ["multi-agent","coding","chinese"], "tier": "standard" },
-    { "id": "kimi", "name": "Kimi K3.1 Pro", "creditsPerRound": 308, "strengths": ["long-context","research","coding"], "tier": "standard" },
-    { "id": "Qwen", "name": "Qwen 3.8 Max Prime", "creditsPerRound": 330, "strengths": ["agentic","coding","chinese"], "tier": "pro" }
+    { "id": "deepseek", "name": "DeepSeek V4.1 Flash", "creditsPerRound": 45, "freeTier": true, "strengths": ["logical","concise","fast"], "tier": "lite" },
+    { "id": "gemini", "name": "Gemini 3.8 Flash", "creditsPerRound": 80, "freeTier": true, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
+    { "id": "gpt-luna", "name": "GPT-6 Luna", "creditsPerRound": 10, "freeTier": true, "strengths": ["balanced","instruction-following","fast"], "tier": "standard" },
+    { "id": "gemini-argon", "name": "Gemini 4 Argon", "creditsPerRound": 195, "freeTier": false, "strengths": ["deep-reasoning","multimodal","long-context"], "tier": "pro" },
+    { "id": "openai", "name": "GPT-6.1 Sol Pro", "creditsPerRound": 194, "freeTier": false, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" },
+    { "id": "claude", "name": "Claude Opus 5.5", "creditsPerRound": 388, "freeTier": false, "strengths": ["nuanced-reasoning","writing","safety"], "tier": "pro" },
+    { "id": "xAI", "name": "Grok 4.7", "creditsPerRound": 375, "freeTier": false, "strengths": ["real-time-knowledge","wit","systems-thinking"], "tier": "pro" },
+    { "id": "minimax", "name": "MiniMax M3.1 Flash", "creditsPerRound": 28, "freeTier": false, "strengths": ["multi-agent","coding","chinese"], "tier": "standard" },
+    { "id": "kimi", "name": "Kimi K3.1 Pro", "creditsPerRound": 308, "freeTier": false, "strengths": ["long-context","research","coding"], "tier": "standard" },
+    { "id": "Qwen", "name": "Qwen 3.8 Max Prime", "creditsPerRound": 330, "freeTier": false, "strengths": ["agentic","coding","chinese"], "tier": "pro" }
   ]
 }
 ```
 
 Tiers: `lite` (budget) · `standard` (balanced) · `pro` (flagship).
+
+`freeTier: true` marks the default trio that welcome/free credits may use. Requesting a `freeTier: false` model before the account has ever purchased credits returns `403 SUBSCRIPTION_REQUIRED` with the locked model ids.
 
 ---
 
@@ -138,7 +141,7 @@ Idempotency-Key: <your-unique-uuid>
 ```json
 {
   "query": "Your topic or question",
-  "models": ["gemini", "openai", "deepseek"],
+  "models": ["deepseek", "gemini", "gpt-luna"],
   "maxRounds": 3,
   "locale": "zh-CN"
 }
@@ -272,7 +275,7 @@ curl -X POST https://llmconclave.com/api/agent/debate \
   --no-buffer \
   -d '{
     "query": "AI对金融行业未来5年的影响",
-    "models": ["gemini", "openai", "deepseek"],
+    "models": ["deepseek", "gemini", "gpt-luna"],
     "maxRounds": 3,
     "locale": "zh-CN"
   }'

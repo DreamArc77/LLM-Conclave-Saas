@@ -20,6 +20,12 @@ export interface JobStore {
   abortJob(sessionId: string): void | Promise<void>;
   /** Returns an SSE Response that streams events for this session. */
   createJobSSEStream(sessionId: string, fromIndex: number): Response;
+  /** Acquire a per-user "one active relay" slot; false when another session is running. */
+  acquireUserLock(userId: string, sessionId: string, ttlSec: number): boolean | Promise<boolean>;
+  /** Session id currently holding the user's slot, or null. */
+  getUserLock(userId: string): string | null | Promise<string | null>;
+  /** Release the slot only when it is still held by this session. */
+  releaseUserLock(userId: string, sessionId: string): void | Promise<void>;
 }
 
 const memAdapter: JobStore = {
@@ -45,6 +51,9 @@ const memAdapter: JobStore = {
     if (!job) return new Response('Relay not found', { status: 404 });
     return memStore.createJobSSEStream(job, fromIndex);
   },
+  acquireUserLock: (userId, sessionId, ttlSec) => memStore.acquireUserLock(userId, sessionId, ttlSec),
+  getUserLock: (userId) => memStore.getUserLock(userId),
+  releaseUserLock: (userId, sessionId) => memStore.releaseUserLock(userId, sessionId),
 };
 
 const redisAdapter: JobStore = {
@@ -54,6 +63,9 @@ const redisAdapter: JobStore = {
   isJobAborted: (sid) => redisStore.isJobAborted(sid),
   abortJob: (sid) => redisStore.abortJob(sid),
   createJobSSEStream: (sid, from) => redisStore.createJobSSEStream(sid, from),
+  acquireUserLock: (userId, sid, ttl) => redisStore.acquireUserLock(userId, sid, ttl),
+  getUserLock: (userId) => redisStore.getUserLock(userId),
+  releaseUserLock: (userId, sid) => redisStore.releaseUserLock(userId, sid),
 };
 
 export const jobStore: JobStore = useInMemory ? memAdapter : redisAdapter;

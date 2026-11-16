@@ -3,6 +3,8 @@ import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
+import { requireApiUser } from '@/lib/auth/api-auth';
+import { hasPaidAccess, isPresetLocked } from '@/lib/credits/access';
 import type { ProviderId } from '@/types/config';
 import type { Locale } from '@/i18n';
 
@@ -69,6 +71,9 @@ function parseVoteChoice(text: string, alternatives: string[]): { choice: string
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const auth = await requireApiUser();
+  if (!auth.ok) return auth.response;
+
   let body: VoteRunRequest;
   try {
     body = await req.json();
@@ -79,6 +84,20 @@ export async function POST(req: Request): Promise<Response> {
   const { models, alternatives, locale = 'zh-CN' } = body;
   if (!models?.length || !alternatives?.length || alternatives.length < 2) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  if (auth.userId) {
+    const paidAccess = await hasPaidAccess(auth.userId);
+    const lockedModels = models
+      .filter((m) => m.isPreset && isPresetLocked(m.id, paidAccess))
+      .map((m) => m.id);
+    if (lockedModels.length > 0) {
+      return Response.json({
+        error: 'SUBSCRIPTION_REQUIRED',
+        lockedModels,
+        topUpUrl: '/account',
+      }, { status: 403 });
+    }
   }
 
   const enc = new TextEncoder();

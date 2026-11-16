@@ -2,16 +2,18 @@
 
 import { create } from 'zustand';
 
+type CreditsModalReason = 'insufficient' | 'subscription' | 'busy';
+
 interface UIState {
   sidebarOpen: boolean;
   settingsOpen: boolean;
-  creditsModal: { required: number; balance: number } | null;
+  creditsModal: { required: number; balance: number; reason: CreditsModalReason } | null;
   toggleSidebar: () => void;
   toggleSettings: () => void;
   openSettings: () => void;
   closeSettings: () => void;
   setSidebarOpen: (open: boolean) => void;
-  openCreditsModal: (required: number, balance: number) => void;
+  openCreditsModal: (required: number, balance: number, reason?: CreditsModalReason) => void;
   closeCreditsModal: () => void;
 }
 
@@ -25,6 +27,7 @@ export const useUIStore = create<UIState>()((set) => ({
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  openCreditsModal: (required, balance) => set({ creditsModal: { required, balance } }),
+  openCreditsModal: (required, balance, reason = 'insufficient') =>
+    set({ creditsModal: { required, balance, reason } }),
   closeCreditsModal: () => set({ creditsModal: null }),
 }));

@@ -60,6 +60,9 @@ export const zhCN: Messages = {
     cancel: '取消',
     preset: '预设',
     presetInfo: '预设模型由服务器提供，API Key 由管理员配置。',
+    locked: '需解锁',
+    freeTierHint: '免费额度只能使用默认三款模型（DeepSeek、Gemini、GPT-6 Luna），充值 credits 后可解锁全部模型。',
+    unlockCta: '去充值',
     noModels: '尚未添加模型，请在上方添加。',
   },
   export: {
@@ -94,6 +97,10 @@ export const zhCN: Messages = {
   billing: {
     insufficientTitle: '余额不足',
     insufficientBody: '当前设置预计需要 {required} credits，您的余额为 {balance} credits。',
+    subscriptionTitle: '解锁旗舰模型',
+    subscriptionBody: '免费额度只能使用默认三款模型。充值 credits 后可解锁 Claude、Grok、Qwen 等全部模型。',
+    busyTitle: '已有讨论正在进行',
+    busyBody: '另一个讨论还在进行中，请等它结束后再试。',
     topUp: '前往充值',
     close: '关闭',
     buyCreditsTitle: '购买 Credits',

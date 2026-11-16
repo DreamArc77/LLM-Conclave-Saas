@@ -3,6 +3,7 @@
 import { createStore, useStore } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
+import { isSaasClient } from '@/lib/flags';
 import type { ModelConfig } from '@/types/config';
 
 interface ConfigState {
@@ -95,6 +96,20 @@ function createConfigStore() {
           } catch {
             return;
           }
+
+          // Free-tier users may only keep the default trio enabled. Resolve this on
+          // startup so a stale localStorage entry cannot trigger a 403 mid-debate.
+          let unlocked = true;
+          if (isSaasClient) {
+            try {
+              const res = await fetch('/api/credits/balance');
+              if (res.ok) {
+                const data = await res.json().catch(() => null);
+                if (data && data.unlocked === false) unlocked = false;
+              }
+            } catch { /* keep unlocked = true; server-side gate still applies */ }
+          }
+
           set((state) => {
             const serverIds = new Set(serverPresets.map((p) => p.id));
             const withoutStale = state.models.filter((m) => !m.isPreset || serverIds.has(m.id));
@@ -102,12 +117,28 @@ function createConfigStore() {
               if (!m.isPreset) return m;
               const fresh = serverPresets.find((p) => p.id === m.id);
               if (!fresh) return m;
-              return { ...m, modelId: fresh.modelId, displayName: fresh.displayName, baseUrl: fresh.baseUrl, creditsPerRound: fresh.creditsPerRound, badge: fresh.badge };
+              return {
+                ...m,
+                modelId: fresh.modelId,
+                displayName: fresh.displayName,
+                baseUrl: fresh.baseUrl,
+                creditsPerRound: fresh.creditsPerRound,
+                defaultEnabled: fresh.defaultEnabled,
+                freeTier: fresh.freeTier,
+                badge: fresh.badge,
+                enabled: unlocked || fresh.freeTier ? m.enabled : false,
+              };
             });
             const existingIds = new Set(updated.map((m) => m.id));
             const toAdd = serverPresets
               .filter((p) => !existingIds.has(p.id))
-              .map((p, i) => ({ ...p, apiKey: '', isPreset: true as const, enabled: p.defaultEnabled ?? true, order: updated.length + i }));
+              .map((p, i) => ({
+                ...p,
+                apiKey: '',
+                isPreset: true as const,
+                enabled: (p.defaultEnabled ?? true) && (unlocked || !!p.freeTier),
+                order: updated.length + i,
+              }));
             return { models: [...updated, ...toAdd] };
           });
         },

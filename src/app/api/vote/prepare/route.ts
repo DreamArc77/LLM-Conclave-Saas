@@ -3,6 +3,7 @@ import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
+import { requireApiUser } from '@/lib/auth/api-auth';
 import type { ProviderId } from '@/types/config';
 import type { Locale } from '@/i18n';
 
@@ -65,6 +66,9 @@ ${conversation}`;
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const auth = await requireApiUser();
+  if (!auth.ok) return auth.response;
+
   let body: PrepareRequest;
   try {
     body = await req.json();

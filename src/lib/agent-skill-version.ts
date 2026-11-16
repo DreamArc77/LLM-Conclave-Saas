@@ -3,7 +3,7 @@
  * backwards-incompatible way (e.g. response format, new required fields).
  * Agents are instructed to re-fetch skill.md when they see a version mismatch.
  */
-export const SKILL_VERSION = 2;
+export const SKILL_VERSION = 3;
 
 /** Attach to every agent API JSON response so agents can self-detect stale skill docs. */
 export function skillVersionHeaders(): HeadersInit {

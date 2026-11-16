@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Zap } from 'lucide-react';
+import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Zap, Lock } from 'lucide-react';
 import { ModelLogo } from '@/components/common/ModelLogo';
 import { useConfigStore } from '@/stores/config-store';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
@@ -12,15 +13,18 @@ import { useT } from '@/hooks/useT';
 
 interface ModelCardProps {
   model: ModelConfig;
+  /** True when the model requires a credit purchase (free-tier user). */
+  locked?: boolean;
 }
 
-export function ModelCard({ model }: ModelCardProps) {
+export function ModelCard({ model, locked = false }: ModelCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const toggleModel = useConfigStore((s) => s.toggleModel);
   const removeModel = useConfigStore((s) => s.removeModel);
   const updateModel = useConfigStore((s) => s.updateModel);
   const t = useT();
+  const router = useRouter();
 
   const provider = PROVIDER_REGISTRY[model.providerId];
 
@@ -78,6 +82,12 @@ export function ModelCard({ model }: ModelCardProps) {
                 {model.creditsPerRound}cr
               </span>
             )}
+            {locked && (
+              <span className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 leading-none">
+                <Lock className="w-2.5 h-2.5" />
+                {t('settings.locked')}
+              </span>
+            )}
           </div>
           <p className="text-xs text-gray-400 truncate">
             {provider?.name} · {model.modelId}
@@ -95,10 +105,20 @@ export function ModelCard({ model }: ModelCardProps) {
           )}
         </button>
 
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label
+          className={`relative inline-flex items-center ${locked ? 'cursor-pointer opacity-60' : 'cursor-pointer'}`}
+          title={locked ? t('settings.freeTierHint') : undefined}
+          onClick={(e) => {
+            if (locked) {
+              e.preventDefault();
+              router.push('/account');
+            }
+          }}
+        >
           <input
             type="checkbox"
             checked={model.enabled}
+            disabled={locked}
             onChange={() => toggleModel(model.id)}
             className="sr-only peer"
           />

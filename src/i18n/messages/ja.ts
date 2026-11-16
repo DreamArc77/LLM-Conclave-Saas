@@ -60,6 +60,9 @@ export const ja: Messages = {
     cancel: 'キャンセル',
     preset: 'プリセット',
     presetInfo: 'プリセットモデルはサーバーが提供し、APIキーは管理者が設定します。',
+    locked: 'ロック中',
+    freeTierHint: '無料クレジットでは既定の3モデル（DeepSeek・Gemini・GPT-6 Luna）のみ利用できます。クレジット購入で全モデルが解除されます。',
+    unlockCta: '購入する',
     noModels: 'モデルがまだ追加されていません。上から追加してください。',
   },
   export: {
@@ -94,6 +97,10 @@ export const ja: Messages = {
   billing: {
     insufficientTitle: 'クレジット不足',
     insufficientBody: 'このセッションには {required} クレジットが必要ですが、現在の残高は {balance} クレジットです。',
+    subscriptionTitle: 'プレミアムモデルを解除',
+    subscriptionBody: '無料クレジットでは既定の3モデルのみ利用できます。クレジット購入で Claude・Grok・Qwen など全モデルが解除されます。',
+    busyTitle: '別の討論が進行中',
+    busyBody: '別の討論がまだ実行中です。終了後にもう一度お試しください。',
     topUp: 'チャージする',
     close: '閉じる',
     buyCreditsTitle: 'クレジット購入',

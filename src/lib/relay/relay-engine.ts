@@ -360,6 +360,24 @@ export async function executeRelay(
         useUIStore.getState().openCreditsModal(body.required ?? 0, body.balance ?? 0);
         return currentSessionId;
       }
+
+      if (response.status === 403 || response.status === 409) {
+        const body = await response.json().catch(() => ({})) as { error?: string };
+        if (response.status === 403 && body.error === 'SUBSCRIPTION_REQUIRED') {
+          localStorage.removeItem(ACTIVE_RELAY_KEY);
+          useChatStore.getState().errorRelay('SUBSCRIPTION_REQUIRED');
+          useUIStore.getState().openCreditsModal(0, 0, 'subscription');
+          return currentSessionId;
+        }
+        if (response.status === 409 && body.error === 'DEBATE_ALREADY_RUNNING') {
+          localStorage.removeItem(ACTIVE_RELAY_KEY);
+          useChatStore.getState().errorRelay('DEBATE_ALREADY_RUNNING');
+          useUIStore.getState().openCreditsModal(0, 0, 'busy');
+          return currentSessionId;
+        }
+        throw new Error(`Relay API error ${response.status}: ${JSON.stringify(body)}`);
+      }
+
       const errorText = await response.text();
       throw new Error(`Relay API error ${response.status}: ${errorText}`);
     }

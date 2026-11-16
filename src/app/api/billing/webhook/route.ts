@@ -1,5 +1,6 @@
 import { getStripe } from '@/lib/stripe';
 import { createAdminClient } from '@/lib/supabase/server';
+import { addCreditsAtomic } from '@/lib/credits/deduct';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,32 +30,20 @@ export async function POST(req: Request): Promise<Response> {
       const creditsNum = parseInt(credits, 10);
       const supabase = createAdminClient();
 
-      // Upsert credits (add to existing balance)
-      const { data: existing } = await supabase
-        .from('credits')
-        .select('balance')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      const currentBalance = (existing?.balance as number) ?? 0;
-      await supabase.from('credits').upsert(
-        {
-          user_id: userId,
-          balance: currentBalance + creditsNum,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
-
-      await supabase.from('credit_transactions').insert({
-        user_id: userId,
+      const result = await addCreditsAtomic({
+        userId,
         amount: creditsNum,
         type: 'purchase',
         description: `Purchased ${creditsNum} credits`,
-        stripe_payment_intent_id: typeof session.payment_intent === 'string'
+        stripePaymentIntentId: typeof session.payment_intent === 'string'
           ? session.payment_intent
-          : session.payment_intent?.id,
+          : session.payment_intent?.id ?? null,
+        supabase,
       });
+
+      if (!result.ok) {
+        console.error('[billing/webhook] addCreditsAtomic failed for user', userId);
+      }
     }
   }
 

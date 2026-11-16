@@ -13,7 +13,22 @@ export function InsufficientCreditsModal() {
 
   if (!creditsModal) return null;
 
-  const { required, balance } = creditsModal;
+  const { required, balance, reason } = creditsModal;
+  const title =
+    reason === 'subscription'
+      ? t('billing.subscriptionTitle')
+      : reason === 'busy'
+        ? t('billing.busyTitle')
+        : t('billing.insufficientTitle');
+  const body =
+    reason === 'subscription'
+      ? t('billing.subscriptionBody')
+      : reason === 'busy'
+        ? t('billing.busyBody')
+        : interpolate(t('billing.insufficientBody'), {
+            required: required.toLocaleString(),
+            balance: balance.toLocaleString(),
+          });
 
   return (
     <>
@@ -31,25 +46,24 @@ export function InsufficientCreditsModal() {
               <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
             </div>
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-              {t('billing.insufficientTitle')}
+              {title}
             </h2>
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-5">
-            {interpolate(t('billing.insufficientBody'), {
-              required: required.toLocaleString(),
-              balance: balance.toLocaleString(),
-            })}
+            {body}
           </p>
 
           <div className="flex gap-2">
-            <Link
-              href="/account"
-              onClick={closeCreditsModal}
-              className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors"
-            >
-              {t('billing.topUp')}
-            </Link>
+            {reason !== 'busy' && (
+              <Link
+                href="/account"
+                onClick={closeCreditsModal}
+                className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors"
+              >
+                {t('billing.topUp')}
+              </Link>
+            )}
             <button
               onClick={closeCreditsModal}
               className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"

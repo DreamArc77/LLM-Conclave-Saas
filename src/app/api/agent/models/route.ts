@@ -10,6 +10,7 @@ export async function GET() {
       id: p.id,
       name: p.displayName,
       creditsPerRound: p.creditsPerRound,
+      freeTier: p.freeTier ?? false,
       strengths: p.agentMeta?.strengths ?? [],
       tier: p.agentMeta?.tier ?? 'standard',
     }));

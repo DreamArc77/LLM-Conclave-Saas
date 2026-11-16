@@ -58,6 +58,9 @@ export const en = {
     cancel: 'Cancel',
     preset: 'Preset',
     presetInfo: 'Preset models are provided by the server; API Key is configured by the admin.',
+    locked: 'Locked',
+    freeTierHint: 'Welcome credits can use the default three models only. Top up credits to unlock all models.',
+    unlockCta: 'Top up',
     noModels: 'No models added yet. Add one above.',
   },
   export: {
@@ -92,6 +95,10 @@ export const en = {
   billing: {
     insufficientTitle: 'Insufficient Credits',
     insufficientBody: 'This session requires {required} credits, but your current balance is {balance} credits.',
+    subscriptionTitle: 'Unlock Premium Models',
+    subscriptionBody: 'Welcome credits can only run the default three models. Top up credits to unlock Claude, Grok, Qwen and the other premium models.',
+    busyTitle: 'Discussion Already Running',
+    busyBody: 'Another discussion is still running. Wait for it to finish, then try again.',
     topUp: 'Top Up',
     close: 'Close',
     buyCreditsTitle: 'Buy Credits',

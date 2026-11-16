@@ -1,4 +1,5 @@
 import { generateReportMarkdown } from '@/lib/report/regenerate';
+import { requireApiUser } from '@/lib/auth/api-auth';
 import type { ConvMessage } from '@/lib/report/regenerate';
 import type { Locale } from '@/i18n';
 
@@ -18,6 +19,9 @@ interface GenerateRequest {
  * Response: { markdown: string, filename: string }
  */
 export async function POST(request: Request): Promise<Response> {
+  const auth = await requireApiUser();
+  if (!auth.ok) return auth.response;
+
   let body: GenerateRequest;
   try {
     body = await request.json();

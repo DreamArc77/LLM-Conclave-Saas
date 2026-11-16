@@ -44,7 +44,11 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
 ];
 
-/** New user welcome bonus: covers 1 round with default enabled models (45 + 450 + 80 = 575 credits). */
+/**
+ * New user welcome bonus. Free-tier trio costs 45 + 80 + 10 = 135 credits per round,
+ * so 1050 covers roughly two sessions (5 rounds + 2 rounds), or ~7 rounds total.
+ * Premium presets are locked until the user has purchased credits at least once.
+ */
 export const WELCOME_CREDITS = 1050;
 
 /** Extra credits granted to a new user who redeems an invite code */

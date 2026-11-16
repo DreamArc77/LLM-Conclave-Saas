@@ -1,6 +1,7 @@
 import { verifyAgentApiKey } from '@/lib/agent-auth';
 import { createAdminClient } from '@/lib/supabase/server';
 import { checkAndDeductCredits, refundCredits } from '@/lib/credits/deduct';
+import { hasPaidAccess } from '@/lib/credits/access';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { MAX_ROUNDS_HARD_LIMIT } from '@/config/credit-packages';
 import { SKILL_VERSION, skillVersionHeaders } from '@/lib/agent-skill-version';
@@ -178,12 +179,31 @@ export async function POST(req: Request) {
   // ── 5. Resolve models ─────────────────────────────────────────────────────
   const maxRounds = Math.min(body.maxRounds ?? 3, MAX_ROUNDS_HARD_LIMIT);
   const availablePresets = PRESET_DEFINITIONS.filter((p) => p.apiKey);
+  const paidAccess = await hasPaidAccess(userId, admin);
   // Default selection = presets marked defaultEnabled (same trio new web users get)
   let selectedPresets = body.models?.length
     ? availablePresets.filter((p) => body.models!.includes(p.id))
     : availablePresets.filter((p) => p.defaultEnabled);
 
-  if (selectedPresets.length === 0) selectedPresets = availablePresets.slice(0, 3);
+  // Welcome/free credits only cover the free-tier trio; premium presets need a purchase.
+  if (!paidAccess) {
+    const lockedPresets = selectedPresets.filter((p) => !p.freeTier);
+    if (lockedPresets.length > 0) {
+      return Response.json(
+        {
+          error: 'SUBSCRIPTION_REQUIRED',
+          lockedModels: lockedPresets.map((p) => p.id),
+          message: 'Welcome credits can only run the free-tier models. Top up credits to unlock the rest.',
+          topUpUrl: `${APP_URL}/account`,
+          skillVersion: SKILL_VERSION,
+        },
+        { status: 403, headers: skillVersionHeaders() }
+      );
+    }
+    selectedPresets = selectedPresets.filter((p) => p.freeTier);
+  }
+
+  if (selectedPresets.length === 0) selectedPresets = availablePresets.filter((p) => p.freeTier).slice(0, 3);
   if (selectedPresets.length === 0) {
     return Response.json({ error: 'No models available', skillVersion: SKILL_VERSION }, { status: 503, headers: skillVersionHeaders() });
   }

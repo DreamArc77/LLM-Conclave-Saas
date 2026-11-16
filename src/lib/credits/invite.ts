@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { INVITE_INVITEE_BONUS, INVITE_INVITER_BONUS, INVITE_CODE_MAX_USES } from '@/config/credit-packages';
+import { addCreditsAtomic } from './deduct';
 
 function generateCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // exclude ambiguous chars (0,O,1,I)
@@ -12,32 +13,16 @@ async function addBonusCredits(
   description: string,
   supabase: SupabaseClient
 ): Promise<void> {
-  const { data: row } = await supabase
-    .from('credits')
-    .select('balance')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (!row) {
-    // No credits row yet — create one
-    await supabase.from('credits').insert({
-      user_id: userId,
-      balance: amount,
-      updated_at: new Date().toISOString(),
-    });
-  } else {
-    await supabase
-      .from('credits')
-      .update({ balance: (row.balance as number) + amount, updated_at: new Date().toISOString() })
-      .eq('user_id', userId);
-  }
-
-  await supabase.from('credit_transactions').insert({
-    user_id: userId,
+  const result = await addCreditsAtomic({
+    userId,
     amount,
     type: 'bonus',
     description,
+    supabase,
   });
+  if (!result.ok) {
+    console.error('[invite] addBonusCredits failed:', description);
+  }
 }
 
 export async function getOrCreateInviteCode(
