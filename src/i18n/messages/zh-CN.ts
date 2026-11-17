@@ -61,6 +61,7 @@ export const zhCN: Messages = {
     preset: '预设',
     presetInfo: '预设模型由服务器提供，API Key 由管理员配置。',
     locked: '需解锁',
+    lockedCta: '充值解锁',
     freeTierHint: '免费额度只能使用默认三款模型（DeepSeek、Gemini、GPT-6 Luna），充值 credits 后可解锁全部模型。',
     unlockCta: '去充值',
     noModels: '尚未添加模型，请在上方添加。',

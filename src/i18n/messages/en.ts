@@ -59,6 +59,7 @@ export const en = {
     preset: 'Preset',
     presetInfo: 'Preset models are provided by the server; API Key is configured by the admin.',
     locked: 'Locked',
+    lockedCta: 'Top up to unlock',
     freeTierHint: 'Welcome credits can use the default three models only. Top up credits to unlock all models.',
     unlockCta: 'Top up',
     noModels: 'No models added yet. Add one above.',

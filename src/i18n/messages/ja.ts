@@ -61,6 +61,7 @@ export const ja: Messages = {
     preset: 'プリセット',
     presetInfo: 'プリセットモデルはサーバーが提供し、APIキーは管理者が設定します。',
     locked: 'ロック中',
+    lockedCta: '購入して解除',
     freeTierHint: '無料クレジットでは既定の3モデル（DeepSeek・Gemini・GPT-6 Luna）のみ利用できます。クレジット購入で全モデルが解除されます。',
     unlockCta: '購入する',
     noModels: 'モデルがまだ追加されていません。上から追加してください。',

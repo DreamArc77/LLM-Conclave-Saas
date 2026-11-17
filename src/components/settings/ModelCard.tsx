@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -83,10 +84,15 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
               </span>
             )}
             {locked && (
-              <span className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 leading-none">
+              <Link
+                href="/account"
+                onClick={(e) => e.stopPropagation()}
+                title={t('settings.freeTierHint')}
+                className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 leading-none hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+              >
                 <Lock className="w-2.5 h-2.5" />
-                {t('settings.locked')}
-              </span>
+                {t('settings.lockedCta')}
+              </Link>
             )}
           </div>
           <p className="text-xs text-gray-400 truncate">
