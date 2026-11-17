@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap } from 'lucide-react';
+import { Lock, Zap } from 'lucide-react';
 import { useUIStore } from '@/stores/ui-store';
 import { useT } from '@/hooks/useT';
 import { interpolate } from '@/i18n';
@@ -13,7 +13,7 @@ export function InsufficientCreditsModal() {
 
   if (!creditsModal) return null;
 
-  const { required, balance, reason } = creditsModal;
+  const { required, balance, reason, modelName } = creditsModal;
   const title =
     reason === 'subscription'
       ? t('billing.subscriptionTitle')
@@ -22,7 +22,9 @@ export function InsufficientCreditsModal() {
         : t('billing.insufficientTitle');
   const body =
     reason === 'subscription'
-      ? t('billing.subscriptionBody')
+      ? modelName
+        ? interpolate(t('billing.subscriptionModelBody'), { model: modelName })
+        : t('billing.subscriptionBody')
       : reason === 'busy'
         ? t('billing.busyBody')
         : interpolate(t('billing.insufficientBody'), {
@@ -42,8 +44,16 @@ export function InsufficientCreditsModal() {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-sm p-6 pointer-events-auto">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-yellow-100 dark:bg-yellow-900/40 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              reason === 'subscription'
+                ? 'bg-violet-100 dark:bg-violet-900/40'
+                : 'bg-yellow-100 dark:bg-yellow-900/40'
+            }`}>
+              {reason === 'subscription' ? (
+                <Lock className="w-4 h-4 text-violet-600 dark:text-violet-300" />
+              ) : (
+                <Zap className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              )}
             </div>
             <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {title}
@@ -68,7 +78,7 @@ export function InsufficientCreditsModal() {
               onClick={closeCreditsModal}
               className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
             >
-              {t('billing.close')}
+              {reason === 'subscription' ? t('billing.notNow') : t('billing.close')}
             </button>
           </div>
         </div>

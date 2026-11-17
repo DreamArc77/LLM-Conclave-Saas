@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, Zap, Lock } from 'lucide-react';
 import { ModelLogo } from '@/components/common/ModelLogo';
 import { useConfigStore } from '@/stores/config-store';
+import { useUIStore } from '@/stores/ui-store';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
 import type { ModelConfig } from '@/types/config';
 import { useT } from '@/hooks/useT';
@@ -24,8 +23,12 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
   const toggleModel = useConfigStore((s) => s.toggleModel);
   const removeModel = useConfigStore((s) => s.removeModel);
   const updateModel = useConfigStore((s) => s.updateModel);
+  const openCreditsModal = useUIStore((s) => s.openCreditsModal);
   const t = useT();
-  const router = useRouter();
+
+  const openUpsell = () => {
+    openCreditsModal(0, 0, 'subscription', model.displayName);
+  };
 
   const provider = PROVIDER_REGISTRY[model.providerId];
 
@@ -43,10 +46,6 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
-
-  const maskedKey = model.apiKey
-    ? model.apiKey.slice(0, 6) + '...' + model.apiKey.slice(-4)
-    : '';
 
   return (
     <div
@@ -68,7 +67,13 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
 
         <div
           className="flex-1 min-w-0 cursor-pointer"
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => {
+            if (locked) {
+              openUpsell();
+              return;
+            }
+            setExpanded(!expanded);
+          }}
         >
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-medium truncate">{model.displayName}</p>
@@ -84,32 +89,42 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
               </span>
             )}
             {locked && (
-              <Link
-                href="/account"
-                onClick={(e) => e.stopPropagation()}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openUpsell();
+                }}
                 title={t('settings.lockedHint')}
                 className="shrink-0 flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 leading-none hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors"
               >
                 <Lock className="w-2.5 h-2.5" />
                 {t('settings.locked')}
-              </Link>
+              </button>
             )}
           </div>
           <p className="text-xs text-gray-400 truncate">
             {provider?.name} · {model.modelId}
           </p>
+          {locked && (
+            <p className="text-[10px] mt-0.5 text-violet-600 dark:text-violet-300">
+              {t('settings.lockedInline')}
+            </p>
+          )}
         </div>
 
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-gray-400 hover:text-gray-600 p-2 -m-2"
-        >
-          {expanded ? (
-            <ChevronUp className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          ) : (
-            <ChevronDown className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-          )}
-        </button>
+        {!locked && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-gray-400 hover:text-gray-600 p-2 -m-2"
+          >
+            {expanded ? (
+              <ChevronUp className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+            ) : (
+              <ChevronDown className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+            )}
+          </button>
+        )}
 
         <label
           className={`relative inline-flex items-center ${locked ? 'cursor-pointer opacity-60' : 'cursor-pointer'}`}
@@ -117,7 +132,7 @@ export function ModelCard({ model, locked = false }: ModelCardProps) {
           onClick={(e) => {
             if (locked) {
               e.preventDefault();
-              router.push('/account');
+              openUpsell();
             }
           }}
         >
