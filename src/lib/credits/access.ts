@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { createAdminClient } from '@/lib/supabase/server';
 
-/** Preset ids a user may run with welcome/free credits (the default trio). */
+/** Preset ids a user may run with welcome/free credits (default trio + MiniMax). */
 export const FREE_TIER_PRESET_IDS = new Set(
   PRESET_DEFINITIONS.filter((p) => p.freeTier).map((p) => p.id)
 );

@@ -45,9 +45,10 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
 ];
 
 /**
- * New user welcome bonus. Free-tier trio costs 45 + 80 + 10 = 135 credits per round,
+ * New user welcome bonus. The default trio costs 45 + 80 + 10 = 135 credits per round,
  * so 1050 covers roughly two sessions (5 rounds + 2 rounds), or ~7 rounds total.
- * Premium presets are locked until the user has purchased credits at least once.
+ * Free-tier access also includes MiniMax M3.1 Flash (28 credits/round); premium
+ * presets are locked until the user has purchased credits at least once.
  */
 export const WELCOME_CREDITS = 1050;
 

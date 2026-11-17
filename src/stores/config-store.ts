@@ -145,22 +145,23 @@ function createConfigStore() {
 
             const merged = [...updated, ...toAdd];
 
-            // One-time layout migration: the free-tier trio belongs at the top of
-            // the list, in the operator-defined preset order. After this runs once,
-            // the user's own drag order is preserved on subsequent loads.
+            // One-time layout migration: the default trio belongs at the top of
+            // the list, in the operator-defined preset order. Free-tier access is
+            // broader (it also includes MiniMax), but only the defaults are pinned.
+            // After this runs once, the user's own drag order is preserved.
             const hasFreeTier = serverPresets.some((p) => p.freeTier);
             if (state.presetOrderMigrated || !hasFreeTier) {
               return { models: merged };
             }
 
             const rank = new Map(serverPresets.map((p, i) => [p.id, i] as const));
-            const trio = merged
-              .filter((m) => m.isPreset && m.freeTier)
+            const pinned = merged
+              .filter((m) => m.isPreset && m.defaultEnabled)
               .sort((a, b) => (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER));
-            const rest = merged.filter((m) => !(m.isPreset && m.freeTier));
+            const rest = merged.filter((m) => !(m.isPreset && m.defaultEnabled));
 
             return {
-              models: [...trio, ...rest].map((m, i) => ({ ...m, order: i })),
+              models: [...pinned, ...rest].map((m, i) => ({ ...m, order: i })),
               presetOrderMigrated: true,
             };
           });

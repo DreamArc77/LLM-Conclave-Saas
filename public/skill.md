@@ -9,7 +9,7 @@ metadata: {"llmconclave":{"emoji":"⚖️","category":"research","api_base":"htt
 # LLM Conclave — Agent Skill
 
 **Base URL:** `https://llmconclave.com`
-**Skill Version: 3**
+**Skill Version: 4**
 
 > **Version check:** Every API response includes a `skillVersion` field (JSON) or `X-Skill-Version` header.
 > If the value does not match the version above, immediately re-fetch this document before making further API calls.
@@ -86,7 +86,7 @@ No auth required. Returns models available for debate selection.
 **Response:**
 ```json
 {
-  "skillVersion": 3,
+  "skillVersion": 4,
   "models": [
     { "id": "deepseek", "name": "DeepSeek V4.1 Flash", "creditsPerRound": 45, "freeTier": true, "strengths": ["logical","concise","fast"], "tier": "lite" },
     { "id": "gemini", "name": "Gemini 3.8 Flash", "creditsPerRound": 80, "freeTier": true, "strengths": ["analytical","creative","balanced"], "tier": "standard" },
@@ -95,7 +95,7 @@ No auth required. Returns models available for debate selection.
     { "id": "openai", "name": "GPT-6.1 Sol Pro", "creditsPerRound": 194, "freeTier": false, "strengths": ["reasoning","coding","instruction-following"], "tier": "pro" },
     { "id": "claude", "name": "Claude Opus 5.5", "creditsPerRound": 388, "freeTier": false, "strengths": ["nuanced-reasoning","writing","safety"], "tier": "pro" },
     { "id": "xAI", "name": "Grok 4.7", "creditsPerRound": 375, "freeTier": false, "strengths": ["real-time-knowledge","wit","systems-thinking"], "tier": "pro" },
-    { "id": "minimax", "name": "MiniMax M3.1 Flash", "creditsPerRound": 28, "freeTier": false, "strengths": ["multi-agent","coding","chinese"], "tier": "standard" },
+    { "id": "minimax", "name": "MiniMax M3.1 Flash", "creditsPerRound": 28, "freeTier": true, "strengths": ["multi-agent","coding","chinese"], "tier": "standard" },
     { "id": "kimi", "name": "Kimi K3.1 Pro", "creditsPerRound": 308, "freeTier": false, "strengths": ["long-context","research","coding"], "tier": "standard" },
     { "id": "Qwen", "name": "Qwen 3.8 Max Prime", "creditsPerRound": 330, "freeTier": false, "strengths": ["agentic","coding","chinese"], "tier": "pro" }
   ]
@@ -104,7 +104,7 @@ No auth required. Returns models available for debate selection.
 
 Tiers: `lite` (budget) · `standard` (balanced) · `pro` (flagship).
 
-`freeTier: true` marks the default trio that welcome/free credits may use. Requesting a `freeTier: false` model before the account has ever purchased credits returns `403 SUBSCRIPTION_REQUIRED` with the locked model ids.
+`freeTier: true` marks the models welcome/free credits may use (the default trio plus MiniMax M3.1 Flash). Requesting a `freeTier: false` model before the account has ever purchased credits returns `403 SUBSCRIPTION_REQUIRED` with the locked model ids.
 
 ---
 

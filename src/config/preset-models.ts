@@ -12,9 +12,10 @@ export interface PresetDefinition {
   /** Whether this model is enabled by default when first synced to a new user's config. */
   defaultEnabled?: boolean;
   /**
-   * Whether the model is usable with welcome/free credits. Only the free-tier trio
-   * (DeepSeek + Gemini + GPT-6 Luna) may be used before the user has ever purchased credits;
-   * every other preset requires a credit purchase. Locked models are also rejected server-side.
+   * Whether the model is usable with welcome/free credits. The free-tier set is
+   * the default trio (DeepSeek + Gemini + GPT-6 Luna) plus MiniMax M3.1 Flash;
+   * every other preset requires a credit purchase. Locked models are also
+   * rejected server-side.
    */
   freeTier?: boolean;
   /** Badge label shown on the model card (e.g. "官方", "精选"). Omit to show no badge. */
@@ -143,6 +144,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 28, // $0.15 / $0.60 per 1M — floor ≈ 13
     defaultEnabled: false,
+    freeTier: true,
     badge: 'Balance',
     agentMeta: { strengths: ['multi-agent', 'coding', 'chinese'], tier: 'standard' },
   },
