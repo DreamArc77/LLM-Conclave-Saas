@@ -11,6 +11,8 @@ interface ConfigState {
   maxRounds: number;
   exportFormat: 'pdf' | 'png';
   generateReport: boolean;
+  /** One-time migration flag: move the free-tier trio to the top of the list. */
+  presetOrderMigrated: boolean;
 
   addModel: (model: Omit<ModelConfig, 'id' | 'order'>) => void;
   removeModel: (modelId: string) => void;
@@ -32,6 +34,7 @@ function createConfigStore() {
         maxRounds: 1,
         exportFormat: 'png' as const,
         generateReport: true,
+        presetOrderMigrated: false,
 
         addModel: (model) =>
           set((state) => ({
@@ -139,7 +142,27 @@ function createConfigStore() {
                 enabled: (p.defaultEnabled ?? true) && (unlocked || !!p.freeTier),
                 order: updated.length + i,
               }));
-            return { models: [...updated, ...toAdd] };
+
+            const merged = [...updated, ...toAdd];
+
+            // One-time layout migration: the free-tier trio belongs at the top of
+            // the list, in the operator-defined preset order. After this runs once,
+            // the user's own drag order is preserved on subsequent loads.
+            const hasFreeTier = serverPresets.some((p) => p.freeTier);
+            if (state.presetOrderMigrated || !hasFreeTier) {
+              return { models: merged };
+            }
+
+            const rank = new Map(serverPresets.map((p, i) => [p.id, i] as const));
+            const trio = merged
+              .filter((m) => m.isPreset && m.freeTier)
+              .sort((a, b) => (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER));
+            const rest = merged.filter((m) => !(m.isPreset && m.freeTier));
+
+            return {
+              models: [...trio, ...rest].map((m, i) => ({ ...m, order: i })),
+              presetOrderMigrated: true,
+            };
           });
         },
       }),
