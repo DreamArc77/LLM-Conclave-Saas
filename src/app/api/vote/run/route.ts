@@ -153,13 +153,13 @@ export async function POST(req: Request): Promise<Response> {
         try {
           switch (provider.protocol) {
             case 'openai-compatible':
-              await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, messages, writeSSE });
+              await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, messages, writeSSE, maxTokens: 1024, reasoningMaxTokens: model.isPreset ? 512 : undefined });
               break;
             case 'anthropic':
-              await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, messages, writeSSE });
+              await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, messages, writeSSE, maxTokens: 1024 });
               break;
             case 'google-gemini':
-              await streamFromGemini({ apiKey, baseUrl, model: model.modelId, messages, writeSSE });
+              await streamFromGemini({ apiKey, baseUrl, model: model.modelId, messages, writeSSE, maxTokens: 1024 });
               break;
             default:
               send({ type: 'error', message: `Unknown protocol: ${provider.protocol}` });

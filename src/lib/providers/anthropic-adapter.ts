@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { StreamParams } from './types';
+import { isTruncatedFinishReason } from './truncation';
+import type { StreamParams, StreamResult } from './types';
+
+const DEFAULT_MAX_TOKENS = 8192;
 
 export async function streamFromAnthropic({
   apiKey,
@@ -9,7 +12,9 @@ export async function streamFromAnthropic({
   messages,
   writeSSE,
   onUsage,
-}: StreamParams) {
+  maxTokens,
+  onFinish,
+}: StreamParams): Promise<StreamResult> {
   const client = new Anthropic({
     apiKey,
     ...(baseUrl ? { baseURL: baseUrl } : {}),
@@ -19,7 +24,7 @@ export async function streamFromAnthropic({
 
   const stream = client.messages.stream({
     model,
-    max_tokens: 8192,
+    max_tokens: maxTokens ?? DEFAULT_MAX_TOKENS,
     messages: anthropicMessages,
     ...(system ? { system } : {}),
   });
@@ -35,6 +40,14 @@ export async function streamFromAnthropic({
       outputTokens: finalMsg.usage.output_tokens,
     });
   }
+
+  const finishReason = finalMsg.stop_reason ?? undefined;
+  const result: StreamResult = {
+    finishReason,
+    truncated: isTruncatedFinishReason(finishReason),
+  };
+  onFinish?.(result);
+  return result;
 }
 
 function normalizeForAnthropic(

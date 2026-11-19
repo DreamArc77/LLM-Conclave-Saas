@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
+import { truncationNote } from '@/lib/providers/truncation';
 import { streamFromOpenAI } from '@/lib/providers/openai-adapter';
 import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
@@ -109,33 +110,51 @@ export async function generateReportMarkdown(
 
   const summaryPrompt = getSummaryPromptFull(locale, filledTemplate, conversation);
 
-  // Accumulate streamed chunks into a string
+  // Accumulate streamed chunks into a string. Reports are long-form, so start with
+  // a generous cap and retry once with a larger one if the provider truncates.
   let markdown = '';
+  let truncated = false;
   const writeSSE = async (data: { type: string; content?: string }) => {
     if (data.type === 'chunk' && data.content) markdown += data.content;
   };
 
-  switch (provider.protocol) {
-    case 'openai-compatible':
-      await streamFromOpenAI({
-        apiKey: summaryApiKey, baseUrl, model: summaryModelId,
-        messages: [{ role: 'user', content: summaryPrompt }], writeSSE,
-      });
-      break;
-    case 'anthropic':
-      await streamFromAnthropic({
-        apiKey: summaryApiKey, baseUrl, model: summaryModelId,
-        messages: [{ role: 'user', content: summaryPrompt }], writeSSE,
-      });
-      break;
-    case 'google-gemini':
-      await streamFromGemini({
-        apiKey: summaryApiKey, baseUrl, model: summaryModelId,
-        messages: [{ role: 'user', content: summaryPrompt }], writeSSE,
-      });
-      break;
-    default:
-      throw new Error('Unknown provider protocol');
+  const runOnce = async (maxTokens: number) => {
+    markdown = '';
+    truncated = false;
+    const onFinish = (result: { truncated: boolean }) => {
+      truncated = result.truncated;
+    };
+    switch (provider.protocol) {
+      case 'openai-compatible':
+        await streamFromOpenAI({
+          apiKey: summaryApiKey, baseUrl, model: summaryModelId,
+          messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens, onFinish,
+        });
+        break;
+      case 'anthropic':
+        await streamFromAnthropic({
+          apiKey: summaryApiKey, baseUrl, model: summaryModelId,
+          messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens, onFinish,
+        });
+        break;
+      case 'google-gemini':
+        await streamFromGemini({
+          apiKey: summaryApiKey, baseUrl, model: summaryModelId,
+          messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens, onFinish,
+        });
+        break;
+      default:
+        throw new Error('Unknown provider protocol');
+    }
+  };
+
+  await runOnce(24000);
+  if (truncated) {
+    console.warn('[report] Truncated at 24000 tokens; retrying with 32000');
+    await runOnce(32000);
+  }
+  if (truncated) {
+    markdown += truncationNote(locale);
   }
 
   return markdown.trim();

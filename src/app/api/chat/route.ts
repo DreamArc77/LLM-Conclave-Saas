@@ -3,6 +3,7 @@ import { streamFromAnthropic } from '@/lib/providers/anthropic-adapter';
 import { streamFromGemini } from '@/lib/providers/gemini-adapter';
 import { PRESET_DEFINITIONS } from '@/config/preset-models';
 import { logger } from '@/lib/logger';
+import { truncationNoteBilingual } from '@/lib/providers/truncation';
 import { isSaas } from '@/lib/flags';
 import { createServerClient, createAdminClient } from '@/lib/supabase/server';
 import { hasPaidAccess, isPresetLocked } from '@/lib/credits/access';
@@ -82,18 +83,28 @@ export async function POST(req: Request): Promise<Response> {
   (async () => {
     try {
       console.log(`[API/chat] provider=${provider} model=${model}`);
+      let truncated = false;
+      const onFinish = (result: { truncated: boolean }) => {
+        truncated = result.truncated;
+      };
+      // Presets are platform-paid and capped; BYOK calls keep the provider default.
+      const maxTokens = preset ? 24000 : undefined;
       switch (provider) {
         case 'openai-compatible':
-          await streamFromOpenAI({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
+          await streamFromOpenAI({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE, maxTokens, onFinish });
           break;
         case 'anthropic':
-          await streamFromAnthropic({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
+          await streamFromAnthropic({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE, maxTokens, onFinish });
           break;
         case 'google-gemini':
-          await streamFromGemini({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE });
+          await streamFromGemini({ apiKey, baseUrl: baseUrl ?? undefined, model, system, messages, writeSSE, maxTokens, onFinish });
           break;
         default:
           await writeSSE({ type: 'error', message: `Unknown provider: ${provider}` });
+      }
+      if (truncated) {
+        console.warn(`[API/chat] Output truncated for ${model} at ${maxTokens ?? 'default'} tokens`);
+        await writeSSE({ type: 'chunk', content: truncationNoteBilingual() });
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';

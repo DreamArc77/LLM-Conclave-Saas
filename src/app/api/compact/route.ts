@@ -89,13 +89,13 @@ Summary:`;
   try {
     switch (provider.protocol) {
       case 'openai-compatible':
-        await streamFromOpenAI({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromOpenAI({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 4096 });
         break;
       case 'anthropic':
-        await streamFromAnthropic({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromAnthropic({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 4096 });
         break;
       case 'google-gemini':
-        await streamFromGemini({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromGemini({ apiKey, baseUrl: resolvedBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 4096 });
         break;
       default:
         return new Response(JSON.stringify({ error: 'Unsupported protocol' }), { status: 500 });

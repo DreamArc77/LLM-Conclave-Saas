@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { PRESET_DEFINITIONS } from '@/config/preset-models';
+import { PRESET_DEFINITIONS, type PresetDefinition } from '@/config/preset-models';
 import { PROVIDER_REGISTRY } from '@/lib/providers/registry';
+import { truncationNote } from '@/lib/providers/truncation';
 import { logger } from '@/lib/logger';
 import { jobStore } from '@/lib/relay/job-store-factory';
 import { isSaas } from '@/lib/flags';
@@ -34,6 +35,12 @@ export const dynamic = 'force-dynamic';
 
 /** How long a user's "one active relay" slot is held before the TTL releases it. */
 const RELAY_USER_LOCK_TTL_SEC = 20 * 60;
+/** Fallback completion cap for presets without an explicit per-model value. */
+const DEFAULT_DEBATE_MAX_OUTPUT_TOKENS = 16000;
+/** Hard prompt budget applied to cheap models so a huge client-supplied context can't run away. */
+const DEFAULT_DEBATE_MAX_INPUT_TOKENS = 120000;
+/** Gemini summaries are cheap; keep enough room for the full meeting-minutes template. */
+const SUMMARY_MAX_OUTPUT_TOKENS = 16000;
 
 interface RelayModelInput {
   id: string;
@@ -272,13 +279,14 @@ export async function POST(req: Request): Promise<Response> {
 
           // Resolve API key
           let apiKey: string;
+          let presetDef: PresetDefinition | undefined;
           if (model.isPreset) {
-            const preset = PRESET_DEFINITIONS.find((p) => p.id === model.id);
-            if (!preset?.apiKey) {
+            presetDef = PRESET_DEFINITIONS.find((p) => p.id === model.id);
+            if (!presetDef?.apiKey) {
               await writeRelaySSE({ type: 'error', message: `Preset not found or missing key: ${model.id}` });
               return;
             }
-            apiKey = preset.apiKey;
+            apiKey = presetDef.apiKey;
           } else {
             if (!model.apiKey) {
               await writeRelaySSE({ type: 'error', message: `No API key for ${model.displayName}` });
@@ -297,17 +305,31 @@ export async function POST(req: Request): Promise<Response> {
 
           const systemPrompt = buildDebateSystemPrompt(locale, query, model.displayName);
           const isFirstCall = round === 0 && i === 0;
+          // Trim older turns before the prompt reaches the model's budget. GPT-6.1
+          // and Qwen have tight per-model budgets; everything else gets the global cap.
+          const inputBudget = presetDef
+            ? (presetDef.maxInputTokens ?? DEFAULT_DEBATE_MAX_INPUT_TOKENS)
+            : undefined;
+          const modelContext = trimContextForBudget(fullContext, inputBudget);
+          const maxTokens = presetDef
+            ? (presetDef.maxOutputTokens ?? DEFAULT_DEBATE_MAX_OUTPUT_TOKENS)
+            : undefined;
+          const reasoningMaxTokens = presetDef?.reasoningMaxTokens;
           const messagesForModel: Array<{ role: 'user' | 'assistant'; content: string; displayName?: string }> =
             isFirstCall
-              ? [...fullContext]
-              : [{ role: 'user', content: formatDebateContext(locale, query, fullContext, model.displayName) }];
+              ? [...modelContext]
+              : [{ role: 'user', content: formatDebateContext(locale, query, modelContext, model.displayName) }];
 
           let fullContent = '';
+          let truncated = false;
           const writeSSE = async (data: { type: string; content?: string; message?: string }) => {
             if (data.type === 'chunk' && data.content) {
               fullContent += data.content;
               await writeRelaySSE({ type: 'content', text: data.content });
             }
+          };
+          const onFinish = (result: { truncated: boolean }) => {
+            truncated = result.truncated;
           };
 
           // Keepalive: keeps the SSE connection alive on iOS Safari (~30s idle timeout)
@@ -318,13 +340,13 @@ export async function POST(req: Request): Promise<Response> {
           try {
             switch (provider.protocol) {
               case 'openai-compatible':
-                await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
+                await streamFromOpenAI({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage, maxTokens, reasoningMaxTokens, onFinish });
                 break;
               case 'anthropic':
-                await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
+                await streamFromAnthropic({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage, maxTokens, onFinish });
                 break;
               case 'google-gemini':
-                await streamFromGemini({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage });
+                await streamFromGemini({ apiKey, baseUrl, model: model.modelId, system: systemPrompt, messages: messagesForModel, writeSSE, onUsage, maxTokens, onFinish });
                 break;
               default:
                 await writeRelaySSE({ type: 'error', message: `Unknown protocol: ${provider.protocol}` });
@@ -343,6 +365,7 @@ export async function POST(req: Request): Promise<Response> {
           // Detect and strip [FINISH]
           const finished = /\[FINISH\]/i.test(fullContent);
           const content = fullContent.replace(/\s*\[FINISH\]\s*/gi, '').trim();
+          const displayContent = truncated ? `${content}${truncationNote(locale)}` : content;
 
           if (finished) finishedModelIds.add(model.id);
 
@@ -354,13 +377,15 @@ export async function POST(req: Request): Promise<Response> {
             modelId: model.modelId,
             providerId: model.providerId,
             displayName: model.displayName,
-            content,
+            content: displayContent,
             finished,
+            truncated,
           });
 
           logger.info(
             `[TOKEN] session=${sessionId} round=${round + 1}/${maxRounds} model=${model.displayName}(${model.modelId})` +
-            ` in=${modelInputTokens} out=${modelOutputTokens} total=${modelInputTokens + modelOutputTokens}`
+            ` in=${modelInputTokens} out=${modelOutputTokens} total=${modelInputTokens + modelOutputTokens}` +
+            ` maxOut=${maxTokens} truncated=${truncated}`
           );
 
           if (perModelStats[model.id]) {
@@ -578,16 +603,25 @@ async function generateSummary(
   }, 12000);
 
   try {
+    let truncated = false;
+    const onFinish = (result: { truncated: boolean }) => {
+      truncated = result.truncated;
+    };
+    const summaryMaxTokens = summaryModel.isPreset ? SUMMARY_MAX_OUTPUT_TOKENS : undefined;
     switch (provider.protocol) {
       case 'openai-compatible':
-        await streamFromOpenAI({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE });
+        await streamFromOpenAI({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens: summaryMaxTokens, onFinish });
         break;
       case 'anthropic':
-        await streamFromAnthropic({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE });
+        await streamFromAnthropic({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens: summaryMaxTokens, onFinish });
         break;
       case 'google-gemini':
-        await streamFromGemini({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE });
+        await streamFromGemini({ apiKey: summaryApiKey, baseUrl, model: summaryModel.modelId, messages: [{ role: 'user', content: summaryPrompt }], writeSSE, maxTokens: summaryMaxTokens, onFinish });
         break;
+    }
+    if (truncated) {
+      logger.warn('[API/relay] Summary hit the output cap:', { model: summaryModel.modelId, maxTokens: summaryMaxTokens ?? 'default' });
+      await writeRelaySSE({ type: 'content', text: truncationNote(locale) });
     }
   } catch (err) {
     clearInterval(keepaliveTimer);
@@ -609,6 +643,48 @@ async function generateSummary(
     topic,
     usageStats,
   });
+}
+
+function estimateContextTokens(text: string): number {
+  // Same heuristic the app already uses for Chinese-heavy text (chars / 2).
+  return Math.ceil(text.length / 2);
+}
+
+/**
+ * Keep the original proposition and the most recent turns, drop the oldest middle
+ * messages when the prompt would exceed the model's input budget. This prevents a
+ * long debate from turning a late round into a 100k-token request.
+ */
+function trimContextForBudget<T extends { role: 'user' | 'assistant'; content: string; displayName?: string }>(
+  context: T[],
+  budgetTokens?: number
+): T[] {
+  if (!budgetTokens || context.length === 0) return context;
+
+  const total = context.reduce((sum, m) => sum + estimateContextTokens(m.content), 0);
+  if (total <= budgetTokens) return context;
+
+  const keep = new Set<number>();
+  const firstUserIndex = context.findIndex((m) => m.role === 'user');
+  if (firstUserIndex >= 0) keep.add(firstUserIndex);
+  keep.add(context.length - 1); // the current user turn is always the last message
+
+  let used = 0;
+  for (const idx of keep) used += estimateContextTokens(context[idx].content);
+
+  for (let i = context.length - 1; i >= 0; i--) {
+    if (keep.has(i)) continue;
+    const tokens = estimateContextTokens(context[i].content);
+    if (used + tokens > budgetTokens) break;
+    keep.add(i);
+    used += tokens;
+  }
+
+  const trimmed = [...keep].sort((a, b) => a - b).map((idx) => context[idx]);
+  logger.warn(
+    `[API/relay] Context trimmed budget=${budgetTokens} from=${total} to=${used} estimated tokens`
+  );
+  return trimmed;
 }
 
 function buildDebateSystemPrompt(locale: Locale, originalQuery: string, modelDisplayName: string): string {

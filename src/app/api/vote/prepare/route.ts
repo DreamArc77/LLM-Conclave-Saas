@@ -126,13 +126,13 @@ export async function POST(req: Request): Promise<Response> {
     const effectiveBaseUrl = baseUrl || provider.defaultBaseUrl;
     switch (provider.protocol) {
       case 'openai-compatible':
-        await streamFromOpenAI({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromOpenAI({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 2048 });
         break;
       case 'anthropic':
-        await streamFromAnthropic({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromAnthropic({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 2048 });
         break;
       case 'google-gemini':
-        await streamFromGemini({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE });
+        await streamFromGemini({ apiKey, baseUrl: effectiveBaseUrl, model: modelId, messages: [{ role: 'user', content: prompt }], writeSSE, maxTokens: 2048 });
         break;
       default:
         throw new Error('Unknown provider protocol');

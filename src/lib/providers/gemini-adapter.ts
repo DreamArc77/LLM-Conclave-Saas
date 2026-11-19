@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { logger } from '@/lib/logger';
-import type { StreamParams } from './types';
+import { isTruncatedFinishReason } from './truncation';
+import type { StreamParams, StreamResult } from './types';
 
 const STREAM_TIMEOUT_MS = 60_000; // 60s timeout for Gemini streaming
 
@@ -12,7 +13,9 @@ export async function streamFromGemini({
   messages,
   writeSSE,
   onUsage,
-}: StreamParams) {
+  maxTokens,
+  onFinish,
+}: StreamParams): Promise<StreamResult> {
   const options: ConstructorParameters<typeof GoogleGenAI>[0] = { apiKey };
   if (baseUrl) {
     options.httpOptions = { baseUrl };
@@ -30,8 +33,11 @@ export async function streamFromGemini({
   console.log('[Gemini] Request:', { model, baseUrl: baseUrl || '(default)', turns: contents.length });
 
   const generateParams: Parameters<typeof ai.models.generateContentStream>[0] = { model, contents };
-  if (system) {
-    generateParams.config = { systemInstruction: system };
+  if (system || maxTokens) {
+    generateParams.config = {
+      ...(system ? { systemInstruction: system } : {}),
+      ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
+    };
   }
 
   try {
@@ -42,6 +48,7 @@ export async function streamFromGemini({
     );
 
     let chunkCount = 0;
+    let finishReason: string | undefined;
     let lastUsageMetadata: { promptTokenCount?: number; candidatesTokenCount?: number } | undefined;
     for await (const chunk of response) {
       const text = chunk.text;
@@ -49,6 +56,8 @@ export async function streamFromGemini({
         chunkCount++;
         await writeSSE({ type: 'chunk', content: text });
       }
+      const candidateReason = chunk.candidates?.[0]?.finishReason;
+      if (candidateReason) finishReason = candidateReason;
       if (chunk.usageMetadata) {
         lastUsageMetadata = chunk.usageMetadata;
       }
@@ -60,6 +69,13 @@ export async function streamFromGemini({
       });
     }
     console.log(`[Gemini] Stream completed: ${chunkCount} chunks`);
+
+    const result: StreamResult = {
+      finishReason,
+      truncated: isTruncatedFinishReason(finishReason),
+    };
+    onFinish?.(result);
+    return result;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     logger.error('[Gemini] Error:', err);

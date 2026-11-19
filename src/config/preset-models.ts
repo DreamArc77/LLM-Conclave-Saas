@@ -18,6 +18,12 @@ export interface PresetDefinition {
    * rejected server-side.
    */
   freeTier?: boolean;
+  /** Hard completion-token cap per debate turn (provider length cap). */
+  maxOutputTokens?: number;
+  /** Prompt-token budget before older debate context is trimmed. */
+  maxInputTokens?: number;
+  /** OpenRouter reasoning-token cap for reasoning-heavy models. */
+  reasoningMaxTokens?: number;
   /** Badge label shown on the model card (e.g. "官方", "精选"). Omit to show no badge. */
   badge?: string;
   /** Metadata for AI agents selecting models via /api/agent/models. */
@@ -58,6 +64,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 45, // $0.14 / $0.42 per 1M — floor ≈ 11
     defaultEnabled: true,
     freeTier: true,
+    maxOutputTokens: 16000,
     badge: 'Lite',
     agentMeta: { strengths: ['logical', 'concise', 'fast'], tier: 'lite' },
   },
@@ -71,6 +78,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 80, // pricing anchor: $0.825 / $4.125 per 1M
     defaultEnabled: true,
     freeTier: true,
+    maxOutputTokens: 12000,
     badge: 'Balance',
     agentMeta: { strengths: ['analytical', 'creative', 'balanced'], tier: 'standard' },
   },
@@ -84,6 +92,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 10, // $0.10 / $0.50 per 1M — floor ≈ 10
     defaultEnabled: true,
     freeTier: true,
+    maxOutputTokens: 12000,
     badge: 'Balance',
     agentMeta: { strengths: ['balanced', 'instruction-following', 'fast'], tier: 'standard' },
   },
@@ -96,6 +105,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 195, // $2 / $10 per 1M — floor ≈ 194
     defaultEnabled: false,
+    maxOutputTokens: 16000,
     badge: 'Flagship',
     agentMeta: { strengths: ['deep-reasoning', 'multimodal', 'long-context'], tier: 'pro' },
   },
@@ -108,6 +118,8 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 194, // $2 / $10 per 1M — floor ≈ 194 (raised from 90, which was below cost)
     defaultEnabled: false,
+    maxOutputTokens: 16000,
+    maxInputTokens: 40000,
     badge: 'Flagship',
     agentMeta: { strengths: ['reasoning', 'coding', 'instruction-following'], tier: 'pro' },
   },
@@ -120,6 +132,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 388, // $4 / $20 per 1M — floor ≈ 388 (raised from 335, which was below cost)
     defaultEnabled: false,
+    maxOutputTokens: 12000,
     badge: 'Flagship',
     agentMeta: { strengths: ['nuanced-reasoning', 'writing', 'safety'], tier: 'pro' },
   },
@@ -132,6 +145,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 375, // $2 / $6 per 1M — floor ≈ 151
     defaultEnabled: false,
+    maxOutputTokens: 24000,
     badge: 'Flagship',
     agentMeta: { strengths: ['real-time-knowledge', 'wit', 'systems-thinking'], tier: 'pro' },
   },
@@ -145,6 +159,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     creditsPerRound: 28, // $0.15 / $0.60 per 1M — floor ≈ 13
     defaultEnabled: false,
     freeTier: true,
+    maxOutputTokens: 12000,
     badge: 'Balance',
     agentMeta: { strengths: ['multi-agent', 'coding', 'chinese'], tier: 'standard' },
   },
@@ -157,6 +172,7 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 308, // $0.2403 / $8.4023 per 1M — floor ≈ 101
     defaultEnabled: false,
+    maxOutputTokens: 16000,
     badge: 'Balance',
     agentMeta: { strengths: ['long-context', 'research', 'coding'], tier: 'standard' },
   },
@@ -169,6 +185,9 @@ export const PRESET_DEFINITIONS: PresetDefinition[] = [
     apiKey: process.env.OPENROUTER_API_KEY || '',
     creditsPerRound: 330, // $4 / $12 per 1M — floor ≈ 302
     defaultEnabled: false,
+    maxOutputTokens: 12000,
+    maxInputTokens: 60000,
+    reasoningMaxTokens: 4096,
     badge: 'Flagship',
     agentMeta: { strengths: ['agentic', 'coding', 'chinese'], tier: 'pro' },
   },
